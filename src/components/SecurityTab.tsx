@@ -59,7 +59,7 @@ export const SecurityTab: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-violet-400 font-semibold text-xs uppercase tracking-wider mb-1">
             <ShieldAlert className="w-4 h-4" />
-            <span>ONYXGUARD Active Defense Matrix</span>
+            <span>DEXTERCORP Active Defense Matrix</span>
           </div>
           <h2 className="text-2xl font-bold text-white font-['Outfit']">Anti-Nuke & Guild Protection</h2>
           <p className="text-xs text-slate-400 mt-1 max-w-xl">

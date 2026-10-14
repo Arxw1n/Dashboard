@@ -256,7 +256,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Subtitle description */}
         <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed mb-8">
-          OnyxGuard protects your community with advanced anti-nuke systems,
+          DexterCorp protects your community with advanced anti-nuke systems,
           intelligent automod, and high-fidelity utility tools.
         </p>
 
@@ -403,7 +403,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="absolute inset-0 rounded-full border border-[#ff2b43] animate-ping opacity-25"></div>
                 <img
                   src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80"
-                  alt="OnyxGuard Mascot"
+                  alt="DexterCorp Mascot"
                   className="w-full h-full rounded-full object-cover"
                 />
               </div>
@@ -411,7 +411,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             {/* Title */}
             <h2 className="font-orbitron font-bold text-2xl text-[#ff2b43] tracking-wide mb-2 text-glow-red">
-              Welcome to OnyxGuard
+              Welcome to DexterCorp
             </h2>
             <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed mb-6">
               Login to access your dashboard and manage your servers with premium tools.

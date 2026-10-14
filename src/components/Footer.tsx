@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-violet-400" />
-          <span className="font-semibold text-slate-300 font-['Outfit']">ONYXGUARD</span>
+          <span className="font-semibold text-slate-300 font-['Outfit']">DEXTERCORP</span>
           <span>• Dedicated Discord Protection & Hybrid Cluster Engine</span>
         </div>
 
@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
             rel="noopener noreferrer"
             className="hover:text-cyan-400 transition-colors flex items-center gap-1"
           >
-            Invite ONYXGUARD <ExternalLink className="w-3 h-3" />
+            Invite DEXTERCORP <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       </div>

@@ -394,7 +394,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
             <SyncingLoader
               fullScreen={false}
               title="SYNCING PROTOCOLS"
-              subtitle="CONNECTING TO ONYXGUARD SHARD DATA"
+              subtitle="CONNECTING TO DEXTERCORP SHARD DATA"
             />
           ) : activeSection === 'commands' ? (
             <CommandsTab
@@ -424,9 +424,9 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               {/* User text details */}
               <div className="space-y-1">
                 <h2 className="font-orbitron font-extrabold text-2xl sm:text-3xl tracking-wide text-white">
-                  {user.username ? user.username.toUpperCase() : 'ONX VEER'}
+                  {user.username ? user.username.toUpperCase() : 'DXTR AXIO'}
                 </h2>
-                <p className="text-xs text-slate-400">Welcome back to your OnyxGuard Control Console</p>
+                <p className="text-xs text-slate-400">Welcome back to your DexterCorp Control Console</p>
 
                 {/* Inline Stats Badges */}
                 <div className="flex flex-wrap items-center gap-3 pt-2 text-[11px] font-mono tracking-wider">
@@ -476,7 +476,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               <div className="flex items-center gap-2.5 text-slate-300">
                 <AlertCircle className="w-4 h-4 text-blue-400 shrink-0" />
                 <span>
-                  Want to see all your personal Discord servers to invite OnyxGuard? Authorize server read permissions.
+                  Want to see all your personal Discord servers to invite DexterCorp? Authorize server read permissions.
                 </span>
               </div>
               <button
@@ -497,7 +497,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               <div>
                 <h3 className="font-orbitron font-bold text-xl text-white">Your Servers</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Configure OnyxGuard in connected servers or invite to unadded servers
+                  Configure DexterCorp in connected servers or invite to unadded servers
                 </p>
               </div>
 
@@ -767,11 +767,11 @@ export const ServersTab: React.FC<ServersTabProps> = ({
                   Add Bot to Server
                 </h4>
                 <p className="text-xs text-slate-400 mb-4 max-w-[200px]">
-                  Invite OnyxGuard to protect another Discord server
+                  Invite DexterCorp to protect another Discord server
                 </p>
                 <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/15 text-emerald-300 text-xs font-bold border border-emerald-500/30 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>+ Invite OnyxGuard</span>
+                  <span>+ Invite DexterCorp</span>
                 </span>
               </div>
             </div>

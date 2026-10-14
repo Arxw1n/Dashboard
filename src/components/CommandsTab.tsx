@@ -165,7 +165,7 @@ export const CommandsTab: React.FC<CommandsTabProps> = ({
             <p className="text-xs text-slate-400 max-w-xl">
               Showing <strong className="text-white font-mono">{filteredCommands.length}</strong> of{' '}
               <strong className="text-[#ff2b43] font-mono">{commands.length}</strong> native commands
-              loaded directly from OnyxGuard core hybrid shard cluster.
+              loaded directly from DexterCorp core hybrid shard cluster.
             </p>
           </div>
 

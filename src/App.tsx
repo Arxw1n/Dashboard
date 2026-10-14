@@ -29,7 +29,7 @@ function filterDiscordAdminGuilds(guildsList: any[]): any[] {
 
 const DEFAULT_ADMIN_USER: UserProfile = {
   id: '1500056784000253973',
-  username: 'ONX VEER',
+  username: 'DXTR AXIO',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   isLoggedIn: true,
   isOwner: true,
@@ -56,7 +56,7 @@ export const App: React.FC = () => {
 
   // Authentication State - STRICTLY null by default so no direct auto-login!
   const [user, setUser] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem('onyxguard_user');
+    const saved = localStorage.getItem('dextercorp_user');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -69,11 +69,11 @@ export const App: React.FC = () => {
   });
 
   const [discordToken, setDiscordToken] = useState<string | null>(() => {
-    return localStorage.getItem('onyxguard_token') || null;
+    return localStorage.getItem('dextercorp_token') || null;
   });
 
   const [discordGuilds, setDiscordGuilds] = useState<any[]>(() => {
-    const saved = localStorage.getItem('onyxguard_discord_guilds');
+    const saved = localStorage.getItem('dextercorp_discord_guilds');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -86,7 +86,7 @@ export const App: React.FC = () => {
 
   // Persist selectedGuild in localStorage so refreshing on /manage stays on that guild!
   const [selectedGuild, setSelectedGuild] = useState<GuildItem | null>(() => {
-    const saved = localStorage.getItem('onyxguard_selected_guild');
+    const saved = localStorage.getItem('dextercorp_selected_guild');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -201,9 +201,9 @@ export const App: React.FC = () => {
       setDiscordToken(token);
       setDiscordGuilds(adminGuilds);
 
-      localStorage.setItem('onyxguard_user', JSON.stringify(profile));
-      localStorage.setItem('onyxguard_token', token);
-      localStorage.setItem('onyxguard_discord_guilds', JSON.stringify(adminGuilds));
+      localStorage.setItem('dextercorp_user', JSON.stringify(profile));
+      localStorage.setItem('dextercorp_token', token);
+      localStorage.setItem('dextercorp_discord_guilds', JSON.stringify(adminGuilds));
       setViewMode('dashboard');
     } catch (err) {
       console.error('Discord auth error:', err);
@@ -223,7 +223,7 @@ export const App: React.FC = () => {
         const allGuilds = await guildsRes.json();
         const adminGuilds = filterDiscordAdminGuilds(allGuilds);
         setDiscordGuilds(adminGuilds);
-        localStorage.setItem('onyxguard_discord_guilds', JSON.stringify(adminGuilds));
+        localStorage.setItem('dextercorp_discord_guilds', JSON.stringify(adminGuilds));
       }
     } catch (e) {
       console.warn('Could not refresh discord guilds:', e);
@@ -339,10 +339,10 @@ export const App: React.FC = () => {
     setUser(null);
     setDiscordToken(null);
     setDiscordGuilds([]);
-    localStorage.removeItem('onyxguard_user');
-    localStorage.removeItem('onyxguard_token');
-    localStorage.removeItem('onyxguard_discord_guilds');
-    localStorage.removeItem('onyxguard_selected_guild');
+    localStorage.removeItem('dextercorp_user');
+    localStorage.removeItem('dextercorp_token');
+    localStorage.removeItem('dextercorp_discord_guilds');
+    localStorage.removeItem('dextercorp_selected_guild');
     navigateTo('landing', '/');
   };
 
@@ -353,7 +353,7 @@ export const App: React.FC = () => {
 
   const handleDirectLogin = () => {
     setUser(DEFAULT_ADMIN_USER);
-    localStorage.setItem('onyxguard_user', JSON.stringify(DEFAULT_ADMIN_USER));
+    localStorage.setItem('dextercorp_user', JSON.stringify(DEFAULT_ADMIN_USER));
     navigateTo('dashboard', '/dashboard');
   };
 
@@ -363,7 +363,7 @@ export const App: React.FC = () => {
       <SyncingLoader
         fullScreen={true}
         title="SYNCING SERVER"
-        subtitle="ESTABLISHING CONNECTION WITH ONYXGUARD DASHBOARD"
+        subtitle="ESTABLISHING CONNECTION WITH DEXTERCORP DASHBOARD"
       />
     );
   }
@@ -394,7 +394,7 @@ export const App: React.FC = () => {
     );
   }
 
-  // SCREEN 2: ABOUT / MEET THE TEAM PAGE (Image 2 - Exactly 1 card for VEER)
+  // SCREEN 2: ABOUT / MEET THE TEAM PAGE (Image 2 - Exactly 1 card for AXIO)
   if (viewMode === 'about') {
     return (
       <AboutView
@@ -414,7 +414,7 @@ export const App: React.FC = () => {
         onRefreshCommands={fetchBotData}
         onSelectGuild={(g) => {
           setSelectedGuild(g);
-          localStorage.setItem('onyxguard_selected_guild', JSON.stringify(g));
+          localStorage.setItem('dextercorp_selected_guild', JSON.stringify(g));
           navigateTo('server_manage', '/manage');
         }}
         onRefreshDiscordGuilds={handleRefreshDiscordGuilds}

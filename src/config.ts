@@ -1,4 +1,4 @@
-// Centralized configuration for OnyxGuard Dashboard
+// Centralized configuration for DexterCorp Dashboard
 
 export const BOT_CONFIG = {
   // Application / Client ID

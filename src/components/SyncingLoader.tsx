@@ -9,7 +9,7 @@ interface SyncingLoaderProps {
 
 export const SyncingLoader: React.FC<SyncingLoaderProps> = ({
   title = 'SYNCING SERVER',
-  subtitle = 'ESTABLISHING CONNECTION WITH ONYXGUARD DASHBOARD',
+  subtitle = 'ESTABLISHING CONNECTION WITH DEXTERCORP DASHBOARD',
   fullScreen = true,
 }) => {
   return (
@@ -51,7 +51,7 @@ export const SyncingLoader: React.FC<SyncingLoaderProps> = ({
         {title}
       </h3>
 
-      {/* Subtitle: ESTABLISHING CONNECTION WITH ONYXGUARD DASHBOARD */}
+      {/* Subtitle: ESTABLISHING CONNECTION WITH DEXTERCORP DASHBOARD */}
       <p className="font-mono text-[9px] sm:text-[10px] tracking-[0.22em] text-slate-400 uppercase max-w-md">
         {subtitle}
       </p>

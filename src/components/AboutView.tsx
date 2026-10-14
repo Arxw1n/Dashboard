@@ -154,10 +154,10 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
             >
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                alt="VEER"
+                alt="AXIO"
                 className="w-5 h-5 rounded-full object-cover border border-[#ff2b43]"
               />
-              <span className="hidden sm:inline font-orbitron text-[11px] font-bold">VEER</span>
+              <span className="hidden sm:inline font-orbitron text-[11px] font-bold">AXIO</span>
             </button>
           </div>
         </div>
@@ -176,7 +176,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
           </p>
         </div>
 
-        {/* 1 SINGLE ABOUT CARD FOR "VEER" (Exact match to Image 2 design, exclusively for VEER) */}
+        {/* 1 SINGLE ABOUT CARD FOR "AXIO" (Exact match to Image 2 design, exclusively for AXIO) */}
         <div className="w-full max-w-[340px] sm:max-w-[380px] bg-[#0c0d14]/90 border-2 border-[#ff2b43] rounded-3xl p-5 sm:p-6 shadow-[0_0_40px_rgba(255,43,67,0.25)] relative overflow-hidden transition-all duration-300 group hover:-translate-y-1 backdrop-blur-xl">
           {/* Subtle neon corner glows */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff2b43]/20 rounded-full blur-[45px] pointer-events-none"></div>
@@ -197,7 +197,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
                 <div className="w-20 h-20 rounded-2xl bg-[#0c0d14] p-1 border-2 border-[#ff2b43] shadow-xl shadow-[#ff2b43]/50 overflow-hidden">
                   <img
                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                    alt="VEER"
+                    alt="AXIO"
                     className="w-full h-full rounded-xl object-cover"
                   />
                 </div>
@@ -213,7 +213,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
           {/* Name & Role Pill (Matches Image 2) */}
           <div className="pt-2 space-y-2 text-center">
             <h2 className="font-orbitron font-black text-2xl tracking-wider text-white group-hover:text-[#ff2b43] transition-colors">
-              VEER
+              AXIO
             </h2>
 
             {/* Role Pill */}
@@ -224,7 +224,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
 
             {/* Bio Description (Matches Image 2 Description style) */}
             <p className="text-xs text-slate-300/90 leading-relaxed pt-2 max-w-xs mx-auto font-light">
-              The Head of OnyxGuard. As the main owner and developer, he manages all operations
+              The Head of DexterCorp. As the main owner and developer, he manages all operations
               and makes the final decisions that shape the future of the project.
             </p>
           </div>

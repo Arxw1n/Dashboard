@@ -58,7 +58,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 }) => {
   // Persist active module in localStorage so F5 reload stays on current tab
   const [activeModule, setActiveModule] = useState<string>(() => {
-    return localStorage.getItem('onyxguard_active_module') || 'welcomer';
+    return localStorage.getItem('dextercorp_active_module') || 'welcomer';
   });
 
   const [isModuleSyncing, setIsModuleSyncing] = useState<boolean>(false);
@@ -68,7 +68,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setIsModuleSyncing(true);
     setTimeout(() => {
       setActiveModule(id);
-      localStorage.setItem('onyxguard_active_module', id);
+      localStorage.setItem('dextercorp_active_module', id);
       setIsModuleSyncing(false);
     }, 280);
   };
@@ -93,7 +93,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [description, setDescription] = useState(
     "We're glad to have you here. You are member #{server_membercount}!"
   );
-  const [authorName, setAuthorName] = useState('ONYXGUARD SECURITY');
+  const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
   const [authorIconUrl, setAuthorIconUrl] = useState('{user_avatar}');
   const [footerText, setFooterText] = useState('Enjoy your stay in {server_name}');
   const [footerIconUrl, setFooterIconUrl] = useState('{server_icon}');
@@ -141,7 +141,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [prefix, setPrefix] = useState('$');
   const [language, setLanguage] = useState('English');
   const [timezone, setTimezone] = useState('UTC');
-  const [botNickname, setBotNickname] = useState('OnyxGuard');
+  const [botNickname, setBotNickname] = useState('DexterCorp');
 
   // 5. Logging Settings
   const [loggingEnabled, setLoggingEnabled] = useState(true);
@@ -305,7 +305,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setEmbedTitle('Welcome to {server_name}!');
     setEmbedColor('#ff2b43');
     setDescription("We're glad to have you here. You are member #{server_membercount}!");
-    setAuthorName('ONYXGUARD SECURITY');
+    setAuthorName('DEXTERCORP SECURITY');
     setAuthorIconUrl('{user_avatar}');
     setThumbnailUrl('{user_avatar}');
     setFooterText('Enjoy your stay in {server_name}');
@@ -396,7 +396,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   // Variables replacer for preview
   const renderPreview = (text: string) => {
     return text
-      .replace(/{user}/g, '@Veer')
+      .replace(/{user}/g, '@Axio')
       .replace(/{server_name}/g, guild.name)
       .replace(/{server_membercount}/g, (guild.memberCount || 420).toString())
       .replace(/{user_avatar}/g, user.avatar)
@@ -538,7 +538,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             <SyncingLoader
               fullScreen={false}
               title="SYNCING MODULE"
-              subtitle="CONFIGURING ONYXGUARD SHARD DATA"
+              subtitle="CONFIGURING DEXTERCORP SHARD DATA"
             />
           ) : (
             <>
@@ -2211,7 +2211,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
               <div className="flex-1 leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-white text-xs">OnyxGuard</span>
+                  <span className="font-semibold text-white text-xs">DexterCorp</span>
                   <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white uppercase tracking-wider">
                     BOT
                   </span>

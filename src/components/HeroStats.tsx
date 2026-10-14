@@ -16,7 +16,7 @@ export const HeroStats: React.FC<HeroStatsProps> = ({ stats }) => {
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold text-violet-400">
               <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
-              <span>ONYXGUARD Sentinel Core • Port 3001</span>
+              <span>DEXTERCORP Sentinel Core • Port 3001</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white font-['Outfit']">
               Ultra-Resilient Discord <span className="gradient-text-purple">Security Engine</span>

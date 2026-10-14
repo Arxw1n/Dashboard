@@ -38,7 +38,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <div className="absolute inset-0 rounded-full border border-[#ff2b43] animate-ping opacity-20"></div>
             <img
               src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80"
-              alt="OnyxGuard Mascot"
+              alt="DexterCorp Mascot"
               className="w-full h-full rounded-full object-cover"
             />
           </div>
