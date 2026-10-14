@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #070709;
+    --bg-card: #0e0f14;
+    --bg-card-hover: #14151c;
+    --border-glow: rgba(255, 43, 67, 0.3);
+    --accent-red: #ff2b43;
+    --accent-red-hover: #e62038;
+  }
+}
+
+body {
+  background-color: #070709;
+  background-image: 
+    radial-gradient(at 50% 0%, rgba(255, 43, 67, 0.12) 0px, transparent 60%),
+    radial-gradient(at 0% 100%, rgba(220, 38, 38, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 43, 67, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: #f1f5f9;
+  min-height: 100vh;
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.font-orbitron {
+  font-family: 'Orbitron', 'Outfit', sans-serif;
+}
+
+.font-rajdhani {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Glassmorphism panel with sleek red accent */
+.glass-panel {
+  background: rgba(14, 15, 20, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(20, 21, 28, 0.95);
+  border-color: rgba(255, 43, 67, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px -10px rgba(255, 43, 67, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glowing text gradients */
+.gradient-text-red {
+  background: linear-gradient(135deg, #ff4d63 0%, #ff2b43 50%, #d91c33 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-glow-red {
+  text-shadow: 0 0 25px rgba(255, 43, 67, 0.7);
+}
+
+.glow-red {
+  box-shadow: 0 0 35px -5px rgba(255, 43, 67, 0.5);
+}
+
+.glow-red-sm {
+  box-shadow: 0 0 20px -3px rgba(255, 43, 67, 0.35);
+}
+
+/* Red button */
+.btn-red-gradient {
+  background: linear-gradient(135deg, #ff2b43 0%, #dc1e35 100%);
+  box-shadow: 0 4px 20px -2px rgba(255, 43, 67, 0.45);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-red-gradient:hover {
+  background: linear-gradient(135deg, #ff475d 0%, #e62239 100%);
+  box-shadow: 0 6px 25px -2px rgba(255, 43, 67, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Pulse animation for live online dot */
+@keyframes pulseGlowRed {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 43, 67, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 43, 67, 0);
+  }
+}
+
+.pulse-badge-red {
+  animation: pulseGlowRed 2s infinite;
+}

@@ -1,0 +1,16 @@
+# Astra Bot - robots.txt
+# https://astra-bot.app
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /callback
+Disallow: /oauth/
+Disallow: /dashboard/*/settings
+Disallow: /dashboard/*/moderation
+Disallow: /dashboard/*/economy
+Disallow: /dashboard/*/leveling
+Disallow: /dashboard/admin/
+
+Sitemap: https://astra-bot.app/sitemap.xml
