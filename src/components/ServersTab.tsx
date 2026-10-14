@@ -169,7 +169,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           // Sample unadded server so user can experience "Add Bot to Server" button flow
           {
             id: '1002',
-            name: 'ONYX COMMUNITY',
+            name: 'DEXTER COMMUNITY',
             icon: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&auto=format&fit=crop&q=80',
             memberCount: 1540,
             channelsCount: 38,
@@ -205,7 +205,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           },
           {
             id: '1002',
-            name: 'ONYX COMMUNITY',
+            name: 'DEXTER COMMUNITY',
             icon: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&auto=format&fit=crop&q=80',
             memberCount: 1540,
             channelsCount: 38,

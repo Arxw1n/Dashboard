@@ -46,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-extrabold tracking-tight text-white font-['Outfit']">
-                ONYX<span className="gradient-text-purple">GUARD</span>
+                DEXTER<span className="gradient-text-purple">CORP</span>
               </span>
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
                 v2.0

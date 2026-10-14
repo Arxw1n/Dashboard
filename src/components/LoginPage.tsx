@@ -31,7 +31,7 @@ export const LoginPage: React.FC<LoginPageProps> = () => {
           </div>
 
           <h1 className="text-3xl font-black text-white font-['Outfit'] tracking-tight">
-            ONYX<span className="gradient-text-purple">GUARD</span>
+            DEXTER<span className="gradient-text-purple">CORP</span>
           </h1>
           <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed">
             Connect your Discord account to manage servers where you hold Administrator permissions.

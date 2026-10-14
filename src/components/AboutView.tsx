@@ -44,7 +44,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
               </div>
             </div>
             <span className="font-orbitron font-bold text-lg tracking-wider text-white">
-              ONYX<span className="text-[#ff2b43]">GUARD</span>
+              DEXTER<span className="text-[#ff2b43]">CORP</span>
             </span>
           </div>
 
