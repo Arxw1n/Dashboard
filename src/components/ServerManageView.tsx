@@ -94,13 +94,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     "We're glad to have you here. You are member #{server_membercount}!"
   );
   const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
-  const [authorIconUrl, setAuthorIconUrl] = useState('{user_avatar}');
+  const [authorIconUrl, setAuthorIconUrl] = useState('');
   const [footerText, setFooterText] = useState('Enjoy your stay in {server_name}');
-  const [footerIconUrl, setFooterIconUrl] = useState('{server_icon}');
-  const [thumbnailUrl, setThumbnailUrl] = useState('{user_avatar}');
-  const [mainImageUrl, setMainImageUrl] = useState(
-    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'
-  );
+  const [footerIconUrl, setFooterIconUrl] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [mainImageUrl, setMainImageUrl] = useState('');
 
   // 2. Anti-Nuke Settings
   const [antinukeEnabled, setAntinukeEnabled] = useState(true);
@@ -360,17 +358,18 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     }
   };
 
-  // Reset welcomer to standard template
+  // Reset welcomer to clean standard template
   const handleResetWelcomer = () => {
-    setContentMessage('Welcome {user}!');
+    setContentMessage('Welcome {user} to {server_name}!');
     setEmbedTitle('Welcome to {server_name}!');
     setEmbedColor('#ff2b43');
     setDescription("We're glad to have you here. You are member #{server_membercount}!");
     setAuthorName('DEXTERCORP SECURITY');
-    setAuthorIconUrl('{user_avatar}');
-    setThumbnailUrl('{user_avatar}');
+    setAuthorIconUrl('');
+    setThumbnailUrl('');
     setFooterText('Enjoy your stay in {server_name}');
-    setFooterIconUrl('{server_icon}');
+    setFooterIconUrl('');
+    setMainImageUrl('');
   };
 
   // Send simulated & real test message to discord
@@ -710,6 +709,72 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
               </div>
 
+              {/* Quick Presets Bar */}
+              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    QUICK PRESETS:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('Welcome to {server_name}!');
+                      setEmbedColor('#ff2b43');
+                      setDescription("We're glad to have you here. You are member #{server_membercount}!\n• Make sure to check out the rules.\n• Choose your roles and enjoy your stay.");
+                      setMainImageUrl('');
+                      setThumbnailUrl('{user_avatar}');
+                      setAuthorName('DEXTERCORP SECURITY');
+                      setFooterText('{server_name} Protection System');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    🛡️ Crimson Security
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('✧ Welcome to {server_name} ✧');
+                      setEmbedColor('#10b981');
+                      setDescription("Hey {user}, welcome! Read the guidelines in rules and get verified to start chatting.");
+                      setMainImageUrl('');
+                      setThumbnailUrl('');
+                      setAuthorName('');
+                      setFooterText('Member #{server_membercount}');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    🌿 Clean Minimal (No Image)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('🔥 Welcome to {server_name}!');
+                      setEmbedColor('#8b5cf6');
+                      setDescription("Welcome {user}! Hop into chat and introduce yourself.\nCheck announcements for ongoing events!");
+                      setMainImageUrl('https://cdn.discordapp.com/attachments/1544380328393838663/1544406020766310460/giphy.gif');
+                      setThumbnailUrl('{user_avatar}');
+                      setAuthorName('{server_name}');
+                      setFooterText('Enjoy your time here');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    🎮 Animated Banner
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMainImageUrl('');
+                    setThumbnailUrl('');
+                    setAuthorIconUrl('');
+                    setFooterIconUrl('');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 transition-all cursor-pointer"
+                >
+                  ✕ Clear All Images
+                </button>
+              </div>
+
               {/* Form Fields: Target Channel & Message Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 space-y-2">
@@ -914,28 +979,59 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      THUMBNAIL URL
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="https://... or {user_avatar}"
-                      value={thumbnailUrl}
-                      onChange={(e) => setThumbnailUrl(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
-                    />
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        THUMBNAIL (OPTIONAL)
+                      </label>
+                      {thumbnailUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setThumbnailUrl('')}
+                          className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
+                        >
+                          ✕ Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Leave empty or enter image URL (https://... or {user_avatar})"
+                        value={thumbnailUrl}
+                        onChange={(e) => setThumbnailUrl(e.target.value)}
+                        className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setThumbnailUrl('{user_avatar}')}
+                        className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-slate-300 font-bold whitespace-nowrap cursor-pointer"
+                      >
+                        User Avatar
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      MAIN IMAGE URL
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        MAIN IMAGE BANNER (OPTIONAL)
+                      </label>
+                      {mainImageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setMainImageUrl('')}
+                          className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
+                        >
+                          ✕ Clear Image
+                        </button>
+                      )}
+                    </div>
                     <input
                       type="text"
-                      placeholder="https://..."
+                      placeholder="Leave empty or enter image URL (https://...)"
                       value={mainImageUrl}
                       onChange={(e) => setMainImageUrl(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors font-mono"
                     />
                   </div>
                 </div>
@@ -1664,8 +1760,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       onChange={(e) => setModLogsChannel(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
                     >
-                      <option value="mod-logs"># mod-logs</option>
-                      <option value="audit-logs"># audit-logs</option>
+                      <option value="">-- Select Logs Channel --</option>
+                      {availableChannels.length > 0 ? (
+                        availableChannels.map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            # {ch.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="mod-logs"># mod-logs</option>
+                      )}
                     </select>
                   </div>
 
@@ -1678,8 +1782,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       onChange={(e) => setMemberLogsChannel(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
                     >
-                      <option value="join-logs"># join-logs</option>
-                      <option value="welcome"># welcome</option>
+                      <option value="">-- Select Join/Leave Channel --</option>
+                      {availableChannels.length > 0 ? (
+                        availableChannels.map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            # {ch.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="join-logs"># join-logs</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -1694,7 +1806,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       onChange={(e) => setMessageLogsChannel(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
                     >
-                      <option value="message-logs"># message-logs</option>
+                      <option value="">-- Select Message Logs Channel --</option>
+                      {availableChannels.length > 0 ? (
+                        availableChannels.map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            # {ch.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="message-logs"># message-logs</option>
+                      )}
                     </select>
                   </div>
 
@@ -1707,7 +1828,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       onChange={(e) => setVoiceLogsChannel(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
                     >
-                      <option value="voice-logs"># voice-logs</option>
+                      <option value="">-- Select Voice Logs Channel --</option>
+                      {availableChannels.length > 0 ? (
+                        availableChannels.map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            # {ch.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="voice-logs"># voice-logs</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -1839,11 +1969,18 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={autoroleHumans}
                       onChange={(e) => setAutoroleHumans(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                     >
-                      <option value="Members">@Members</option>
-                      <option value="Citizens">@Citizens</option>
-                      <option value="Community">@Community</option>
+                      <option value="">-- Select Member Role --</option>
+                      {availableRoles.length > 0 ? (
+                        availableRoles.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            @{r.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="Members">@Members</option>
+                      )}
                     </select>
                   </div>
 
@@ -1854,10 +1991,18 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={autoroleBots}
                       onChange={(e) => setAutoroleBots(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                     >
-                      <option value="Bots">@Bots</option>
-                      <option value="Automations">@Automations</option>
+                      <option value="">-- Select Bot Role --</option>
+                      {availableRoles.length > 0 ? (
+                        availableRoles.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            @{r.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="Bots">@Bots</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -2410,7 +2555,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             <div className="flex items-start gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-[#5865F2] flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
                 <img
-                  src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=100&auto=format&fit=crop&q=80"
+                  src="https://cdn.discordapp.com/embed/avatars/0.png"
                   alt="Bot Avatar"
                   className="w-full h-full object-cover"
                 />
@@ -2438,11 +2583,17 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             >
               {authorName && (
                 <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
-                  <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=50&auto=format&fit=crop&q=80"
-                    alt="Author Icon"
-                    className="w-4 h-4 rounded-full"
-                  />
+                  {authorIconUrl && (
+                    <img
+                      src={
+                        authorIconUrl.includes('user') || authorIconUrl.includes('avatar')
+                          ? (user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png')
+                          : authorIconUrl
+                      }
+                      alt="Author Icon"
+                      className="w-4 h-4 rounded-full"
+                    />
+                  )}
                   <span>{authorName}</span>
                 </div>
               )}
@@ -2462,7 +2613,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 {thumbnailUrl && (
                   <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
                     <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                      src={
+                        thumbnailUrl.includes('user') || thumbnailUrl.includes('avatar')
+                          ? (user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png')
+                          : thumbnailUrl
+                      }
                       alt="Thumbnail"
                       className="w-full h-full object-cover"
                     />
@@ -2478,14 +2633,17 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
               {footerText && (
                 <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
-                  <img
-                    src={
-                      guild.icon ||
-                      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=50&auto=format&fit=crop&q=80'
-                    }
-                    alt="Server Icon"
-                    className="w-3.5 h-3.5 rounded-full"
-                  />
+                  {footerIconUrl && (
+                    <img
+                      src={
+                        footerIconUrl.includes('server') || footerIconUrl.includes('guild')
+                          ? (guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png')
+                          : footerIconUrl
+                      }
+                      alt="Server Icon"
+                      className="w-3.5 h-3.5 rounded-full"
+                    />
+                  )}
                   <span>{renderPreview(footerText)}</span>
                 </div>
               )}
