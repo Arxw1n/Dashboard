@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -22,7 +21,11 @@ export default async function handler(req, res) {
   }
 
   const clientId = process.env.VITE_DISCORD_CLIENT_ID || '1552995406860779611';
-  const clientSecret = process.env.DISCORD_CLIENT_SECRET || 'SebSFHsaNitIls14H1hwAzpb5zm9-dRY';
+  const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+
+  if (!clientSecret) {
+    return res.status(500).json({ error: 'DISCORD_CLIENT_SECRET environment variable is not configured' });
+  }
 
   try {
     const params = new URLSearchParams({

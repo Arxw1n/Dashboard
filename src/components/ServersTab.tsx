@@ -117,7 +117,18 @@ export const ServersTab: React.FC<ServersTabProps> = ({
     fetchBotGuilds();
   }, []);
 
-  const botGuildIds = new Set(botGuilds.map((bg) => String(bg.id)));
+  const addedLocally: string[] = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('dextercorp_added_guilds') || '[]');
+    } catch {
+      return [];
+    }
+  })();
+
+  const botGuildIds = new Set([
+    ...botGuilds.map((bg) => String(bg.id)),
+    ...addedLocally,
+  ]);
 
   // Combine Discord Admin Guilds with Bot Presence, fallback to bot's connected servers
   const processedGuilds: GuildItem[] =

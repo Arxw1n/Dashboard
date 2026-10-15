@@ -127,13 +127,37 @@ export const App: React.FC = () => {
 
     const token = hashParams.get('access_token') || searchParams.get('access_token');
     const code = searchParams.get('code');
+    const guildId = searchParams.get('guild_id');
+
+    if (guildId) {
+      try {
+        const added = JSON.parse(localStorage.getItem('dextercorp_added_guilds') || '[]');
+        if (!added.includes(guildId)) {
+          added.push(guildId);
+          localStorage.setItem('dextercorp_added_guilds', JSON.stringify(added));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
     if (token) {
       window.history.replaceState(null, '', '/dashboard');
       fetchDiscordUserProfile(token);
     } else if (code) {
       window.history.replaceState(null, '', '/dashboard');
-      exchangeCodeForToken(code);
+      const existingToken = localStorage.getItem('dextercorp_token');
+      if (existingToken) {
+        fetchDiscordUserProfile(existingToken);
+      } else {
+        exchangeCodeForToken(code);
+      }
+    } else if (guildId) {
+      window.history.replaceState(null, '', '/dashboard');
+      const existingToken = localStorage.getItem('dextercorp_token');
+      if (existingToken) {
+        fetchDiscordUserProfile(existingToken);
+      }
     }
   }, []);
 

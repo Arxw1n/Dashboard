@@ -34,10 +34,13 @@ export const BOT_CONFIG = {
     )}&scope=identify+guilds`;
   },
 
-  // Bot invite URL
+  // Bot invite URL with automatic return redirect back to the dashboard
   getInviteUrl: (guildId?: string): string => {
     const clientId = BOT_CONFIG.clientId;
-    let url = `https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&integration_type=0&scope=bot`;
+    const redirectUri = BOT_CONFIG.getRedirectUri();
+    let url = `https://discord.com/oauth2/authorize?client_id=${clientId}&permissions=8&integration_type=0&scope=bot+applications.commands&response_type=code&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}`;
     if (guildId) {
       url += `&guild_id=${guildId}`;
     }
