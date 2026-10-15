@@ -112,6 +112,13 @@ export default async function handler(req, res) {
           panelColor: tData?.panelColor || '#5865F2',
           buttonText: tData?.buttonText || 'Open Ticket',
           buttonEmoji: tData?.buttonEmoji || '📩',
+          buttonStyle: tData?.buttonStyle || 1,
+          authorName: tData?.authorName || '',
+          authorIcon: tData?.authorIcon || '',
+          thumbnailUrl: tData?.thumbnailUrl || '',
+          imageUrl: tData?.imageUrl || '',
+          footerText: tData?.footerText || 'Protected by DexterCorp Sentinel Core',
+          footerIcon: tData?.footerIcon || '',
         },
         verification: {
           enabled: Boolean(vData?.enabled),
@@ -125,6 +132,13 @@ export default async function handler(req, res) {
           gateColor: vData?.gateColor || '#10b981',
           buttonText: vData?.buttonText || 'Verify Account',
           buttonEmoji: vData?.buttonEmoji || '✅',
+          buttonStyle: vData?.buttonStyle || 3,
+          authorName: vData?.authorName || '',
+          authorIcon: vData?.authorIcon || '',
+          thumbnailUrl: vData?.thumbnailUrl || '',
+          imageUrl: vData?.imageUrl || '',
+          footerText: vData?.footerText || 'Protected by DexterCorp Verification Gate',
+          footerIcon: vData?.footerIcon || '',
         },
       });
     }
@@ -256,6 +270,13 @@ export default async function handler(req, res) {
           panelColor: settings.ticket.panelColor || '#5865F2',
           buttonText: settings.ticket.buttonText || 'Open Ticket',
           buttonEmoji: settings.ticket.buttonEmoji || '📩',
+          buttonStyle: parseInt(settings.ticket.buttonStyle) || 1,
+          authorName: settings.ticket.authorName || '',
+          authorIcon: settings.ticket.authorIcon || '',
+          thumbnailUrl: settings.ticket.thumbnailUrl || '',
+          imageUrl: settings.ticket.imageUrl || '',
+          footerText: settings.ticket.footerText || '',
+          footerIcon: settings.ticket.footerIcon || '',
         };
         await db.collection('guildticketdatas').updateOne(
           { id: guildId },
@@ -277,6 +298,13 @@ export default async function handler(req, res) {
           gateColor: settings.verification.gateColor || '#10b981',
           buttonText: settings.verification.buttonText || 'Verify Account',
           buttonEmoji: settings.verification.buttonEmoji || '✅',
+          buttonStyle: parseInt(settings.verification.buttonStyle) || 3,
+          authorName: settings.verification.authorName || '',
+          authorIcon: settings.verification.authorIcon || '',
+          thumbnailUrl: settings.verification.thumbnailUrl || '',
+          imageUrl: settings.verification.imageUrl || '',
+          footerText: settings.verification.footerText || '',
+          footerIcon: settings.verification.footerIcon || '',
         };
         await db.collection('guildverificationdatas').updateOne(
           { id: guildId },

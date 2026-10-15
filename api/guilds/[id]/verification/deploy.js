@@ -46,6 +46,13 @@ export default async function handler(req, res) {
       gateColor = '#10b981',
       buttonText = 'Verify Account',
       buttonEmoji = '✅',
+      buttonStyle = 3,
+      authorName = '',
+      authorIcon = '',
+      thumbnailUrl = '',
+      imageUrl = '',
+      footerText = 'Protected by DexterCorp Verification Gate',
+      footerIcon = '',
       role,
       unverifiedRole,
       ignoredChannels = [],
@@ -59,30 +66,50 @@ export default async function handler(req, res) {
     // Convert hex color to integer
     const parsedColor = parseInt(gateColor.replace('#', ''), 16) || 1096065;
 
+    // Build rich embed
+    const embed = {
+      title: gateTitle,
+      description:
+        gateDescription +
+        `\n\n• 🛡️ **Click "${buttonText}"** below to verify\n` +
+        `• 🔓 All public text and voice channels will unlock immediately\n` +
+        `• ⚠️ Automated anti-raid protections are actively monitored`,
+      color: parsedColor,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (authorName && authorName.trim()) {
+      embed.author = {
+        name: authorName.trim(),
+        icon_url: authorIcon && authorIcon.trim() ? authorIcon.trim() : undefined,
+      };
+    }
+
+    if (thumbnailUrl && thumbnailUrl.trim()) {
+      embed.thumbnail = { url: thumbnailUrl.trim() };
+    }
+
+    if (imageUrl && imageUrl.trim()) {
+      embed.image = { url: imageUrl.trim() };
+    }
+
+    if (footerText && footerText.trim()) {
+      embed.footer = {
+        text: footerText.trim(),
+        icon_url: footerIcon && footerIcon.trim() ? footerIcon.trim() : undefined,
+      };
+    }
+
     // Discord API message payload with Interactive Verification Button
     const payload = {
-      embeds: [
-        {
-          title: gateTitle,
-          description:
-            gateDescription +
-            `\n\n• 🛡️ **Click "${buttonText}"** below to verify\n` +
-            `• 🔓 All public text and voice channels will unlock immediately\n` +
-            `• ⚠️ Automated anti-raid protections are actively monitored`,
-          color: parsedColor,
-          footer: {
-            text: 'Protected by DexterCorp Verification Gate',
-          },
-          timestamp: new Date().toISOString(),
-        },
-      ],
+      embeds: [embed],
       components: [
         {
           type: 1, // ActionRow
           components: [
             {
               type: 2, // Button
-              style: 3, // Success (Green)
+              style: parseInt(buttonStyle) || 3, // 1: Blurple, 2: Grey, 3: Green, 4: Red
               custom_id: 'verify_button',
               label: buttonText,
               emoji: buttonEmoji ? { name: buttonEmoji } : { name: '✅' },
@@ -132,6 +159,13 @@ export default async function handler(req, res) {
             gateColor,
             buttonText,
             buttonEmoji,
+            buttonStyle: parseInt(buttonStyle) || 3,
+            authorName,
+            authorIcon,
+            thumbnailUrl,
+            imageUrl,
+            footerText,
+            footerIcon,
           },
         },
         { upsert: true }

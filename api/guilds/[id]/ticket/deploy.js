@@ -46,6 +46,13 @@ export default async function handler(req, res) {
       panelColor = '#5865F2',
       buttonText = 'Open Ticket',
       buttonEmoji = '📩',
+      buttonStyle = 1,
+      authorName = '',
+      authorIcon = '',
+      thumbnailUrl = '',
+      imageUrl = '',
+      footerText = 'Protected by DexterCorp Sentinel Core',
+      footerIcon = '',
       category,
       role,
       logsChannel,
@@ -59,30 +66,50 @@ export default async function handler(req, res) {
     // Convert hex color to integer
     const parsedColor = parseInt(panelColor.replace('#', ''), 16) || 5793266;
 
+    // Build rich embed
+    const embed = {
+      title: panelTitle,
+      description:
+        panelDescription +
+        `\n\n• 📩 **Click "${buttonText}"** below to start\n` +
+        `• 💬 A private channel will be generated for your inquiry\n` +
+        `• 🛡️ Only you and support staff can view your ticket`,
+      color: parsedColor,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (authorName && authorName.trim()) {
+      embed.author = {
+        name: authorName.trim(),
+        icon_url: authorIcon && authorIcon.trim() ? authorIcon.trim() : undefined,
+      };
+    }
+
+    if (thumbnailUrl && thumbnailUrl.trim()) {
+      embed.thumbnail = { url: thumbnailUrl.trim() };
+    }
+
+    if (imageUrl && imageUrl.trim()) {
+      embed.image = { url: imageUrl.trim() };
+    }
+
+    if (footerText && footerText.trim()) {
+      embed.footer = {
+        text: footerText.trim(),
+        icon_url: footerIcon && footerIcon.trim() ? footerIcon.trim() : undefined,
+      };
+    }
+
     // Discord API message payload with Interactive Button
     const payload = {
-      embeds: [
-        {
-          title: panelTitle,
-          description:
-            panelDescription +
-            `\n\n• 📩 **Click "${buttonText}"** below to start\n` +
-            `• 💬 A private channel will be generated for your inquiry\n` +
-            `• 🛡️ Only you and support staff can view your ticket`,
-          color: parsedColor,
-          footer: {
-            text: 'Protected by DexterCorp Sentinel Core',
-          },
-          timestamp: new Date().toISOString(),
-        },
-      ],
+      embeds: [embed],
       components: [
         {
           type: 1, // ActionRow
           components: [
             {
               type: 2, // Button
-              style: 1, // Primary (Blurple)
+              style: parseInt(buttonStyle) || 1, // 1: Blurple, 2: Grey, 3: Green, 4: Red
               custom_id: 'ticket_open',
               label: buttonText,
               emoji: buttonEmoji ? { name: buttonEmoji } : { name: '📩' },
@@ -133,6 +160,13 @@ export default async function handler(req, res) {
             panelColor,
             buttonText,
             buttonEmoji,
+            buttonStyle: parseInt(buttonStyle) || 1,
+            authorName,
+            authorIcon,
+            thumbnailUrl,
+            imageUrl,
+            footerText,
+            footerIcon,
           },
         },
         { upsert: true }

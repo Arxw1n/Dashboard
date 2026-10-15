@@ -96,6 +96,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [ticketPanelColor, setTicketPanelColor] = useState('#5865F2');
   const [ticketButtonText, setTicketButtonText] = useState('Open Support Ticket');
   const [ticketButtonEmoji, setTicketButtonEmoji] = useState('📩');
+  const [ticketButtonStyle, setTicketButtonStyle] = useState<number>(1);
+  const [ticketAuthorName, setTicketAuthorName] = useState('');
+  const [ticketAuthorIcon, setTicketAuthorIcon] = useState('');
+  const [ticketThumbnailUrl, setTicketThumbnailUrl] = useState('');
+  const [ticketImageUrl, setTicketImageUrl] = useState('');
+  const [ticketFooterText, setTicketFooterText] = useState('Protected by DexterCorp Sentinel Core');
+  const [ticketFooterIcon, setTicketFooterIcon] = useState('');
   const [ticketDeploying, setTicketDeploying] = useState(false);
   const [ticketDeploySuccess, setTicketDeploySuccess] = useState(false);
 
@@ -113,6 +120,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [verifyGateColor, setVerifyGateColor] = useState('#10b981');
   const [verifyButtonText, setVerifyButtonText] = useState('Verify Account');
   const [verifyButtonEmoji, setVerifyButtonEmoji] = useState('✅');
+  const [verifyButtonStyle, setVerifyButtonStyle] = useState<number>(3);
+  const [verifyAuthorName, setVerifyAuthorName] = useState('');
+  const [verifyAuthorIcon, setVerifyAuthorIcon] = useState('');
+  const [verifyThumbnailUrl, setVerifyThumbnailUrl] = useState('');
+  const [verifyImageUrl, setVerifyImageUrl] = useState('');
+  const [verifyFooterText, setVerifyFooterText] = useState('Protected by DexterCorp Verification Gate');
+  const [verifyFooterIcon, setVerifyFooterIcon] = useState('');
   const [verifyDeploying, setVerifyDeploying] = useState(false);
   const [verifyDeploySuccess, setVerifyDeploySuccess] = useState(false);
 
@@ -373,6 +387,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             if (res.data.ticket.panelColor) setTicketPanelColor(res.data.ticket.panelColor);
             if (res.data.ticket.buttonText) setTicketButtonText(res.data.ticket.buttonText);
             if (res.data.ticket.buttonEmoji) setTicketButtonEmoji(res.data.ticket.buttonEmoji);
+            if (res.data.ticket.buttonStyle) setTicketButtonStyle(Number(res.data.ticket.buttonStyle));
+            if (res.data.ticket.authorName) setTicketAuthorName(res.data.ticket.authorName);
+            if (res.data.ticket.authorIcon) setTicketAuthorIcon(res.data.ticket.authorIcon);
+            if (res.data.ticket.thumbnailUrl) setTicketThumbnailUrl(res.data.ticket.thumbnailUrl);
+            if (res.data.ticket.imageUrl) setTicketImageUrl(res.data.ticket.imageUrl);
+            if (res.data.ticket.footerText) setTicketFooterText(res.data.ticket.footerText);
+            if (res.data.ticket.footerIcon) setTicketFooterIcon(res.data.ticket.footerIcon);
           }
           if (res.data.verification) {
             setVerifyEnabled(Boolean(res.data.verification.enabled));
@@ -386,6 +407,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             if (res.data.verification.gateColor) setVerifyGateColor(res.data.verification.gateColor);
             if (res.data.verification.buttonText) setVerifyButtonText(res.data.verification.buttonText);
             if (res.data.verification.buttonEmoji) setVerifyButtonEmoji(res.data.verification.buttonEmoji);
+            if (res.data.verification.buttonStyle) setVerifyButtonStyle(Number(res.data.verification.buttonStyle));
+            if (res.data.verification.authorName) setVerifyAuthorName(res.data.verification.authorName);
+            if (res.data.verification.authorIcon) setVerifyAuthorIcon(res.data.verification.authorIcon);
+            if (res.data.verification.thumbnailUrl) setVerifyThumbnailUrl(res.data.verification.thumbnailUrl);
+            if (res.data.verification.imageUrl) setVerifyImageUrl(res.data.verification.imageUrl);
+            if (res.data.verification.footerText) setVerifyFooterText(res.data.verification.footerText);
+            if (res.data.verification.footerIcon) setVerifyFooterIcon(res.data.verification.footerIcon);
           }
         }
       } catch (e) {
@@ -454,6 +482,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           panelColor: ticketPanelColor,
           buttonText: ticketButtonText,
           buttonEmoji: ticketButtonEmoji,
+          buttonStyle: ticketButtonStyle,
+          authorName: ticketAuthorName,
+          authorIcon: ticketAuthorIcon,
+          thumbnailUrl: ticketThumbnailUrl,
+          imageUrl: ticketImageUrl,
+          footerText: ticketFooterText,
+          footerIcon: ticketFooterIcon,
         },
         verification: {
           enabled: verifyEnabled,
@@ -467,6 +502,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           gateColor: verifyGateColor,
           buttonText: verifyButtonText,
           buttonEmoji: verifyButtonEmoji,
+          buttonStyle: verifyButtonStyle,
+          authorName: verifyAuthorName,
+          authorIcon: verifyAuthorIcon,
+          thumbnailUrl: verifyThumbnailUrl,
+          imageUrl: verifyImageUrl,
+          footerText: verifyFooterText,
+          footerIcon: verifyFooterIcon,
         },
       };
 
@@ -500,6 +542,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         panelColor: ticketPanelColor,
         buttonText: ticketButtonText,
         buttonEmoji: ticketButtonEmoji,
+        buttonStyle: ticketButtonStyle,
+        authorName: ticketAuthorName,
+        authorIcon: ticketAuthorIcon,
+        thumbnailUrl: ticketThumbnailUrl,
+        imageUrl: ticketImageUrl,
+        footerText: ticketFooterText,
+        footerIcon: ticketFooterIcon,
         category: ticketCategory,
         role: ticketRole,
         logsChannel: ticketLogsChannel,
@@ -534,6 +583,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         gateColor: verifyGateColor,
         buttonText: verifyButtonText,
         buttonEmoji: verifyButtonEmoji,
+        buttonStyle: verifyButtonStyle,
+        authorName: verifyAuthorName,
+        authorIcon: verifyAuthorIcon,
+        thumbnailUrl: verifyThumbnailUrl,
+        imageUrl: verifyImageUrl,
+        footerText: verifyFooterText,
+        footerIcon: verifyFooterIcon,
         role: verifyRole,
         unverifiedRole,
         ignoredChannels: verifyIgnoredChannels,
@@ -701,6 +757,21 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       },
       ...activeGiveaways,
     ]);
+  };
+
+  // Discord button color style mapper (1: Blurple, 2: Grey, 3: Green, 4: Red)
+  const getDiscordButtonClass = (style: number) => {
+    switch (style) {
+      case 3: // Success Green
+        return 'bg-[#248046] hover:bg-[#1a6334] text-white shadow-md shadow-[#248046]/30';
+      case 2: // Secondary Grey
+        return 'bg-[#4e5058] hover:bg-[#404249] text-white shadow-md shadow-[#4e5058]/30';
+      case 4: // Danger Red
+        return 'bg-[#da373c] hover:bg-[#b02227] text-white shadow-md shadow-[#da373c]/30';
+      case 1: // Primary Blurple
+      default:
+        return 'bg-[#5865F2] hover:bg-[#4752c4] text-white shadow-md shadow-[#5865F2]/30';
+    }
   };
 
   // Variables replacer for preview
@@ -3172,6 +3243,155 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       />
                     </div>
                   </div>
+
+                  {/* Button Color Palette (Discord Style Selector) */}
+                  <div className="space-y-2 pt-2 border-t border-white/5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>BUTTON COLOR PALETTE (DISCORD STYLE)</span>
+                      <span className="text-[10px] text-[#5865F2] font-mono font-semibold">
+                        {ticketButtonStyle === 3 ? '🟢 Success Green' : ticketButtonStyle === 1 ? '🔵 Blurple Blue' : ticketButtonStyle === 2 ? '⚪ Secondary Grey' : '🔴 Danger Red'}
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { style: 3, label: 'Success Green', hex: '#248046', bg: 'bg-[#248046]', border: 'border-emerald-500' },
+                        { style: 1, label: 'Blurple Blue', hex: '#5865F2', bg: 'bg-[#5865F2]', border: 'border-indigo-500' },
+                        { style: 2, label: 'Secondary Grey', hex: '#4e5058', bg: 'bg-[#4e5058]', border: 'border-slate-400' },
+                        { style: 4, label: 'Danger Red', hex: '#da373c', bg: 'bg-[#da373c]', border: 'border-rose-500' },
+                      ].map((btnColor) => {
+                        const isSelected = ticketButtonStyle === btnColor.style;
+                        return (
+                          <button
+                            key={btnColor.style}
+                            type="button"
+                            onClick={() => setTicketButtonStyle(btnColor.style)}
+                            className={`flex items-center gap-2.5 p-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                              isSelected
+                                ? `bg-white/10 ${btnColor.border} text-white shadow-lg ring-2 ring-white/20`
+                                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded-full ${btnColor.bg} border border-white/20 shrink-0 flex items-center justify-center text-[10px]`}>
+                              {isSelected ? '✓' : ''}
+                            </span>
+                            <span className="truncate">{btnColor.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Embed Images, Avatar & Branding Section */}
+                <div className="p-4 rounded-xl bg-[#0e1017] border border-white/5 space-y-3.5 mt-2">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/5">
+                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#5865F2]" />
+                      AVATARS, THUMBNAIL & BRANDING IMAGES
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">Optional Branding</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        AUTHOR / HEADER TITLE
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketAuthorName}
+                        onChange={(e) => setTicketAuthorName(e.target.value)}
+                        placeholder="e.g. {server_name} Support Desk"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>AUTHOR AVATAR ICON URL</span>
+                        <button
+                          type="button"
+                          onClick={() => setTicketAuthorIcon('{server_icon}')}
+                          className="text-[9px] text-[#5865F2] hover:underline cursor-pointer"
+                        >
+                          + Use Server Icon
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketAuthorIcon}
+                        onChange={(e) => setTicketAuthorIcon(e.target.value)}
+                        placeholder="https://... or {server_icon}"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>THUMBNAIL ICON URL (TOP RIGHT)</span>
+                        <button
+                          type="button"
+                          onClick={() => setTicketThumbnailUrl('{server_icon}')}
+                          className="text-[9px] text-[#5865F2] hover:underline cursor-pointer"
+                        >
+                          + Use Server Icon
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketThumbnailUrl}
+                        onChange={(e) => setTicketThumbnailUrl(e.target.value)}
+                        placeholder="https://... or {server_icon}"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        LARGE BANNER IMAGE URL
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketImageUrl}
+                        onChange={(e) => setTicketImageUrl(e.target.value)}
+                        placeholder="https://... (Support header banner graphic)"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        FOOTER TEXT
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketFooterText}
+                        onChange={(e) => setTicketFooterText(e.target.value)}
+                        placeholder="e.g. Protected by Sentinel Support"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>FOOTER ICON URL</span>
+                        <button
+                          type="button"
+                          onClick={() => setTicketFooterIcon('{server_icon}')}
+                          className="text-[9px] text-[#5865F2] hover:underline cursor-pointer"
+                        >
+                          + Use Server Icon
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketFooterIcon}
+                        onChange={(e) => setTicketFooterIcon(e.target.value)}
+                        placeholder="https://... or {server_icon}"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Live Deploy Action */}
@@ -3512,6 +3732,155 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       />
                     </div>
                   </div>
+
+                  {/* Button Color Palette (Discord Style Selector) */}
+                  <div className="space-y-2 pt-2 border-t border-white/5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>BUTTON COLOR PALETTE (DISCORD STYLE)</span>
+                      <span className="text-[10px] text-emerald-400 font-mono font-semibold">
+                        {verifyButtonStyle === 3 ? '🟢 Success Green' : verifyButtonStyle === 1 ? '🔵 Blurple Blue' : verifyButtonStyle === 2 ? '⚪ Secondary Grey' : '🔴 Danger Red'}
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { style: 3, label: 'Success Green', hex: '#248046', bg: 'bg-[#248046]', border: 'border-emerald-500' },
+                        { style: 1, label: 'Blurple Blue', hex: '#5865F2', bg: 'bg-[#5865F2]', border: 'border-indigo-500' },
+                        { style: 2, label: 'Secondary Grey', hex: '#4e5058', bg: 'bg-[#4e5058]', border: 'border-slate-400' },
+                        { style: 4, label: 'Danger Red', hex: '#da373c', bg: 'bg-[#da373c]', border: 'border-rose-500' },
+                      ].map((btnColor) => {
+                        const isSelected = verifyButtonStyle === btnColor.style;
+                        return (
+                          <button
+                            key={btnColor.style}
+                            type="button"
+                            onClick={() => setVerifyButtonStyle(btnColor.style)}
+                            className={`flex items-center gap-2.5 p-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                              isSelected
+                                ? `bg-white/10 ${btnColor.border} text-white shadow-lg ring-2 ring-white/20`
+                                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded-full ${btnColor.bg} border border-white/20 shrink-0 flex items-center justify-center text-[10px]`}>
+                              {isSelected ? '✓' : ''}
+                            </span>
+                            <span className="truncate">{btnColor.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Embed Images, Avatar & Branding Section */}
+                <div className="p-4 rounded-xl bg-[#0c120e] border border-white/5 space-y-3.5 mt-2">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/5">
+                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                      AVATARS, THUMBNAIL & BRANDING IMAGES
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">Optional Branding</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        AUTHOR / HEADER TITLE
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyAuthorName}
+                        onChange={(e) => setVerifyAuthorName(e.target.value)}
+                        placeholder="e.g. {server_name} Security Gate"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>AUTHOR AVATAR ICON URL</span>
+                        <button
+                          type="button"
+                          onClick={() => setVerifyAuthorIcon('{server_icon}')}
+                          className="text-[9px] text-emerald-400 hover:underline cursor-pointer"
+                        >
+                          + Use Server Icon
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyAuthorIcon}
+                        onChange={(e) => setVerifyAuthorIcon(e.target.value)}
+                        placeholder="https://... or {server_icon}"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>THUMBNAIL ICON URL (TOP RIGHT)</span>
+                        <button
+                          type="button"
+                          onClick={() => setVerifyThumbnailUrl('{server_icon}')}
+                          className="text-[9px] text-emerald-400 hover:underline cursor-pointer"
+                        >
+                          + Use Server Icon
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyThumbnailUrl}
+                        onChange={(e) => setVerifyThumbnailUrl(e.target.value)}
+                        placeholder="https://... or {server_icon}"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        LARGE BANNER IMAGE URL
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyImageUrl}
+                        onChange={(e) => setVerifyImageUrl(e.target.value)}
+                        placeholder="https://... (Verification welcome banner)"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        FOOTER TEXT
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyFooterText}
+                        onChange={(e) => setVerifyFooterText(e.target.value)}
+                        placeholder="e.g. Protected by DexterCorp Verification Gate"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>FOOTER ICON URL</span>
+                        <button
+                          type="button"
+                          onClick={() => setVerifyFooterIcon('{server_icon}')}
+                          className="text-[9px] text-emerald-400 hover:underline cursor-pointer"
+                        >
+                          + Use Server Icon
+                        </button>
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyFooterIcon}
+                        onChange={(e) => setVerifyFooterIcon(e.target.value)}
+                        placeholder="https://... or {server_icon}"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Live Deploy Action */}
@@ -3623,20 +3992,83 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   className="ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden"
                   style={{ borderLeftColor: ticketPanelColor || '#5865F2' }}
                 >
-                  <h4 className="font-bold text-white text-xs">
-                    {ticketPanelTitle || '🎫 Support Desk & Inquiries'}
-                  </h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
-                    {ticketPanelDesc ||
-                      'Welcome to our support desk! If you require assistance, have billing questions, or wish to report an issue, please open a private ticket below.'}
-                  </p>
+                  {/* Author Header */}
+                  {ticketAuthorName && (
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
+                      {ticketAuthorIcon && (
+                        <img
+                          src={
+                            ticketAuthorIcon.includes('server') || ticketAuthorIcon.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : ticketAuthorIcon.includes('user') || ticketAuthorIcon.includes('avatar')
+                              ? user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : ticketAuthorIcon
+                          }
+                          alt="Author Icon"
+                          className="w-4 h-4 rounded-full object-cover"
+                        />
+                      )}
+                      <span>{renderPreview(ticketAuthorName)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-1">
+                      <h4 className="font-bold text-white text-xs">
+                        {renderPreview(ticketPanelTitle) || '🎫 Support Desk & Inquiries'}
+                      </h4>
+                      <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {renderPreview(ticketPanelDesc) ||
+                          'Welcome to our support desk! If you require assistance, have billing questions, or wish to report an issue, please open a private ticket below.'}
+                      </p>
+                    </div>
+
+                    {ticketThumbnailUrl && (
+                      <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
+                        <img
+                          src={
+                            ticketThumbnailUrl.includes('server') || ticketThumbnailUrl.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : ticketThumbnailUrl
+                          }
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {ticketImageUrl && (
+                    <div className="rounded-md overflow-hidden max-h-40 border border-black/30 mt-2">
+                      <img src={ticketImageUrl} alt="Ticket Banner" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+
+                  {ticketFooterText && (
+                    <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
+                      {ticketFooterIcon && (
+                        <img
+                          src={
+                            ticketFooterIcon.includes('server') || ticketFooterIcon.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : ticketFooterIcon
+                          }
+                          alt="Footer Icon"
+                          className="w-3.5 h-3.5 rounded-full object-cover"
+                        />
+                      )}
+                      <span>{renderPreview(ticketFooterText)}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Discord Interactive Button (custom_id: ticket_open) */}
+                {/* Discord Interactive Button (custom_id: ticket_open) with Dynamic Color */}
                 <div className="ml-12 mt-3 pt-1">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#5865F2] hover:bg-[#4752c4] text-white font-semibold text-xs shadow-md transition-transform active:scale-95 cursor-pointer"
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-xs shadow-md transition-transform active:scale-95 cursor-pointer ${getDiscordButtonClass(
+                      ticketButtonStyle
+                    )}`}
                   >
                     <span>{ticketButtonEmoji || '📩'}</span>
                     <span>{ticketButtonText || 'Open Support Ticket'}</span>
@@ -3698,20 +4130,83 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   className="ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden"
                   style={{ borderLeftColor: verifyGateColor || '#10b981' }}
                 >
-                  <h4 className="font-bold text-white text-xs">
-                    {verifyGateTitle || '🛡️ Server Verification Gate'}
-                  </h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
-                    {verifyGateDesc ||
-                      'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'}
-                  </p>
+                  {/* Author Header */}
+                  {verifyAuthorName && (
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
+                      {verifyAuthorIcon && (
+                        <img
+                          src={
+                            verifyAuthorIcon.includes('server') || verifyAuthorIcon.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : verifyAuthorIcon.includes('user') || verifyAuthorIcon.includes('avatar')
+                              ? user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : verifyAuthorIcon
+                          }
+                          alt="Author Icon"
+                          className="w-4 h-4 rounded-full object-cover"
+                        />
+                      )}
+                      <span>{renderPreview(verifyAuthorName)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-1">
+                      <h4 className="font-bold text-white text-xs">
+                        {renderPreview(verifyGateTitle) || '🛡️ Server Verification Gate'}
+                      </h4>
+                      <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {renderPreview(verifyGateDesc) ||
+                          'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'}
+                      </p>
+                    </div>
+
+                    {verifyThumbnailUrl && (
+                      <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
+                        <img
+                          src={
+                            verifyThumbnailUrl.includes('server') || verifyThumbnailUrl.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : verifyThumbnailUrl
+                          }
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {verifyImageUrl && (
+                    <div className="rounded-md overflow-hidden max-h-40 border border-black/30 mt-2">
+                      <img src={verifyImageUrl} alt="Verification Banner" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+
+                  {verifyFooterText && (
+                    <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
+                      {verifyFooterIcon && (
+                        <img
+                          src={
+                            verifyFooterIcon.includes('server') || verifyFooterIcon.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : verifyFooterIcon
+                          }
+                          alt="Footer Icon"
+                          className="w-3.5 h-3.5 rounded-full object-cover"
+                        />
+                      )}
+                      <span>{renderPreview(verifyFooterText)}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Discord Interactive Button (custom_id: verify_button) */}
+                {/* Discord Interactive Button (custom_id: verify_button) with Dynamic Color */}
                 <div className="ml-12 mt-3 pt-1">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#248046] hover:bg-[#1a6334] text-white font-semibold text-xs shadow-md transition-transform active:scale-95 cursor-pointer"
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-xs shadow-md transition-transform active:scale-95 cursor-pointer ${getDiscordButtonClass(
+                      verifyButtonStyle
+                    )}`}
                   >
                     <span>{verifyButtonEmoji || '✅'}</span>
                     <span>{verifyButtonText || 'Verify Account'}</span>
