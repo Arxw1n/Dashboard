@@ -217,9 +217,46 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [builderChannel, setBuilderChannel] = useState('announcements');
   const [builderSent, setBuilderSent] = useState(false);
 
-  // Fetch settings from API
+  // Live Guild Text Channels & Roles fetched from Discord API
+  const [availableChannels, setAvailableChannels] = useState<{ id: string; name: string; type?: number }[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<{ id: string; name: string; color?: number }[]>([]);
+
+  // Fetch settings, text channels, and roles from API
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchGuildData = async () => {
+      // 1. Fetch live text channels
+      try {
+        const chRes = await axios.get(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/channels`));
+        if (Array.isArray(chRes.data) && chRes.data.length > 0) {
+          setAvailableChannels(chRes.data);
+          setTargetChannel((curr) => {
+            if (!curr || curr === 'welcome' || curr === 'general') {
+              return chRes.data[0].id;
+            }
+            return curr;
+          });
+          setBuilderChannel((curr) => {
+            if (!curr || curr === 'announcements' || curr === 'general') {
+              return chRes.data[0].id;
+            }
+            return curr;
+          });
+        }
+      } catch (err) {
+        console.warn('Channels fetch fallback:', err);
+      }
+
+      // 2. Fetch live server roles
+      try {
+        const rRes = await axios.get(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/roles`));
+        if (Array.isArray(rRes.data) && rRes.data.length > 0) {
+          setAvailableRoles(rRes.data);
+        }
+      } catch (err) {
+        console.warn('Roles fetch fallback:', err);
+      }
+
+      // 3. Fetch server settings from MongoDB
       try {
         let res;
         try {
@@ -242,13 +279,27 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             setWelcomerEnabled(Boolean(res.data.welcome.enabled));
             if (res.data.welcome.content) setContentMessage(res.data.welcome.content);
             if (res.data.welcome.channelId) setTargetChannel(res.data.welcome.channelId);
+            if (res.data.welcome.embeds) {
+              const emb = res.data.welcome.embeds;
+              if (emb.title) setEmbedTitle(emb.title);
+              if (emb.description) setDescription(emb.description);
+              if (emb.color) {
+                const hexColor =
+                  typeof emb.color === 'number'
+                    ? `#${emb.color.toString(16).padStart(6, '0')}`
+                    : emb.color;
+                setEmbedColor(hexColor);
+              }
+              if (emb.footer?.text) setFooterText(emb.footer.text);
+              if (emb.author?.name) setAuthorName(emb.author.name);
+            }
           }
         }
       } catch (e) {
         // Use local fallback smoothly
       }
     };
-    fetchSettings();
+    fetchGuildData();
   }, [guild.id]);
 
   // Save handler
@@ -334,19 +385,38 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             title: embedTitle,
             description: description,
             color: embedColor,
-            footer: { text: footerText },
+            author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
+            thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
+            image: mainImageUrl ? { url: mainImageUrl } : undefined,
+            footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
           },
         },
       });
     } catch (e) {
-      console.log('Test send fallback:', e);
+      console.warn('Test send fallback:', e);
     }
     setTimeout(() => setTestSent(false), 3500);
   };
 
   // Send builder embed to channel
-  const handleSendBuilderEmbed = () => {
+  const handleSendBuilderEmbed = async () => {
     setBuilderSent(true);
+    try {
+      await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/embed/send`), {
+        channelId: builderChannel,
+        embed: {
+          title: embedTitle,
+          description: description,
+          color: embedColor,
+          author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
+          thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
+          image: mainImageUrl ? { url: mainImageUrl } : undefined,
+          footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
+        },
+      });
+    } catch (e) {
+      console.warn('Builder send fallback:', e);
+    }
     setTimeout(() => setBuilderSent(false), 3500);
   };
 
@@ -636,18 +706,26 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors cursor-pointer"
                     >
                       <option value="">-- Select a server channel --</option>
-                      {guild.channels && guild.channels.length > 0 &&
-                        guild.channels
-                          .filter((ch: any) => ch.type === 0 || ch.type === undefined)
-                          .map((ch: any) => (
+                      {availableChannels.length > 0
+                        ? availableChannels.map((ch) => (
                             <option key={ch.id} value={ch.id}>
                               # {ch.name}
                             </option>
                           ))
-                      }
-                      <option value="welcome"># welcome</option>
-                      <option value="general"># general</option>
-                      <option value="join-logs"># join-logs</option>
+                        : guild.channels && guild.channels.length > 0
+                        ? guild.channels
+                            .filter((ch: any) => ch.type === 0 || ch.type === undefined)
+                            .map((ch: any) => (
+                              <option key={ch.id} value={ch.id}>
+                                # {ch.name}
+                              </option>
+                            ))
+                        : (
+                          <>
+                            <option value="welcome"># welcome</option>
+                            <option value="general"># general</option>
+                          </>
+                        )}
                     </select>
                     <input
                       type="text"
@@ -2132,11 +2210,21 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <select
                     value={builderChannel}
                     onChange={(e) => setBuilderChannel(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                   >
-                    <option value="announcements"># announcements</option>
-                    <option value="general"># general</option>
-                    <option value="rules"># rules</option>
+                    {availableChannels && availableChannels.length > 0 ? (
+                      availableChannels.map((ch) => (
+                        <option key={ch.id} value={ch.id}>
+                          # {ch.name}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="announcements"># announcements</option>
+                        <option value="general"># general</option>
+                        <option value="rules"># rules</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
