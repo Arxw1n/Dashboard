@@ -11,15 +11,18 @@ export const BOT_CONFIG = {
     ? import.meta.env.VITE_API_URL 
     : (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''),
 
-  // Dynamic redirect URI depending on current origin (localhost:5173 or your Vercel URL)
+  // OAuth Redirect URI: uses permanent production domain on Vercel to guarantee Discord match
   getRedirectUri: (): string => {
     if (import.meta.env.VITE_REDIRECT_URI) {
       return import.meta.env.VITE_REDIRECT_URI;
     }
     if (typeof window !== 'undefined' && window.location.origin) {
-      return `${window.location.origin}/dashboard`;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return `${window.location.origin}/dashboard`;
+      }
+      return 'https://dashboard-phi-seven-48.vercel.app/dashboard';
     }
-    return 'http://localhost:5173/dashboard';
+    return 'https://dashboard-phi-seven-48.vercel.app/dashboard';
   },
 
   // Discord OAuth2 authorization URL (Implicit grant: instant client-side login on Vercel)
