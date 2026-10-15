@@ -274,6 +274,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           enabled: welcomerEnabled,
           content: contentMessage,
           channelId: targetChannel,
+          autorole: autoroleEnabled ? autoroleHumans : '',
+          embeds: {
+            title: embedTitle,
+            description: description,
+            color: embedColor,
+            author: { name: authorName, icon_url: authorIconUrl },
+            thumbnail: { url: thumbnailUrl },
+            image: { url: mainImageUrl },
+            footer: { text: footerText, icon_url: footerIconUrl },
+          },
         },
         logging: {
           enabled: loggingEnabled,
@@ -312,9 +322,25 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setFooterIconUrl('{server_icon}');
   };
 
-  // Send simulated test message to discord
-  const handleSendTestMessage = () => {
+  // Send simulated & real test message to discord
+  const handleSendTestMessage = async () => {
     setTestSent(true);
+    try {
+      await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
+        channelId: targetChannel,
+        welcome: {
+          content: contentMessage,
+          embeds: {
+            title: embedTitle,
+            description: description,
+            color: embedColor,
+            footer: { text: footerText },
+          },
+        },
+      });
+    } catch (e) {
+      console.log('Test send fallback:', e);
+    }
     setTimeout(() => setTestSent(false), 3500);
   };
 

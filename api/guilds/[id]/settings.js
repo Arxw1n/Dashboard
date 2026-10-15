@@ -1,3 +1,6 @@
+// In-memory cache for serverless invocation reuse
+const settingsStore = new Map();
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,7 +19,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    // Return standard configured defaults for DexterCorp
+    if (settingsStore.has(guildId)) {
+      return res.status(200).json(settingsStore.get(guildId));
+    }
+
     return res.status(200).json({
       prefix: '!',
       antinuke: {
@@ -29,7 +35,6 @@ export default async function handler(req, res) {
         antiRoleDelete: true,
         antiWebhook: true,
         antiVanity: true,
-        antiIntegration: true,
         whitelist: [],
       },
       automod: {
@@ -43,8 +48,9 @@ export default async function handler(req, res) {
       },
       welcome: {
         enabled: true,
-        content: 'Welcome to the server! Make sure to read the rules and enjoy your stay.',
         channelId: '',
+        content: 'Welcome $user_mention to $guild_name!',
+        autorole: '',
       },
       logging: {
         enabled: true,
@@ -56,7 +62,8 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const payload = req.body || {};
-    // Return success
+    settingsStore.set(guildId, payload);
+
     return res.status(200).json({
       success: true,
       guildId,
