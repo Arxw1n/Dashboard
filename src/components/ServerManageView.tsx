@@ -398,13 +398,23 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setTimeout(() => setTestSent(false), 3500);
   };
 
-  // Send builder embed to channel
+  // Send builder embed to channel with dual-endpoint fallback
   const handleSendBuilderEmbed = async () => {
     setBuilderSent(true);
-    try {
-      await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/embed/send`), {
-        channelId: builderChannel,
-        embed: {
+    const payload = {
+      channelId: builderChannel,
+      embed: {
+        title: embedTitle,
+        description: description,
+        color: embedColor,
+        author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
+        thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
+        image: mainImageUrl ? { url: mainImageUrl } : undefined,
+        footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
+      },
+      welcome: {
+        content: '',
+        embeds: {
           title: embedTitle,
           description: description,
           color: embedColor,
@@ -413,7 +423,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           image: mainImageUrl ? { url: mainImageUrl } : undefined,
           footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
         },
-      });
+      },
+    };
+
+    try {
+      try {
+        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/embed/send`), payload);
+      } catch {
+        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), payload);
+      }
     } catch (e) {
       console.warn('Builder send fallback:', e);
     }
@@ -2274,6 +2292,62 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   />
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      AUTHOR NAME
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Server Announcements"
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      FOOTER TEXT
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Official Community Update"
+                      value={footerText}
+                      onChange={(e) => setFooterText(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      THUMBNAIL URL
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://... or {user_avatar}"
+                      value={thumbnailUrl}
+                      onChange={(e) => setThumbnailUrl(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      IMAGE BANNER URL
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://... (Optional banner image)"
+                      value={mainImageUrl}
+                      onChange={(e) => setMainImageUrl(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
                 <button
                   onClick={handleSendBuilderEmbed}
                   className="w-full py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -2282,7 +2356,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <span>
                     {builderSent
                       ? '✓ Embed Dispatched to Discord!'
-                      : `Send Embed to #${builderChannel}`}
+                      : `Send Embed to #${availableChannels.find((c) => c.id === builderChannel)?.name || builderChannel}`}
                   </span>
                 </button>
               </div>
