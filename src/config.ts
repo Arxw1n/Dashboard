@@ -22,11 +22,11 @@ export const BOT_CONFIG = {
     return 'http://localhost:5173/dashboard';
   },
 
-  // Discord OAuth2 authorization URL
+  // Discord OAuth2 authorization URL (Implicit grant: instant client-side login on Vercel)
   getOAuthUrl: (): string => {
     const clientId = BOT_CONFIG.clientId;
     const redirectUri = BOT_CONFIG.getRedirectUri();
-    return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
+    return `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(
       redirectUri
     )}&scope=identify+guilds`;
   },
