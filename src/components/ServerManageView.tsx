@@ -629,18 +629,37 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <span>TARGET CHANNEL</span>
                     <span className="text-[#ff2b43]">*</span>
                   </label>
-                  <select
-                    value={targetChannel}
-                    onChange={(e) => setTargetChannel(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors cursor-pointer"
-                  >
-                    <option value="welcome">-- Select a channel -- (#welcome)</option>
-                    <option value="general"># general</option>
-                    <option value="join-logs"># join-logs</option>
-                    <option value="lounge"># lounge</option>
-                  </select>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <select
+                      value={targetChannel}
+                      onChange={(e) => setTargetChannel(e.target.value)}
+                      className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors cursor-pointer"
+                    >
+                      <option value="">-- Select a server channel --</option>
+                      {guild.channels && guild.channels.length > 0 &&
+                        guild.channels
+                          .filter((ch: any) => ch.type === 0 || ch.type === undefined)
+                          .map((ch: any) => (
+                            <option key={ch.id} value={ch.id}>
+                              # {ch.name}
+                            </option>
+                          ))
+                      }
+                      <option value="welcome"># welcome</option>
+                      <option value="general"># general</option>
+                      <option value="join-logs"># join-logs</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Or Channel ID / #name"
+                      value={targetChannel}
+                      onChange={(e) => setTargetChannel(e.target.value)}
+                      className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
+                      title="Direct Channel Snowflake ID or Name"
+                    />
+                  </div>
                   <p className="text-[10px] text-slate-500">
-                    The channel where the bot will send the welcome message
+                    Select a channel or paste the channel ID where the bot will send the welcome message
                   </p>
                 </div>
 
