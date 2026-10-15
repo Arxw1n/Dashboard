@@ -402,7 +402,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-20 h-20 rounded-full p-1 border-2 border-[#ff2b43] shadow-lg shadow-[#ff2b43]/40 flex items-center justify-center relative">
                 <div className="absolute inset-0 rounded-full border border-[#ff2b43] animate-ping opacity-25"></div>
                 <img
-                  src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80"
+                  src="/astra-avatar.webp"
                   alt="DexterCorp Mascot"
                   className="w-full h-full rounded-full object-cover"
                 />

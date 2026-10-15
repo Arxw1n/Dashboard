@@ -181,7 +181,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           {
             id: '1002',
             name: 'DEXTER COMMUNITY',
-            icon: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&auto=format&fit=crop&q=80',
+            icon: null,
             memberCount: 1540,
             channelsCount: 38,
             textChannels: 26,
@@ -200,7 +200,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           {
             id: '1001',
             name: 'VOLT X CHEATS',
-            icon: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80',
+            icon: null,
             memberCount: 87,
             channelsCount: 70,
             textChannels: 45,
@@ -217,7 +217,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           {
             id: '1002',
             name: 'DEXTER COMMUNITY',
-            icon: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&auto=format&fit=crop&q=80',
+            icon: null,
             memberCount: 1540,
             channelsCount: 38,
             textChannels: 26,
@@ -329,7 +329,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           </button>
           <div className="w-8 h-8 rounded-full border border-[#ff2b43]/40 overflow-hidden shadow-sm shadow-[#ff2b43]/20">
             <img
-              src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}
+              src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
               alt={user.username}
               className="w-full h-full object-cover"
             />
@@ -386,11 +386,11 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               <PlusCircle className="w-5 h-5" />
             </a>
 
-            {/* Bottom user avatar */}
+              {/* Bottom user avatar */}
             <div className="mt-auto pt-3">
               <div className="w-9 h-9 rounded-full border border-[#ff2b43]/50 overflow-hidden">
                 <img
-                  src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}
+                  src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
                   alt={user.username}
                   className="w-full h-full object-cover"
                 />
@@ -425,7 +425,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               <div className="relative">
                 <div className="w-20 h-20 rounded-full p-1 border-2 border-[#ff2b43] shadow-lg shadow-[#ff2b43]/30 overflow-hidden bg-[#0c0d12]">
                   <img
-                    src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                    src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
                     alt={user.username}
                     className="w-full h-full rounded-full object-cover"
                   />

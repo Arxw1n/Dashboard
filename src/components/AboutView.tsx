@@ -153,7 +153,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
               title="Open Dashboard"
             >
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                src="/astra-avatar.webp"
                 alt="AXIO"
                 className="w-5 h-5 rounded-full object-cover border border-[#ff2b43]"
               />
@@ -182,13 +182,9 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff2b43]/20 rounded-full blur-[45px] pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#5865F2]/10 rounded-full blur-[45px] pointer-events-none"></div>
 
-          {/* Top Banner Graphic with Dark Cyber Image */}
-          <div className="w-full h-28 rounded-2xl bg-gradient-to-br from-[#1a080c] via-[#2a0e14] to-[#11121c] border border-white/10 relative overflow-hidden mb-9">
-            <img
-              src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80"
-              alt="Banner"
-              className="w-full h-full object-cover opacity-60"
-            />
+          {/* Top Banner Graphic with Dark Cyber Grid */}
+          <div className="w-full h-28 rounded-2xl bg-gradient-to-br from-[#1b070d] via-[#2e0d16] to-[#0c0e18] border border-white/10 relative overflow-hidden mb-9 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[radial-gradient(#ff2b43_1px,transparent_1px)] [background-size:16px_16px] opacity-25"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#0c0d14] via-transparent to-transparent"></div>
 
             {/* Avatar overlapping banner (Exact Match to Image 2 Avatar with Heart Badge) */}
@@ -196,7 +192,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
               <div className="relative">
                 <div className="w-20 h-20 rounded-2xl bg-[#0c0d14] p-1 border-2 border-[#ff2b43] shadow-xl shadow-[#ff2b43]/50 overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                    src="/astra-avatar.webp"
                     alt="AXIO"
                     className="w-full h-full rounded-xl object-cover"
                   />

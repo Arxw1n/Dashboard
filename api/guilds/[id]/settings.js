@@ -67,12 +67,35 @@ export default async function handler(req, res) {
           channelId: gData?.welcome?.channel || '',
           content: gData?.welcome?.content || 'Welcome $user_mention to $guild_name!',
           autorole: gData?.autorole?.humanRoles?.[0] || '',
-          embeds: gData?.welcome?.embeds || {},
+          embeds: (() => {
+            const emb = { ...(gData?.welcome?.embeds || {}) };
+            if (emb.image && (!emb.image.url || emb.image.url.includes('unsplash') || !emb.image.url.trim())) {
+              delete emb.image;
+            }
+            if (emb.thumbnail && (!emb.thumbnail.url || emb.thumbnail.url.includes('unsplash') || !emb.thumbnail.url.trim())) {
+              delete emb.thumbnail;
+            }
+            if (emb.author && emb.author.icon_url && emb.author.icon_url.includes('unsplash')) {
+              delete emb.author.icon_url;
+            }
+            if (emb.footer && emb.footer.icon_url && emb.footer.icon_url.includes('unsplash')) {
+              delete emb.footer.icon_url;
+            }
+            return emb;
+          })(),
+        },
+        autorole: {
+          enabled: Boolean(gData?.autorole?.enabled),
+          humanRoles: gData?.autorole?.humanRoles || [],
+          botRoles: gData?.autorole?.botRoles || [],
         },
         logging: {
-          enabled: Boolean(anData?.logchannelid),
-          modLogsChannel: anData?.logchannelid || '',
-          memberLogsChannel: anData?.logchannelid || '',
+          enabled: Boolean(gData?.logging?.enabled || anData?.logchannelid),
+          modLogsChannel: gData?.logging?.modLogsChannel || anData?.logchannelid || '',
+          memberLogsChannel: gData?.logging?.memberLogsChannel || '',
+          messageLogsChannel: gData?.logging?.messageLogsChannel || '',
+          serverLogsChannel: gData?.logging?.serverLogsChannel || '',
+          voiceLogsChannel: gData?.logging?.voiceLogsChannel || '',
         },
       });
     }
@@ -84,19 +107,63 @@ export default async function handler(req, res) {
       if (settings.prefix) updateGuildData.prefix = settings.prefix;
 
       if (settings.welcome) {
+        const cleanedEmbeds = { ...(settings.welcome.embeds || {}) };
+        if (cleanedEmbeds.image && (!cleanedEmbeds.image.url || !cleanedEmbeds.image.url.trim() || cleanedEmbeds.image.url.includes('unsplash'))) {
+          delete cleanedEmbeds.image;
+        }
+        if (cleanedEmbeds.thumbnail && (!cleanedEmbeds.thumbnail.url || !cleanedEmbeds.thumbnail.url.trim() || cleanedEmbeds.thumbnail.url.includes('unsplash'))) {
+          delete cleanedEmbeds.thumbnail;
+        }
+        if (cleanedEmbeds.author) {
+          if (!cleanedEmbeds.author.name || !cleanedEmbeds.author.name.trim()) {
+            delete cleanedEmbeds.author;
+          } else if (!cleanedEmbeds.author.icon_url || !cleanedEmbeds.author.icon_url.trim() || cleanedEmbeds.author.icon_url.includes('unsplash')) {
+            delete cleanedEmbeds.author.icon_url;
+          }
+        }
+        if (cleanedEmbeds.footer) {
+          if (!cleanedEmbeds.footer.text || !cleanedEmbeds.footer.text.trim()) {
+            delete cleanedEmbeds.footer;
+          } else if (!cleanedEmbeds.footer.icon_url || !cleanedEmbeds.footer.icon_url.trim() || cleanedEmbeds.footer.icon_url.includes('unsplash')) {
+            delete cleanedEmbeds.footer.icon_url;
+          }
+        }
+
         updateGuildData.welcome = {
           enabled: settings.welcome.enabled !== false,
           channel: settings.welcome.enabled ? (settings.welcome.channelId || null) : null,
           content: settings.welcome.content || 'Welcome $user_mention to $guild_name!',
-          embeds: settings.welcome.embeds || {},
+          embeds: cleanedEmbeds,
         };
-        if (settings.welcome.autorole !== undefined) {
-          updateGuildData.autorole = {
-            enabled: Boolean(settings.welcome.autorole),
-            humanRoles: settings.welcome.autorole ? [settings.welcome.autorole] : [],
-            botRoles: [],
-          };
-        }
+      }
+
+      if (settings.autorole) {
+        updateGuildData.autorole = {
+          enabled: Boolean(settings.autorole.enabled),
+          humanRoles: settings.autorole.humanRole
+            ? [settings.autorole.humanRole]
+            : (settings.autorole.humanRoles || []),
+          botRoles: settings.autorole.botRole
+            ? [settings.autorole.botRole]
+            : (settings.autorole.botRoles || []),
+        };
+      } else if (settings.welcome?.autorole !== undefined) {
+        updateGuildData.autorole = {
+          enabled: Boolean(settings.welcome.autorole),
+          humanRoles: settings.welcome.autorole ? [settings.welcome.autorole] : [],
+          botRoles: [],
+        };
+      }
+
+      if (settings.logging) {
+        updateGuildData.logging = {
+          enabled: Boolean(settings.logging.enabled),
+          modLogsChannel: settings.logging.modLogsChannel || '',
+          memberLogsChannel: settings.logging.memberLogsChannel || '',
+          messageLogsChannel: settings.logging.messageLogsChannel || '',
+          serverLogsChannel: settings.logging.serverLogsChannel || '',
+          voiceLogsChannel: settings.logging.voiceLogsChannel || '',
+        };
       }
 
       if (Object.keys(updateGuildData).length > 0) {

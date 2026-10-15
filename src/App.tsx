@@ -30,7 +30,7 @@ function filterDiscordAdminGuilds(guildsList: any[]): any[] {
 const DEFAULT_ADMIN_USER: UserProfile = {
   id: '1500056784000253973',
   username: 'DXTR AXIO',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+  avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
   isLoggedIn: true,
   isOwner: true,
 };
@@ -98,7 +98,7 @@ export const App: React.FC = () => {
     return {
       id: '1001',
       name: 'VOLT X CHEATS',
-      icon: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80',
+      icon: null,
       memberCount: 420,
       ownerId: '1500056784000253973',
       hasBot: true,
@@ -453,7 +453,7 @@ export const App: React.FC = () => {
     const activeGuild = selectedGuild || {
       id: '1001',
       name: 'VOLT X CHEATS',
-      icon: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80',
+      icon: null,
       memberCount: 420,
       ownerId: user?.id || '1500056784000253973',
       hasBot: true,

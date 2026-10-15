@@ -78,6 +78,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [showVariablesGuide, setShowVariablesGuide] = useState(false);
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [testSent, setTestSent] = useState(false);
+  const [logTestSent, setLogTestSent] = useState(false);
   const [previewTab, setPreviewTab] = useState<'welcomer' | 'alert' | 'automod'>('welcomer');
 
   // 1. Welcomer State (Screenshot 4)
@@ -290,7 +291,40 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               }
               if (emb.footer?.text) setFooterText(emb.footer.text);
               if (emb.author?.name) setAuthorName(emb.author.name);
+              if (emb.image?.url && !emb.image.url.includes('unsplash')) {
+                setMainImageUrl(emb.image.url);
+              } else {
+                setMainImageUrl('');
+              }
+              if (emb.thumbnail?.url && !emb.thumbnail.url.includes('unsplash')) {
+                setThumbnailUrl(emb.thumbnail.url);
+              } else {
+                setThumbnailUrl('');
+              }
+              if (emb.author?.icon_url && !emb.author.icon_url.includes('unsplash')) {
+                setAuthorIconUrl(emb.author.icon_url);
+              } else {
+                setAuthorIconUrl('');
+              }
+              if (emb.footer?.icon_url && !emb.footer.icon_url.includes('unsplash')) {
+                setFooterIconUrl(emb.footer.icon_url);
+              } else {
+                setFooterIconUrl('');
+              }
             }
+          }
+          if (res.data.autorole) {
+            setAutoroleEnabled(Boolean(res.data.autorole.enabled));
+            if (res.data.autorole.humanRoles?.[0]) setAutoroleHumans(res.data.autorole.humanRoles[0]);
+            if (res.data.autorole.botRoles?.[0]) setAutoroleBots(res.data.autorole.botRoles[0]);
+          }
+          if (res.data.logging) {
+            setLoggingEnabled(Boolean(res.data.logging.enabled));
+            if (res.data.logging.modLogsChannel) setModLogsChannel(res.data.logging.modLogsChannel);
+            if (res.data.logging.memberLogsChannel) setMemberLogsChannel(res.data.logging.memberLogsChannel);
+            if (res.data.logging.messageLogsChannel) setMessageLogsChannel(res.data.logging.messageLogsChannel);
+            if (res.data.logging.serverLogsChannel) setServerLogsChannel(res.data.logging.serverLogsChannel);
+            if (res.data.logging.voiceLogsChannel) setVoiceLogsChannel(res.data.logging.voiceLogsChannel);
           }
         }
       } catch (e) {
@@ -328,16 +362,24 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             title: embedTitle,
             description: description,
             color: embedColor,
-            author: { name: authorName, icon_url: authorIconUrl },
-            thumbnail: { url: thumbnailUrl },
-            image: { url: mainImageUrl },
-            footer: { text: footerText, icon_url: footerIconUrl },
+            ...(authorName.trim() ? { author: { name: authorName.trim(), ...(authorIconUrl.trim() ? { icon_url: authorIconUrl.trim() } : {}) } } : {}),
+            ...(thumbnailUrl.trim() ? { thumbnail: { url: thumbnailUrl.trim() } } : {}),
+            ...(mainImageUrl.trim() ? { image: { url: mainImageUrl.trim() } } : {}),
+            ...(footerText.trim() ? { footer: { text: footerText.trim(), ...(footerIconUrl.trim() ? { icon_url: footerIconUrl.trim() } : {}) } } : {}),
           },
+        },
+        autorole: {
+          enabled: autoroleEnabled,
+          humanRole: autoroleHumans,
+          botRole: autoroleBots,
         },
         logging: {
           enabled: loggingEnabled,
           modLogsChannel,
           memberLogsChannel,
+          messageLogsChannel,
+          serverLogsChannel,
+          voiceLogsChannel,
         },
       };
 
@@ -561,7 +603,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             <img
               src={
                 user.avatar ||
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+                'https://cdn.discordapp.com/embed/avatars/0.png'
               }
               alt={user.username}
               className="w-full h-full object-cover"
@@ -751,14 +793,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       setEmbedTitle('🔥 Welcome to {server_name}!');
                       setEmbedColor('#8b5cf6');
                       setDescription("Welcome {user}! Hop into chat and introduce yourself.\nCheck announcements for ongoing events!");
-                      setMainImageUrl('https://cdn.discordapp.com/attachments/1544380328393838663/1544406020766310460/giphy.gif');
+                      setMainImageUrl('');
                       setThumbnailUrl('{user_avatar}');
                       setAuthorName('{server_name}');
                       setFooterText('Enjoy your time here');
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    🎮 Animated Banner
+                    🎮 Gaming & Events
                   </button>
                 </div>
                 <button
@@ -1841,6 +1883,46 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     </select>
                   </div>
                 </div>
+
+                {/* Live Test Logging Delivery Button */}
+                <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-slate-200">Test Audit Log Dispatch</p>
+                    <p className="text-[10px] text-slate-400">
+                      Dispatches a live verification event to #{availableChannels.find(c => c.id === modLogsChannel)?.name || modLogsChannel || 'channel'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const target = modLogsChannel || availableChannels[0]?.id;
+                      if (!target) return;
+                      setLogTestSent(true);
+                      try {
+                        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
+                          channelId: target,
+                          welcome: {
+                            content: `🛡️ **[DexterCorp Security Audit Log]** Test event triggered from web dashboard.`,
+                            embeds: {
+                              title: '📋 Security & Audit Logging Verified',
+                              description: `**Event:** Real-Time Dashboard Audit Verification\n**Operator:** <@${user.id}>\n**Guild:** ${guild.name} (\`${guild.id}\`)\n**Status:** 🟢 Live Synchronized across all bot clusters`,
+                              color: '#f59e0b',
+                              author: { name: 'DEXTERCORP AUDIT SENTINEL' },
+                              footer: { text: 'DexterCorp Core v2.5' }
+                            }
+                          }
+                        });
+                      } catch (err) {
+                        console.warn(err);
+                      }
+                      setTimeout(() => setLogTestSent(false), 3000);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{logTestSent ? '✓ Audit Log Sent to Discord!' : 'Send Test Log to Channel'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2363,6 +2445,89 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Embed Builder Quick Presets Bar */}
+              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    TEMPLATE PRESETS:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('📢 Community Announcement');
+                      setEmbedColor('#3b82f6');
+                      setDescription('Hey @everyone!\n\nWe have exciting updates rolling out to our server today. Please read the changelog below:\n\n• New bot security systems active\n• Updated role hierarchy & privileges\n• Community events scheduled this weekend!');
+                      setAuthorName(guild.name);
+                      setFooterText('DexterCorp Security Dispatch');
+                      setMainImageUrl('');
+                      setThumbnailUrl('');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    📢 Announcement
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('📜 Official Server Guidelines');
+                      setEmbedColor('#10b981');
+                      setDescription('Welcome to **' + guild.name + '**! To keep our community safe, please follow these rules:\n\n1. Be respectful to all members.\n2. No spam, advertising, or unsolicited DMs.\n3. Keep discussions in the appropriate channels.\n4. Follow Discord Terms of Service.');
+                      setAuthorName(guild.name + ' Administration');
+                      setFooterText('Violations will result in automated timeout or ban');
+                      setMainImageUrl('');
+                      setThumbnailUrl('');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    📜 Rules & Info
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('💎 Server Booster Perks');
+                      setEmbedColor('#ec4899');
+                      setDescription('Boost **' + guild.name + '** to unlock exclusive VIP benefits!\n\n✨ Exclusive Booster Role & Color\n✨ Access to VIP voice & text channels\n✨ Permission to post embeds & attach files\n✨ Direct priority support');
+                      setAuthorName('Booster Rewards Program');
+                      setFooterText('Thank you for supporting our server!');
+                      setMainImageUrl('');
+                      setThumbnailUrl('');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    💎 Booster Perks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTitle('🚨 Security Alert & Protection Active');
+                      setEmbedColor('#ff2b43');
+                      setDescription('DexterCorp Sentinel is monitoring this server 24/7.\n\n🛡️ Mass-ban & kick protection: **ENABLED**\n🛡️ Anti-bot join filtering: **ACTIVE**\n🛡️ Suspicious link blocker: **ENFORCED**\n\nAll actions are audited live.');
+                      setAuthorName('DexterCorp Sentinel Core');
+                      setFooterText('Automated Threat Response');
+                      setMainImageUrl('');
+                      setThumbnailUrl('');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                  >
+                    🚨 Security Notice
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmbedTitle('');
+                    setDescription('');
+                    setMainImageUrl('');
+                    setThumbnailUrl('');
+                    setAuthorName('');
+                    setFooterText('');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 transition-all cursor-pointer"
+                >
+                  ✕ Clear All
+                </button>
               </div>
 
               <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
