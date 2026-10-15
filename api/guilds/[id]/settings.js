@@ -39,6 +39,8 @@ export default async function handler(req, res) {
       const gData = await db.collection('guilddatas').findOne({ id: guildId });
       const anData = await db.collection('antinukedatas').findOne({ id: guildId });
       const amData = await db.collection('automoddatas').findOne({ id: guildId });
+      const tData = await db.collection('guildticketdatas').findOne({ id: guildId });
+      const vData = await db.collection('guildverificationdatas').findOne({ id: guildId });
 
       return res.status(200).json({
         prefix: gData?.prefix || '!',
@@ -96,6 +98,33 @@ export default async function handler(req, res) {
           messageLogsChannel: gData?.logging?.messageLogsChannel || '',
           serverLogsChannel: gData?.logging?.serverLogsChannel || '',
           voiceLogsChannel: gData?.logging?.voiceLogsChannel || '',
+        },
+        ticket: {
+          enabled: Boolean(tData?.enabled),
+          channel: tData?.channel || '',
+          category: tData?.category || '',
+          role: tData?.role || '',
+          logsChannel: tData?.logsChannel || '',
+          ticketCount: tData?.ticketCount || 0,
+          limit: tData?.limit || 1,
+          panelTitle: tData?.panelTitle || `🎫 Support Tickets`,
+          panelDescription: tData?.panelDescription || `Welcome to our support desk! If you require assistance, have questions, or wish to report an issue, please open a private ticket below.`,
+          panelColor: tData?.panelColor || '#5865F2',
+          buttonText: tData?.buttonText || 'Open Ticket',
+          buttonEmoji: tData?.buttonEmoji || '📩',
+        },
+        verification: {
+          enabled: Boolean(vData?.enabled),
+          channel: vData?.channel || '',
+          role: vData?.role || '',
+          unverifiedRole: vData?.unverifiedRole || '',
+          ignoredChannels: vData?.ignoredChannels || [],
+          method: vData?.method || 'button',
+          gateTitle: vData?.gateTitle || `🛡️ Server Verification Gate`,
+          gateDescription: vData?.gateDescription || `Welcome! To protect our community from automated bots and raids, please verify your account below to unlock access to all channels.`,
+          gateColor: vData?.gateColor || '#10b981',
+          buttonText: vData?.buttonText || 'Verify Account',
+          buttonEmoji: vData?.buttonEmoji || '✅',
         },
       });
     }
@@ -210,6 +239,48 @@ export default async function handler(req, res) {
         await db.collection('automoddatas').updateOne(
           { id: guildId },
           { $set: amUpdate },
+          { upsert: true }
+        );
+      }
+
+      if (settings.ticket) {
+        const ticketUpdate = {
+          enabled: Boolean(settings.ticket.enabled),
+          channel: settings.ticket.channel || null,
+          category: settings.ticket.category || null,
+          role: settings.ticket.role || null,
+          logsChannel: settings.ticket.logsChannel || null,
+          limit: parseInt(settings.ticket.limit) || 1,
+          panelTitle: settings.ticket.panelTitle || '🎫 Support Tickets',
+          panelDescription: settings.ticket.panelDescription || '',
+          panelColor: settings.ticket.panelColor || '#5865F2',
+          buttonText: settings.ticket.buttonText || 'Open Ticket',
+          buttonEmoji: settings.ticket.buttonEmoji || '📩',
+        };
+        await db.collection('guildticketdatas').updateOne(
+          { id: guildId },
+          { $set: ticketUpdate },
+          { upsert: true }
+        );
+      }
+
+      if (settings.verification) {
+        const verifyUpdate = {
+          enabled: Boolean(settings.verification.enabled),
+          channel: settings.verification.channel || null,
+          role: settings.verification.role || null,
+          unverifiedRole: settings.verification.unverifiedRole || null,
+          ignoredChannels: settings.verification.ignoredChannels || [],
+          method: settings.verification.method || 'button',
+          gateTitle: settings.verification.gateTitle || '🛡️ Server Verification Gate',
+          gateDescription: settings.verification.gateDescription || '',
+          gateColor: settings.verification.gateColor || '#10b981',
+          buttonText: settings.verification.buttonText || 'Verify Account',
+          buttonEmoji: settings.verification.buttonEmoji || '✅',
+        };
+        await db.collection('guildverificationdatas').updateOne(
+          { id: guildId },
+          { $set: verifyUpdate },
           { upsert: true }
         );
       }

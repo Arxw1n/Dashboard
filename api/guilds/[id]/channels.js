@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     const textChannels = data
-      .filter((ch) => ch.type === 0 || ch.type === 5) // Text and announcement channels
+      .filter((ch) => ch.type === 0 || ch.type === 5 || ch.type === 4) // Text, Announcement, and Category channels
       .map((ch) => ({
         id: String(ch.id),
         name: ch.name,

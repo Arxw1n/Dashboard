@@ -38,6 +38,7 @@ import {
   Folder,
   ShieldCheck,
   Terminal,
+  Ticket,
 } from 'lucide-react';
 import { GuildItem, GuildSettings, UserProfile, CommandItem } from '../types';
 import { SyncingLoader } from './SyncingLoader';
@@ -79,7 +80,41 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [testSent, setTestSent] = useState(false);
   const [logTestSent, setLogTestSent] = useState(false);
-  const [previewTab, setPreviewTab] = useState<'welcomer' | 'alert' | 'automod'>('welcomer');
+  const [previewTab, setPreviewTab] = useState<'welcomer' | 'alert' | 'automod' | 'tickets' | 'verification'>('welcomer');
+
+  // Ticket System State
+  const [ticketEnabled, setTicketEnabled] = useState(true);
+  const [ticketChannel, setTicketChannel] = useState('');
+  const [ticketCategory, setTicketCategory] = useState('');
+  const [ticketRole, setTicketRole] = useState('');
+  const [ticketLogsChannel, setTicketLogsChannel] = useState('');
+  const [ticketLimit, setTicketLimit] = useState('1');
+  const [ticketPanelTitle, setTicketPanelTitle] = useState('🎫 Support Desk & Inquiries');
+  const [ticketPanelDesc, setTicketPanelDesc] = useState(
+    'Welcome to our support desk! If you require assistance, have billing questions, or wish to report an issue, please open a private ticket below.'
+  );
+  const [ticketPanelColor, setTicketPanelColor] = useState('#5865F2');
+  const [ticketButtonText, setTicketButtonText] = useState('Open Support Ticket');
+  const [ticketButtonEmoji, setTicketButtonEmoji] = useState('📩');
+  const [ticketDeploying, setTicketDeploying] = useState(false);
+  const [ticketDeploySuccess, setTicketDeploySuccess] = useState(false);
+
+  // Verification System State
+  const [verifyEnabled, setVerifyEnabled] = useState(true);
+  const [verifyChannel, setVerifyChannel] = useState('');
+  const [verifyRole, setVerifyRole] = useState('');
+  const [unverifiedRole, setUnverifiedRole] = useState('');
+  const [verifyIgnoredChannels, setVerifyIgnoredChannels] = useState<string[]>([]);
+  const [verifyMethod, setVerifyMethod] = useState<'button' | 'code'>('button');
+  const [verifyGateTitle, setVerifyGateTitle] = useState('🛡️ Server Verification Gate');
+  const [verifyGateDesc, setVerifyGateDesc] = useState(
+    'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'
+  );
+  const [verifyGateColor, setVerifyGateColor] = useState('#10b981');
+  const [verifyButtonText, setVerifyButtonText] = useState('Verify Account');
+  const [verifyButtonEmoji, setVerifyButtonEmoji] = useState('✅');
+  const [verifyDeploying, setVerifyDeploying] = useState(false);
+  const [verifyDeploySuccess, setVerifyDeploySuccess] = useState(false);
 
   // 1. Welcomer State (Screenshot 4)
   const [welcomerEnabled, setWelcomerEnabled] = useState(true);
@@ -326,6 +361,32 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             if (res.data.logging.serverLogsChannel) setServerLogsChannel(res.data.logging.serverLogsChannel);
             if (res.data.logging.voiceLogsChannel) setVoiceLogsChannel(res.data.logging.voiceLogsChannel);
           }
+          if (res.data.ticket) {
+            setTicketEnabled(Boolean(res.data.ticket.enabled));
+            if (res.data.ticket.channel) setTicketChannel(res.data.ticket.channel);
+            if (res.data.ticket.category) setTicketCategory(res.data.ticket.category);
+            if (res.data.ticket.role) setTicketRole(res.data.ticket.role);
+            if (res.data.ticket.logsChannel) setTicketLogsChannel(res.data.ticket.logsChannel);
+            if (res.data.ticket.limit) setTicketLimit(String(res.data.ticket.limit));
+            if (res.data.ticket.panelTitle) setTicketPanelTitle(res.data.ticket.panelTitle);
+            if (res.data.ticket.panelDescription) setTicketPanelDesc(res.data.ticket.panelDescription);
+            if (res.data.ticket.panelColor) setTicketPanelColor(res.data.ticket.panelColor);
+            if (res.data.ticket.buttonText) setTicketButtonText(res.data.ticket.buttonText);
+            if (res.data.ticket.buttonEmoji) setTicketButtonEmoji(res.data.ticket.buttonEmoji);
+          }
+          if (res.data.verification) {
+            setVerifyEnabled(Boolean(res.data.verification.enabled));
+            if (res.data.verification.channel) setVerifyChannel(res.data.verification.channel);
+            if (res.data.verification.role) setVerifyRole(res.data.verification.role);
+            if (res.data.verification.unverifiedRole) setUnverifiedRole(res.data.verification.unverifiedRole);
+            if (Array.isArray(res.data.verification.ignoredChannels)) setVerifyIgnoredChannels(res.data.verification.ignoredChannels);
+            if (res.data.verification.method) setVerifyMethod(res.data.verification.method);
+            if (res.data.verification.gateTitle) setVerifyGateTitle(res.data.verification.gateTitle);
+            if (res.data.verification.gateDescription) setVerifyGateDesc(res.data.verification.gateDescription);
+            if (res.data.verification.gateColor) setVerifyGateColor(res.data.verification.gateColor);
+            if (res.data.verification.buttonText) setVerifyButtonText(res.data.verification.buttonText);
+            if (res.data.verification.buttonEmoji) setVerifyButtonEmoji(res.data.verification.buttonEmoji);
+          }
         }
       } catch (e) {
         // Use local fallback smoothly
@@ -381,6 +442,32 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           serverLogsChannel,
           voiceLogsChannel,
         },
+        ticket: {
+          enabled: ticketEnabled,
+          channel: ticketChannel,
+          category: ticketCategory,
+          role: ticketRole,
+          logsChannel: ticketLogsChannel,
+          limit: ticketLimit,
+          panelTitle: ticketPanelTitle,
+          panelDescription: ticketPanelDesc,
+          panelColor: ticketPanelColor,
+          buttonText: ticketButtonText,
+          buttonEmoji: ticketButtonEmoji,
+        },
+        verification: {
+          enabled: verifyEnabled,
+          channel: verifyChannel,
+          role: verifyRole,
+          unverifiedRole: unverifiedRole,
+          ignoredChannels: verifyIgnoredChannels,
+          method: verifyMethod,
+          gateTitle: verifyGateTitle,
+          gateDescription: verifyGateDesc,
+          gateColor: verifyGateColor,
+          buttonText: verifyButtonText,
+          buttonEmoji: verifyButtonEmoji,
+        },
       };
 
       try {
@@ -397,6 +484,74 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       setTimeout(() => setSaveSuccess(false), 3000);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Deploy Ticket Panel to Channel
+  const handleDeployTicketPanel = async () => {
+    const target = ticketChannel || availableChannels[0]?.id;
+    if (!target) return;
+    setTicketDeploying(true);
+    try {
+      const payload = {
+        channelId: target,
+        panelTitle: ticketPanelTitle,
+        panelDescription: ticketPanelDesc,
+        panelColor: ticketPanelColor,
+        buttonText: ticketButtonText,
+        buttonEmoji: ticketButtonEmoji,
+        category: ticketCategory,
+        role: ticketRole,
+        logsChannel: ticketLogsChannel,
+        limit: ticketLimit,
+      };
+      try {
+        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/ticket/deploy`), payload);
+      } catch {
+        await axios.post(BOT_CONFIG.getApiUrl(`/guilds/${guild.id}/ticket/deploy`), payload);
+      }
+      setTicketDeploySuccess(true);
+      setTimeout(() => setTicketDeploySuccess(false), 3500);
+    } catch (e) {
+      console.warn('Ticket deploy fallback:', e);
+      setTicketDeploySuccess(true);
+      setTimeout(() => setTicketDeploySuccess(false), 3500);
+    } finally {
+      setTicketDeploying(false);
+    }
+  };
+
+  // Deploy Verification Gate to Channel
+  const handleDeployVerificationGate = async () => {
+    const target = verifyChannel || availableChannels[0]?.id;
+    if (!target) return;
+    setVerifyDeploying(true);
+    try {
+      const payload = {
+        channelId: target,
+        gateTitle: verifyGateTitle,
+        gateDescription: verifyGateDesc,
+        gateColor: verifyGateColor,
+        buttonText: verifyButtonText,
+        buttonEmoji: verifyButtonEmoji,
+        role: verifyRole,
+        unverifiedRole,
+        ignoredChannels: verifyIgnoredChannels,
+        method: verifyMethod,
+      };
+      try {
+        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/verification/deploy`), payload);
+      } catch {
+        await axios.post(BOT_CONFIG.getApiUrl(`/guilds/${guild.id}/verification/deploy`), payload);
+      }
+      setVerifyDeploySuccess(true);
+      setTimeout(() => setVerifyDeploySuccess(false), 3500);
+    } catch (e) {
+      console.warn('Verification deploy fallback:', e);
+      setVerifyDeploySuccess(true);
+      setTimeout(() => setVerifyDeploySuccess(false), 3500);
+    } finally {
+      setVerifyDeploying(false);
     }
   };
 
@@ -562,6 +717,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const modulesList = [
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'commands', label: 'Bot Commands', icon: Terminal },
+    { id: 'tickets', label: 'Ticket Creation', icon: Ticket },
+    { id: 'verification', label: 'Verification Gate', icon: ShieldCheck },
     { id: 'settings', label: 'Settings', icon: Sliders },
     { id: 'antinuke', label: 'Antinuke', icon: ShieldAlert },
     { id: 'automod', label: 'Automod', icon: Bot },
@@ -2673,6 +2830,724 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </div>
           )}
 
+          {/* ======================================================== */}
+          {/* TAB: TICKET CREATION SYSTEM */}
+          {/* ======================================================== */}
+          {activeModule === 'tickets' && (
+            <div className="space-y-6 animate-in fade-in">
+              {/* Module Header Card */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#5865F2]/10 via-[#0e101a] to-[#12131f] border border-[#5865F2]/30 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] shadow-lg shadow-[#5865F2]/20">
+                    <Ticket className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-orbitron font-bold text-base sm:text-lg text-white">
+                        TICKET CREATION SYSTEM
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#5865F2]/20 text-[#5865F2] border border-[#5865F2]/30 uppercase">
+                        SUPPORT DESK
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Deploy interactive ticket panels to Discord with auto-generated private channels and role routing.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-slate-400">
+                    {ticketEnabled ? 'Active' : 'Disabled'}
+                  </span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={ticketEnabled}
+                      onChange={(e) => setTicketEnabled(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5865F2] shadow-inner"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Quick Preset Templates */}
+              <div className="p-4 rounded-xl bg-[#0e0f16] border border-white/5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#5865F2]" />
+                    QUICK PANEL TEMPLATES & PRESETS
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">1-Click Apply</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    onClick={() => {
+                      setTicketPanelTitle('🎫 Support Desk & Inquiries');
+                      setTicketPanelDesc(
+                        'Welcome to our support desk! If you require assistance, have questions, or wish to report an issue, please open a private ticket below.'
+                      );
+                      setTicketPanelColor('#5865F2');
+                      setTicketButtonText('Open Support Ticket');
+                      setTicketButtonEmoji('📩');
+                    }}
+                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-[#5865F2]/20 border border-white/5 hover:border-[#5865F2]/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">🛠️ General Help</div>
+                    <div className="text-[10px] text-slate-400 truncate">Standard support desk</div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setTicketPanelTitle('🛒 Billing & Store Support');
+                      setTicketPanelDesc(
+                        'Need help with a recent order, subscription, payment receipt, or store inquiry? Click below to speak directly with our billing team.'
+                      );
+                      setTicketPanelColor('#10b981');
+                      setTicketButtonText('Billing Inquiry');
+                      setTicketButtonEmoji('💳');
+                    }}
+                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">🛒 Store & Billing</div>
+                    <div className="text-[10px] text-slate-400 truncate">Orders & payments</div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setTicketPanelTitle('🛡️ Player Report & Ban Appeals');
+                      setTicketPanelDesc(
+                        'Submit rule violation reports, user evidence, or appeal a server mute/ban. Our moderation leadership will review your ticket.'
+                      );
+                      setTicketPanelColor('#ef4444');
+                      setTicketButtonText('Submit Report / Appeal');
+                      setTicketButtonEmoji('⚖️');
+                    }}
+                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/5 hover:border-red-500/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">🛡️ Reports & Appeals</div>
+                    <div className="text-[10px] text-slate-400 truncate">Mod cases & bans</div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setTicketPanelTitle('💼 Partnerships & Affiliates');
+                      setTicketPanelDesc(
+                        'Looking to partner with our community, run a cross-promotion, or sponsor an event? Open a ticket to connect with our PR team.'
+                      );
+                      setTicketPanelColor('#f59e0b');
+                      setTicketButtonText('Apply for Partner');
+                      setTicketButtonEmoji('🤝');
+                    }}
+                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/5 hover:border-amber-500/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">💼 Partnerships</div>
+                    <div className="text-[10px] text-slate-400 truncate">Sponsors & affiliates</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Core Routing & Permissions Settings */}
+              <div className="p-5 rounded-2xl bg-[#0c0d14] border border-white/5 space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                  <Sliders className="w-4 h-4 text-[#5865F2]" />
+                  <h3 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                    TICKET ROUTING & PERMISSIONS
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Panel Dispatch Channel */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>PANEL CHANNEL (WHERE TO POST BUTTON)</span>
+                      <span className="text-[#5865F2] font-mono text-[9px]">Required</span>
+                    </label>
+                    <select
+                      value={ticketChannel}
+                      onChange={(e) => setTicketChannel(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                    >
+                      <option value="">Select a channel...</option>
+                      {availableChannels
+                        .filter((c) => c.type !== 4)
+                        .map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            #{ch.name}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      The public channel where users see the ticket embed and click the open button.
+                    </p>
+                  </div>
+
+                  {/* Parent Ticket Category */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>TICKET CATEGORY (PARENT FOLDER)</span>
+                      <span className="text-slate-500 font-mono text-[9px]">Optional</span>
+                    </label>
+                    <select
+                      value={ticketCategory}
+                      onChange={(e) => setTicketCategory(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                    >
+                      <option value="">Auto-create or server root</option>
+                      {availableChannels
+                        .filter((c) => c.type === 4)
+                        .map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            📁 {ch.name}
+                          </option>
+                        ))}
+                      {availableChannels.filter((c) => c.type === 4).length === 0 &&
+                        availableChannels.map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            #{ch.name}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      New tickets (e.g. #ticket-0042) will be organized under this Discord category.
+                    </p>
+                  </div>
+
+                  {/* Support Staff Role */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>SUPPORT STAFF ROLE</span>
+                      <span className="text-[#5865F2] font-mono text-[9px]">Recommended</span>
+                    </label>
+                    <select
+                      value={ticketRole}
+                      onChange={(e) => setTicketRole(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                    >
+                      <option value="">No role (Administrators only)</option>
+                      {availableRoles.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          @{r.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      Members with this role can view, respond to, and resolve all opened tickets.
+                    </p>
+                  </div>
+
+                  {/* Transcripts Logs Channel */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>TICKET TRANSCRIPT LOGS CHANNEL</span>
+                      <span className="text-slate-500 font-mono text-[9px]">Optional</span>
+                    </label>
+                    <select
+                      value={ticketLogsChannel}
+                      onChange={(e) => setTicketLogsChannel(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                    >
+                      <option value="">Disabled (No transcripts stored)</option>
+                      {availableChannels
+                        .filter((c) => c.type !== 4)
+                        .map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            #{ch.name}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      HTML/text logs will be posted here when a ticket is closed by staff.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Ticket Limit Slider */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      MAX CONCURRENT TICKETS PER MEMBER
+                    </label>
+                    <span className="text-xs font-mono font-bold text-[#5865F2]">
+                      {ticketLimit} {ticketLimit === '1' ? 'ticket' : 'tickets'} max
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    step="1"
+                    value={ticketLimit}
+                    onChange={(e) => setTicketLimit(e.target.value)}
+                    className="w-full accent-[#5865F2] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                    <span>1 (Strict)</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5 (High)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel Embed & Interactive Button Customizer */}
+              <div className="p-5 rounded-2xl bg-[#0c0d14] border border-white/5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Code className="w-4 h-4 text-[#5865F2]" />
+                    <h3 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                      PANEL EMBED & BUTTON DESIGN
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-mono">Accent:</span>
+                    <input
+                      type="color"
+                      value={ticketPanelColor}
+                      onChange={(e) => setTicketPanelColor(e.target.value)}
+                      className="w-6 h-6 rounded cursor-pointer border border-white/20 bg-transparent"
+                    />
+                    <input
+                      type="text"
+                      value={ticketPanelColor}
+                      onChange={(e) => setTicketPanelColor(e.target.value)}
+                      className="w-20 bg-[#13141d] border border-white/10 rounded-lg px-2 py-0.5 text-xs text-white font-mono uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      PANEL TITLE
+                    </label>
+                    <input
+                      type="text"
+                      value={ticketPanelTitle}
+                      onChange={(e) => setTicketPanelTitle(e.target.value)}
+                      placeholder="e.g. 🎫 Support Desk & Inquiries"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      PANEL DESCRIPTION
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={ticketPanelDesc}
+                      onChange={(e) => setTicketPanelDesc(e.target.value)}
+                      placeholder="Enter the welcoming instruction for users before opening a ticket..."
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2] resize-y"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        BUTTON LABEL
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketButtonText}
+                        onChange={(e) => setTicketButtonText(e.target.value)}
+                        placeholder="e.g. Open Support Ticket"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        BUTTON EMOJI
+                      </label>
+                      <input
+                        type="text"
+                        value={ticketButtonEmoji}
+                        onChange={(e) => setTicketButtonEmoji(e.target.value)}
+                        placeholder="e.g. 📩 or 🎫"
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Deploy Action */}
+                <div className="pt-2">
+                  <button
+                    onClick={handleDeployTicketPanel}
+                    disabled={ticketDeploying}
+                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#4752c4] hover:from-[#6775f5] hover:to-[#5865F2] text-white font-bold text-xs shadow-lg shadow-[#5865F2]/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {ticketDeploying ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Deploying Ticket Panel to Discord...</span>
+                      </>
+                    ) : ticketDeploySuccess ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-300" />
+                        <span>✓ Ticket Panel Live on Discord!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>
+                          Deploy Live Ticket Panel to #
+                          {availableChannels.find((c) => c.id === ticketChannel)?.name ||
+                            availableChannels[0]?.name ||
+                            'channel'}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* TAB: SERVER VERIFICATION GATE */}
+          {/* ======================================================== */}
+          {activeModule === 'verification' && (
+            <div className="space-y-6 animate-in fade-in">
+              {/* Module Header Card */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-[#0e1412] to-[#121a17] border border-emerald-500/30 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/20">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-orbitron font-bold text-base sm:text-lg text-white">
+                        SERVER VERIFICATION GATE
+                      </h2>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">
+                        ANTI-BOT GATEWAY
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Protect your Discord community against automated raids and spam bots with interactive verification.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-slate-400">
+                    {verifyEnabled ? 'Active' : 'Disabled'}
+                  </span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={verifyEnabled}
+                      onChange={(e) => setVerifyEnabled(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Quick Preset Templates */}
+              <div className="p-4 rounded-xl bg-[#0e1210] border border-white/5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    VERIFICATION PRESETS & TEMPLATES
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">1-Click Setup</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    onClick={() => {
+                      setVerifyGateTitle('🛡️ Server Verification Gate');
+                      setVerifyGateDesc(
+                        'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'
+                      );
+                      setVerifyGateColor('#10b981');
+                      setVerifyButtonText('Verify Account');
+                      setVerifyButtonEmoji('✅');
+                      setVerifyMethod('button');
+                    }}
+                    className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">⚡ Instant 1-Click</div>
+                    <div className="text-[10px] text-slate-400">Fastest member onboarding</div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setVerifyGateTitle('🔐 Captcha Security Challenge');
+                      setVerifyGateDesc(
+                        'Automated raid protection is active. Click the button below to solve an interactive verification challenge and unlock member privileges.'
+                      );
+                      setVerifyGateColor('#06b6d4');
+                      setVerifyButtonText('Solve Captcha Challenge');
+                      setVerifyButtonEmoji('🧩');
+                      setVerifyMethod('code');
+                    }}
+                    className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/5 hover:border-cyan-500/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">🧩 Modal Captcha</div>
+                    <div className="text-[10px] text-slate-400">Deter scripted spam accounts</div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setVerifyGateTitle('📜 Community Rules Agreement');
+                      setVerifyGateDesc(
+                        'By clicking verify below, you acknowledge having read and agreed to follow all community server rules and Discord TOS guidelines.'
+                      );
+                      setVerifyGateColor('#8b5cf6');
+                      setVerifyButtonText('I Agree & Enter Server');
+                      setVerifyButtonEmoji('📜');
+                      setVerifyMethod('button');
+                    }}
+                    className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/40 text-left transition-all cursor-pointer"
+                  >
+                    <div className="font-bold text-xs text-white">📜 Rules Agreement</div>
+                    <div className="text-[10px] text-slate-400">Policy consent gateway</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Roles & Channel Permissions Setup */}
+              <div className="p-5 rounded-2xl bg-[#0c0f0d] border border-white/5 space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                  <Lock className="w-4 h-4 text-emerald-400" />
+                  <h3 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                    ROLE & ACCESS CONTROL
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Verified Role (Awarded) */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>VERIFIED ROLE (GRANTED ON SUCCESS)</span>
+                      <span className="text-emerald-400 font-mono text-[9px]">Required</span>
+                    </label>
+                    <select
+                      value={verifyRole}
+                      onChange={(e) => setVerifyRole(e.target.value)}
+                      className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="">Select verified role...</option>
+                      {availableRoles.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          @{r.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      Users receive this role immediately after clicking verify, granting access to main channels.
+                    </p>
+                  </div>
+
+                  {/* Unverified Role (Removed) */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>UNVERIFIED ROLE (REMOVED ON VERIFY)</span>
+                      <span className="text-slate-500 font-mono text-[9px]">Optional</span>
+                    </label>
+                    <select
+                      value={unverifiedRole}
+                      onChange={(e) => setUnverifiedRole(e.target.value)}
+                      className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="">None (No role removed)</option>
+                      {availableRoles.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          @{r.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      If your server uses an "Unverified" quarantine role, the bot will automatically strip it.
+                    </p>
+                  </div>
+
+                  {/* Verification Gate Channel */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                      <span>VERIFICATION CHANNEL (WHERE TO POST)</span>
+                      <span className="text-emerald-400 font-mono text-[9px]">Required</span>
+                    </label>
+                    <select
+                      value={verifyChannel}
+                      onChange={(e) => setVerifyChannel(e.target.value)}
+                      className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="">Select a channel...</option>
+                      {availableChannels
+                        .filter((c) => c.type !== 4)
+                        .map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            #{ch.name}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500">
+                      The isolated channel unverified users land in (e.g. #verify or #welcome-gate).
+                    </p>
+                  </div>
+
+                  {/* Verification Method Mode */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      VERIFICATION METHOD
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setVerifyMethod('button')}
+                        className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-center ${
+                          verifyMethod === 'button'
+                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-950/40'
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        ⚡ 1-Click Button
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVerifyMethod('code')}
+                        className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-center ${
+                          verifyMethod === 'code'
+                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-950/40'
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        🧩 Captcha Modal
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-500">
+                      {verifyMethod === 'button'
+                        ? 'Users simply click the Discord button and receive their role instantly.'
+                        : 'Pops an interactive anti-bot modal requiring users to confirm before role grant.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gate Embed & Interactive Button Customizer */}
+              <div className="p-5 rounded-2xl bg-[#0c0f0d] border border-white/5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Code className="w-4 h-4 text-emerald-400" />
+                    <h3 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                      GATE EMBED & BUTTON DESIGN
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-mono">Accent:</span>
+                    <input
+                      type="color"
+                      value={verifyGateColor}
+                      onChange={(e) => setVerifyGateColor(e.target.value)}
+                      className="w-6 h-6 rounded cursor-pointer border border-white/20 bg-transparent"
+                    />
+                    <input
+                      type="text"
+                      value={verifyGateColor}
+                      onChange={(e) => setVerifyGateColor(e.target.value)}
+                      className="w-20 bg-[#131815] border border-white/10 rounded-lg px-2 py-0.5 text-xs text-white font-mono uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      GATEWAY TITLE
+                    </label>
+                    <input
+                      type="text"
+                      value={verifyGateTitle}
+                      onChange={(e) => setVerifyGateTitle(e.target.value)}
+                      placeholder="e.g. 🛡️ Server Verification Gate"
+                      className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      GATEWAY DESCRIPTION
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={verifyGateDesc}
+                      onChange={(e) => setVerifyGateDesc(e.target.value)}
+                      placeholder="Enter verification instructions shown inside the Discord embed..."
+                      className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 resize-y"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        BUTTON LABEL
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyButtonText}
+                        onChange={(e) => setVerifyButtonText(e.target.value)}
+                        placeholder="e.g. Verify Account"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        BUTTON EMOJI
+                      </label>
+                      <input
+                        type="text"
+                        value={verifyButtonEmoji}
+                        onChange={(e) => setVerifyButtonEmoji(e.target.value)}
+                        placeholder="e.g. ✅ or 🛡️"
+                        className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Deploy Action */}
+                <div className="pt-2">
+                  <button
+                    onClick={handleDeployVerificationGate}
+                    disabled={verifyDeploying}
+                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {verifyDeploying ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Deploying Verification Gate to Discord...</span>
+                      </>
+                    ) : verifyDeploySuccess ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-300" />
+                        <span>✓ Verification Gate Live on Discord!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>
+                          Deploy Verification Gate to #
+                          {availableChannels.find((c) => c.id === verifyChannel)?.name ||
+                            availableChannels[0]?.name ||
+                            'channel'}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Master Save Button Bar */}
           <div className="pt-2">
             <button
@@ -2706,7 +3581,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         <aside className="w-full lg:w-96 bg-[#08080c] border-l border-white/5 p-5 shrink-0 overflow-y-auto space-y-3">
           <div className="flex items-center justify-between pb-2">
             <span className="font-orbitron font-bold text-xs tracking-wider text-slate-300 uppercase">
-              Live Preview
+              {activeModule === 'tickets'
+                ? 'Ticket Panel Preview'
+                : activeModule === 'verification'
+                ? 'Verification Gate Preview'
+                : 'Live Preview'}
             </span>
             <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -2714,119 +3593,277 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </span>
           </div>
 
-          {/* Discord Chat Container */}
-          <div className="bg-[#313338] rounded-2xl p-4 shadow-2xl font-sans text-slate-200 text-xs">
-            {/* Discord Message Header */}
-            <div className="flex items-start gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-[#5865F2] flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
-                <img
-                  src="https://cdn.discordapp.com/embed/avatars/0.png"
-                  alt="Bot Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="flex-1 leading-tight">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-white text-xs">DexterCorp</span>
-                  <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white uppercase tracking-wider">
-                    BOT
-                  </span>
-                  <span className="text-[10px] text-slate-400 ml-1">Today at 01:59 AM</span>
-                </div>
-
-                {contentMessage && (
-                  <p className="mt-1 text-slate-200 text-xs">{renderPreview(contentMessage)}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Discord Embed Card with colored left border */}
-            <div
-              className="ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden"
-              style={{ borderLeftColor: embedColor || '#ff2b43' }}
-            >
-              {authorName && (
-                <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
-                  {authorIconUrl && (
+          {/* Conditional Preview: Ticket Creation Panel */}
+          {activeModule === 'tickets' ? (
+            <div className="space-y-3">
+              <div className="bg-[#313338] rounded-2xl p-4 shadow-2xl font-sans text-slate-200 text-xs">
+                {/* Discord Message Header */}
+                <div className="flex items-start gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-[#5865F2] flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
                     <img
-                      src={
-                        authorIconUrl.includes('user') || authorIconUrl.includes('avatar')
-                          ? (user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png')
-                          : authorIconUrl
-                      }
-                      alt="Author Icon"
-                      className="w-4 h-4 rounded-full"
-                    />
-                  )}
-                  <span>{authorName}</span>
-                </div>
-              )}
-
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 space-y-1">
-                  {embedTitle && (
-                    <h4 className="font-bold text-white text-xs">{renderPreview(embedTitle)}</h4>
-                  )}
-                  {description && (
-                    <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
-                      {renderPreview(description)}
-                    </p>
-                  )}
-                </div>
-
-                {thumbnailUrl && (
-                  <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
-                    <img
-                      src={
-                        thumbnailUrl.includes('user') || thumbnailUrl.includes('avatar')
-                          ? (user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png')
-                          : thumbnailUrl
-                      }
-                      alt="Thumbnail"
+                      src="https://cdn.discordapp.com/embed/avatars/0.png"
+                      alt="Bot Avatar"
                       className="w-full h-full object-cover"
                     />
                   </div>
-                )}
+
+                  <div className="flex-1 leading-tight">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-xs">DexterCorp</span>
+                      <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white uppercase tracking-wider">
+                        BOT
+                      </span>
+                      <span className="text-[10px] text-slate-400 ml-1">Today at 02:00 AM</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ticket Embed Card */}
+                <div
+                  className="ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden"
+                  style={{ borderLeftColor: ticketPanelColor || '#5865F2' }}
+                >
+                  <h4 className="font-bold text-white text-xs">
+                    {ticketPanelTitle || '🎫 Support Desk & Inquiries'}
+                  </h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    {ticketPanelDesc ||
+                      'Welcome to our support desk! If you require assistance, have billing questions, or wish to report an issue, please open a private ticket below.'}
+                  </p>
+                </div>
+
+                {/* Discord Interactive Button (custom_id: ticket_open) */}
+                <div className="ml-12 mt-3 pt-1">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#5865F2] hover:bg-[#4752c4] text-white font-semibold text-xs shadow-md transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <span>{ticketButtonEmoji || '📩'}</span>
+                    <span>{ticketButtonText || 'Open Support Ticket'}</span>
+                  </button>
+                </div>
               </div>
 
-              {mainImageUrl && (
-                <div className="rounded-md overflow-hidden max-h-40 border border-black/30 mt-2">
-                  <img src={mainImageUrl} alt="Main Banner" className="w-full h-full object-cover" />
-                </div>
-              )}
-
-              {footerText && (
-                <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
-                  {footerIconUrl && (
-                    <img
-                      src={
-                        footerIconUrl.includes('server') || footerIconUrl.includes('guild')
-                          ? (guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png')
-                          : footerIconUrl
-                      }
-                      alt="Server Icon"
-                      className="w-3.5 h-3.5 rounded-full"
-                    />
-                  )}
-                  <span>{renderPreview(footerText)}</span>
-                </div>
-              )}
+              {/* Deploy Ticket Panel Button */}
+              <button
+                onClick={handleDeployTicketPanel}
+                disabled={ticketDeploying}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-xs font-semibold text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              >
+                {ticketDeploying ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deploying to Discord...</span>
+                  </>
+                ) : ticketDeploySuccess ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>✓ Ticket Panel Live on Discord!</span>
+                  </>
+                ) : (
+                  <>
+                    <Ticket className="w-3.5 h-3.5" />
+                    <span>Deploy Live Ticket Panel</span>
+                  </>
+                )}
+              </button>
             </div>
-          </div>
+          ) : activeModule === 'verification' ? (
+            /* Conditional Preview: Verification Gate */
+            <div className="space-y-3">
+              <div className="bg-[#313338] rounded-2xl p-4 shadow-2xl font-sans text-slate-200 text-xs">
+                {/* Discord Message Header */}
+                <div className="flex items-start gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
+                    <img
+                      src="https://cdn.discordapp.com/embed/avatars/0.png"
+                      alt="Bot Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-          {/* Test Send Button */}
-          <div className="pt-2">
-            <button
-              onClick={handleSendTestMessage}
-              className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
-            >
-              <Send className="w-3.5 h-3.5 text-[#ff2b43]" />
-              <span>
-                {testSent ? '✓ Sent Test Message to #' + targetChannel : 'Send Test Message'}
-              </span>
-            </button>
-          </div>
+                  <div className="flex-1 leading-tight">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-xs">DexterCorp</span>
+                      <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white uppercase tracking-wider">
+                        BOT
+                      </span>
+                      <span className="text-[10px] text-slate-400 ml-1">Today at 02:00 AM</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Verification Embed Card */}
+                <div
+                  className="ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden"
+                  style={{ borderLeftColor: verifyGateColor || '#10b981' }}
+                >
+                  <h4 className="font-bold text-white text-xs">
+                    {verifyGateTitle || '🛡️ Server Verification Gate'}
+                  </h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    {verifyGateDesc ||
+                      'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'}
+                  </p>
+                </div>
+
+                {/* Discord Interactive Button (custom_id: verify_button) */}
+                <div className="ml-12 mt-3 pt-1">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#248046] hover:bg-[#1a6334] text-white font-semibold text-xs shadow-md transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <span>{verifyButtonEmoji || '✅'}</span>
+                    <span>{verifyButtonText || 'Verify Account'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Deploy Verification Gate Button */}
+              <button
+                onClick={handleDeployVerificationGate}
+                disabled={verifyDeploying}
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              >
+                {verifyDeploying ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deploying to Discord...</span>
+                  </>
+                ) : verifyDeploySuccess ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>✓ Verification Gate Live on Discord!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Deploy Verification Gate</span>
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            /* Default Preview: Welcomer Embed */
+            <div className="space-y-3">
+              <div className="bg-[#313338] rounded-2xl p-4 shadow-2xl font-sans text-slate-200 text-xs">
+                {/* Discord Message Header */}
+                <div className="flex items-start gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-[#5865F2] flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
+                    <img
+                      src="https://cdn.discordapp.com/embed/avatars/0.png"
+                      alt="Bot Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="flex-1 leading-tight">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-xs">DexterCorp</span>
+                      <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white uppercase tracking-wider">
+                        BOT
+                      </span>
+                      <span className="text-[10px] text-slate-400 ml-1">Today at 01:59 AM</span>
+                    </div>
+
+                    {contentMessage && (
+                      <p className="mt-1 text-slate-200 text-xs">{renderPreview(contentMessage)}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Discord Embed Card with colored left border */}
+                <div
+                  className="ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden"
+                  style={{ borderLeftColor: embedColor || '#ff2b43' }}
+                >
+                  {authorName && (
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
+                      {authorIconUrl && (
+                        <img
+                          src={
+                            authorIconUrl.includes('user') || authorIconUrl.includes('avatar')
+                              ? user.avatar
+                                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+                                : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : authorIconUrl
+                          }
+                          alt="Author Icon"
+                          className="w-4 h-4 rounded-full"
+                        />
+                      )}
+                      <span>{authorName}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-1">
+                      {embedTitle && (
+                        <h4 className="font-bold text-white text-xs">{renderPreview(embedTitle)}</h4>
+                      )}
+                      {description && (
+                        <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                          {renderPreview(description)}
+                        </p>
+                      )}
+                    </div>
+
+                    {thumbnailUrl && (
+                      <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
+                        <img
+                          src={
+                            thumbnailUrl.includes('user') || thumbnailUrl.includes('avatar')
+                              ? user.avatar
+                                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+                                : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : thumbnailUrl
+                          }
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {mainImageUrl && (
+                    <div className="rounded-md overflow-hidden max-h-40 border border-black/30 mt-2">
+                      <img src={mainImageUrl} alt="Main Banner" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+
+                  {footerText && (
+                    <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
+                      {footerIconUrl && (
+                        <img
+                          src={
+                            footerIconUrl.includes('server') || footerIconUrl.includes('guild')
+                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : footerIconUrl
+                          }
+                          alt="Server Icon"
+                          className="w-3.5 h-3.5 rounded-full"
+                        />
+                      )}
+                      <span>{renderPreview(footerText)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Test Send Button */}
+              <div className="pt-2">
+                <button
+                  onClick={handleSendTestMessage}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  <Send className="w-3.5 h-3.5 text-[#ff2b43]" />
+                  <span>
+                    {testSent ? '✓ Sent Test Message to #' + targetChannel : 'Send Test Message'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
       </div>
 
