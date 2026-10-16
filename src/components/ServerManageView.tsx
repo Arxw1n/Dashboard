@@ -141,7 +141,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [embedTitle, setEmbedTitle] = useState('🏠 Welcome to Dexter Corporation 👿');
   const [embedColor, setEmbedColor] = useState('#ff0033');
   const [description, setDescription] = useState(
-    "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n**Joined** {user_joined} · {user.joined_date}\n\n<a:259419darkbluearrow:1554068841015943189> **Read our ToS** <#rules>\n<a:259419darkbluearrow:1554068841015943189> **Check out our latest Announcements** <#announcements>\n<a:259419darkbluearrow:1554068841015943189> **Need help? Open a Support Ticket** <#tickets>"
+    "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} · {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
   );
   const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
   const [authorIconUrl, setAuthorIconUrl] = useState('');
@@ -1009,7 +1009,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       setEmbedTitle('🏠 Welcome to Dexter Corporation 👿');
                       setEmbedColor('#ff0033');
                       setDescription(
-                        "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n**Joined** {user_joined} · {user.joined_date}\n\n<a:259419darkbluearrow:1554068841015943189> **Read our ToS** <#rules>\n<a:259419darkbluearrow:1554068841015943189> **Check out our latest Announcements** <#announcements>\n<a:259419darkbluearrow:1554068841015943189> **Need help? Open a Support Ticket** <#tickets>"
+                        "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} · {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
                       );
                       setMainImageUrl('');
                       setThumbnailUrl('');
@@ -1224,14 +1224,37 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    DESCRIPTION
-                  </label>
+                  <div className="flex flex-wrap items-center justify-between gap-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      DESCRIPTION
+                    </label>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">PORTAL EMOJIS:</span>
+                      {[
+                        { label: 'Red Arrow', tag: '<a:73288animatedarrowred:1554068830689431563>' },
+                        { label: 'Verified', tag: '<:2392verified:1554068820828626944>' },
+                        { label: 'Shield', tag: '<:86067verified86x:1554068835227930624>' },
+                        { label: 'Flame', tag: '<a:flame:1554068992648290415>' },
+                        { label: 'Fire Crown', tag: '<a:1706redcrownfire:1554068818337468476>' },
+                        { label: 'Admin', tag: '<a:Admin128:1554066211636248597>' },
+                      ].map((em, eIdx) => (
+                        <button
+                          key={eIdx}
+                          type="button"
+                          onClick={() => setDescription((prev) => prev + (prev.endsWith('\n') || prev.endsWith(' ') ? '' : ' ') + em.tag)}
+                          className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-[10px] border border-white/10 cursor-pointer transition-colors"
+                          title={`Click to insert ${em.tag}`}
+                        >
+                          + {em.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={5}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors resize-none leading-relaxed"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors resize-none leading-relaxed font-mono"
                   />
                 </div>
 
