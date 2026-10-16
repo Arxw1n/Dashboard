@@ -50,14 +50,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
             <div className="absolute inset-0 bg-white/20 rounded-2xl blur-xl opacity-60 animate-pulse-glow" />
             <div className="relative w-16 h-16 rounded-2xl border border-white/20 bg-[#12141c] overflow-hidden shadow-2xl flex items-center justify-center">
               <img
-                src="https://cdn.discordapp.com/attachments/1349027457531904072/1351659687168586391/giphy.gif"
+                src="/astra-avatar.png"
                 alt="DexterCorp"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
+                  const img = e.target as HTMLImageElement;
+                  if (!img.dataset.fallback) {
+                    img.dataset.fallback = '1';
+                    img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                  }
                 }}
               />
-              <Shield className="w-8 h-8 text-white absolute inset-0 m-auto pointer-events-none -z-10" />
+              <Shield className="w-8 h-8 text-white/30 absolute inset-0 m-auto pointer-events-none -z-10" />
             </div>
           </div>
         </div>

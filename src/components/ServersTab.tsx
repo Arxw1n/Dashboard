@@ -3,39 +3,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Server,
-  Users,
-  ShieldCheck,
-  ExternalLink,
-  Settings,
-  Search,
   PlusCircle,
-  AlertCircle,
-  RefreshCw,
-  LogOut,
-  ChevronLeft,
-  Sun,
+  ExternalLink,
   Crown,
   Shield,
-  Sparkles,
-  Hash,
-  Volume2,
-  Folder,
-  CheckCircle2,
-  XCircle,
-  X,
-  Info,
-  Sliders,
-  Eye,
-  Bot,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Calendar,
-  Zap,
+  Search,
+  RefreshCw,
+  LogOut,
+  Home,
   Terminal,
+  Zap,
+  CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 import { GuildItem, UserProfile, CommandItem } from '../types';
-import { SyncingLoader } from './SyncingLoader';
 import { CommandsTab } from './CommandsTab';
+import { SyncingLoader } from './SyncingLoader';
 
 interface ServersTabProps {
   user: UserProfile;
@@ -60,38 +43,10 @@ export const ServersTab: React.FC<ServersTabProps> = ({
 }) => {
   const [botGuilds, setBotGuilds] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSideRail, setShowSideRail] = useState(true);
-  const [selectedSpecsGuild, setSelectedSpecsGuild] = useState<GuildItem | null>(null);
-
-  // Main Section Toggle: Servers vs Commands Directory
-  const [activeSection, setActiveSection] = useState<'servers' | 'commands'>('servers');
-  const [isSectionSyncing, setIsSectionSyncing] = useState<boolean>(false);
-
-  const handleSectionChange = (section: 'servers' | 'commands') => {
-    if (section === activeSection) return;
-    setIsSectionSyncing(true);
-    setTimeout(() => {
-      setActiveSection(section);
-      setIsSectionSyncing(false);
-    }, 280);
-  };
-
+  const [activeView, setActiveView] = useState<'servers' | 'commands'>('servers');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterTab, setFilterTab] = useState<'all' | 'with_bot' | 'without_bot'>('all');
-  const [isFilterSyncing, setIsFilterSyncing] = useState<boolean>(false);
-
-  const handleFilterChange = (tab: 'all' | 'with_bot' | 'without_bot') => {
-    if (tab === filterTab) return;
-    setIsFilterSyncing(true);
-    setTimeout(() => {
-      setFilterTab(tab);
-      setIsFilterSyncing(false);
-    }, 280);
-  };
 
   const BOT_INVITE_URL = BOT_CONFIG.getInviteUrl();
-
-  const DISCORD_SYNC_URL = BOT_CONFIG.getOAuthUrl();
 
   // Fetch bot guilds from local backend
   useEffect(() => {
@@ -130,7 +85,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
     ...addedLocally,
   ]);
 
-  // Combine Discord Admin Guilds with Bot Presence, fallback to bot's connected servers
+  // Combine Discord Admin Guilds with Bot Presence
   const processedGuilds: GuildItem[] =
     discordGuilds.length > 0
       ? discordGuilds.map((g) => {
@@ -152,18 +107,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
             channelsCount: botMatch?.channelsCount,
             textChannels: botMatch?.textChannels,
             voiceChannels: botMatch?.voiceChannels,
-            categoryChannels: botMatch?.categoryChannels,
             rolesCount: botMatch?.rolesCount,
-            emojisCount: botMatch?.emojisCount,
-            boostCount: botMatch?.boostCount,
-            boostTier: botMatch?.boostTier,
-            verificationLevel: botMatch?.verificationLevel,
-            vanityURLCode: botMatch?.vanityURLCode,
-            createdAt: botMatch?.createdAt,
-            joinedAt: botMatch?.joinedAt,
-            features: botMatch?.features,
-            roles: botMatch?.roles,
-            channels: botMatch?.channels,
             settings: botMatch?.settings,
             modules: botMatch?.modules,
           };
@@ -177,132 +121,94 @@ export const ServersTab: React.FC<ServersTabProps> = ({
             isAdmin: true,
             isOwner: bg.ownerId === user.id || idx === 0,
           })),
-          // Sample unadded server so user can experience "Add Bot to Server" button flow
           {
             id: '1002',
             name: 'DEXTER COMMUNITY',
             icon: null,
             memberCount: 1540,
-            channelsCount: 38,
-            textChannels: 26,
-            voiceChannels: 12,
-            rolesCount: 22,
-            boostCount: 7,
-            boostTier: 2,
-            ownerId: '9999',
             hasBot: false,
             isAdmin: true,
             isOwner: false,
           },
         ]
       : [
-          // Default demonstration servers matching Screenshot 3
           {
             id: '1001',
             name: 'VOLT X CHEATS',
             icon: null,
             memberCount: 87,
-            channelsCount: 70,
-            textChannels: 45,
-            voiceChannels: 25,
-            rolesCount: 45,
-            boostCount: 2,
-            boostTier: 1,
-            ownerId: user.id,
             hasBot: true,
             isAdmin: true,
             isOwner: true,
-            modules: { antinuke: true, automod: true, welcome: true, logging: false },
           },
           {
             id: '1002',
             name: 'DEXTER COMMUNITY',
             icon: null,
             memberCount: 1540,
-            channelsCount: 38,
-            textChannels: 26,
-            voiceChannels: 12,
-            rolesCount: 22,
-            boostCount: 7,
-            boostTier: 2,
-            ownerId: '9999',
             hasBot: false,
             isAdmin: true,
             isOwner: false,
           },
         ];
 
-  // ONLY servers where the bot is added appear on the left rail!
-  const botAddedGuilds = processedGuilds.filter((g) => g.hasBot);
-
-  const manageableCount = processedGuilds.length;
-  const ownedCount = processedGuilds.filter((g) => g.isOwner).length;
-  const withBotCount = processedGuilds.filter((g) => g.hasBot).length;
-  const withoutBotCount = processedGuilds.filter((g) => !g.hasBot).length;
-
-  // Filter guilds based on search and active tab
-  const filteredGuilds = processedGuilds.filter((g) => {
-    const matchesSearch = g.name.toLowerCase().includes(searchQuery.toLowerCase().trim());
-    if (!matchesSearch) return false;
-    if (filterTab === 'with_bot') return g.hasBot;
-    if (filterTab === 'without_bot') return !g.hasBot;
-    return true;
-  });
+  // Configured (Bot present) vs Unconfigured (Available to invite)
+  const filteredAll = processedGuilds.filter((g) =>
+    g.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
+  const withBotGuilds = filteredAll.filter((g) => g.hasBot);
+  const withoutBotGuilds = filteredAll.filter((g) => !g.hasBot);
 
   return (
     <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-['Inter'] selection:bg-white/20 selection:text-white relative">
       {/* Background ambient lighting & mesh */}
       <div className="absolute inset-0 bg-mesh pointer-events-none opacity-40"></div>
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[140px] pointer-events-none"></div>
+      <div className="absolute top-0 right-1/4 w-[600px] h-[350px] bg-white/5 rounded-full blur-[140px] pointer-events-none"></div>
 
-      {/* Top Header Bar */}
-      <header className="h-16 border-b border-white/5 bg-[#06070a]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
-        <div className="flex items-center gap-3">
-          {/* Back button */}
-          <button
-            onClick={onBackToHome}
-            className="w-9 h-9 rounded-xl liquid-glass hover:bg-white/10 flex items-center justify-center text-white transition-all active:scale-95 cursor-pointer"
-            title="Back to Landing Page"
-          >
-            <ChevronLeft className="w-5 h-5 stroke-[2]" />
-          </button>
-
-          {/* Toggle Side Rail Button if collapsed */}
-          {!showSideRail && (
-            <button
-              onClick={() => setShowSideRail(true)}
-              className="p-1.5 rounded-xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
-              title="Show Connected Servers Rail"
+      {/* Obsidian Dashboard Header Bar */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#06070a]/80 border-b border-white/5">
+        <div className="max-w-[1650px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+          {/* Left Brand + Mode Switcher */}
+          <div className="flex items-center gap-3 min-w-0 flex-shrink">
+            <div
+              onClick={onBackToHome}
+              className="flex items-center gap-2.5 group min-w-0 cursor-pointer"
             >
-              <PanelLeftOpen className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">Servers Rail</span>
-            </button>
-          )}
+              <img
+                src="/astra-avatar.png"
+                alt="Dexter"
+                className="h-8 w-8 rounded-xl object-contain group-hover:scale-105 transition-transform duration-300 flex-shrink-0 border border-white/10"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                }}
+              />
+              <span className="font-display font-bold text-sm sm:text-base tracking-tight text-white truncate">
+                Dexter <span className="text-slate-400">Corporation</span>
+              </span>
+              <span className="hidden sm:inline text-xs font-semibold uppercase tracking-widest text-slate-400 px-2.5 py-0.5 liquid-glass rounded-full flex-shrink-0">
+                Dashboard
+              </span>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <h1 className="font-display font-bold text-lg sm:text-xl tracking-tight text-white">
-              Dashboard
-            </h1>
-
-            {/* View Switcher: Servers vs Commands Directory */}
-            <div className="flex items-center liquid-glass rounded-xl p-1 gap-1">
+            {/* Switcher: Servers vs Commands */}
+            <div className="hidden sm:flex items-center liquid-glass rounded-xl p-1 gap-1 ml-2">
               <button
-                onClick={() => handleSectionChange('servers')}
+                onClick={() => setActiveView('servers')}
                 className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  activeSection === 'servers'
+                  activeView === 'servers'
                     ? 'bg-white text-black shadow-md'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <Server className="w-3.5 h-3.5" />
                 <span>Servers</span>
-                <span className="text-[10px] font-mono opacity-80">({manageableCount})</span>
+                <span className="text-[10px] font-mono opacity-80">({processedGuilds.length})</span>
               </button>
 
               <button
-                onClick={() => handleSectionChange('commands')}
+                onClick={() => setActiveView('commands')}
                 className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  activeSection === 'commands'
+                  activeView === 'commands'
                     ? 'bg-white text-black shadow-md'
                     : 'text-slate-400 hover:text-white'
                 }`}
@@ -313,717 +219,238 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Right Header Icons */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => window.open(BOT_INVITE_URL, '_blank')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-bold transition-all cursor-pointer"
-            title="Invite Bot to a Server"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Invite Bot</span>
-          </button>
-          <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer">
-            <Settings className="w-4 h-4" />
-          </button>
-          <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer">
-            <Sun className="w-4 h-4" />
-          </button>
-          <div className="w-8 h-8 rounded-full border border-[#ff2b43]/40 overflow-hidden shadow-sm shadow-[#ff2b43]/20">
-            <img
-              src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
-              alt={user.username}
-              className="w-full h-full object-cover"
-            />
+          {/* Right Header Navigation Icons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={onBackToHome}
+              className="liquid-glass h-9 w-9 rounded-xl grid place-items-center text-slate-400 hover:text-white hover:scale-105 transition-all cursor-pointer"
+              title="Back to Landing Page"
+            >
+              <Home className="h-4 w-4" />
+            </button>
+
+            <button
+              onClick={onRefreshDiscordGuilds}
+              className="liquid-glass h-9 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white hover:scale-105 transition-all cursor-pointer"
+              title="Refresh server list"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-white' : ''}`} />
+              <span className="hidden md:inline">Sync</span>
+            </button>
+
+            <button
+              onClick={onLogout}
+              className="liquid-glass h-9 w-9 rounded-xl grid place-items-center text-slate-400 hover:text-rose-400 hover:scale-105 transition-all cursor-pointer"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+
+            {/* User Pill */}
+            <div className="liquid-glass h-9 px-2 rounded-xl flex items-center gap-2">
+              <div className="relative">
+                <img
+                  src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
+                  alt="avatar"
+                  className="h-6 w-6 rounded-full ring-1 ring-white/20"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 border border-black" />
+              </div>
+              <span className="hidden md:block text-xs font-semibold max-w-[100px] truncate text-white">
+                {user.username || 'Operator'}
+              </span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Layout: Left Vertical Rail + Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Vertical Server Rail - ONLY SHOWS SERVERS WHERE BOT IS ADDED */}
-        {showSideRail && (
-          <aside className="w-16 bg-[#08080b] border-r border-white/5 flex flex-col items-center py-3 space-y-3 shrink-0 transition-all duration-300">
-            {/* Collapse / Hide Toggle */}
-            <button
-              onClick={() => setShowSideRail(false)}
-              className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              title="Hide Side Rail"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
+      {/* Main Content */}
+      <main className="flex-1 max-w-[1650px] mx-auto w-full px-4 sm:px-6 py-10 relative z-10">
+        {activeView === 'commands' ? (
+          <CommandsTab
+            commands={commands}
+            isLoading={isLoading}
+            onRefresh={onRefreshCommands}
+          />
+        ) : (
+          <>
+            {/* Header Area */}
+            <div className="mb-10 animate-in fade-in slide-in-from-top-2 duration-300">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+                Select a server
+              </p>
+              <h1 className="font-display font-bold text-3xl md:text-5xl tracking-tight text-white">
+                Welcome back,{' '}
+                <span className="text-gradient">
+                  {user.username || 'Operator'}
+                </span>
+              </h1>
+              <p className="mt-2 text-sm text-slate-400 max-w-lg leading-relaxed">
+                Choose a server below to configure. Servers with{' '}
+                <span className="text-white font-medium">Dexter Corporation</span> installed are shown first.
+              </p>
+            </div>
 
-            <div className="w-8 h-[1px] bg-white/10"></div>
-
-            {/* Server Icons: ONLY SERVERS WHERE BOT IS ADDED */}
-            {botAddedGuilds.map((g, idx) => (
-              <button
-                key={g.id || idx}
-                onClick={() => onSelectGuild(g)}
-                title={`${g.name} (Bot Connected - Click to Configure)`}
-                className="relative group w-10 h-10 rounded-2xl hover:rounded-xl bg-[#13141c] hover:bg-[#ff2b43]/20 border border-white/5 hover:border-[#ff2b43]/50 transition-all duration-200 flex items-center justify-center overflow-hidden cursor-pointer"
-              >
-                {g.icon ? (
-                  <img src={g.icon} alt={g.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-orbitron font-bold text-[10px] text-white">
-                    {g.name.slice(0, 3).toUpperCase()}
-                  </span>
-                )}
-                {/* Active red indicator */}
-                <span className="absolute -left-1 w-1 h-3 group-hover:h-5 bg-[#ff2b43] rounded-r transition-all duration-200"></span>
-              </button>
-            ))}
-
-            <div className="w-8 h-[1px] bg-white/10 my-1"></div>
-
-            {/* Invite button */}
-            <a
-              href={BOT_INVITE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Add Bot to More Servers"
-              className="w-10 h-10 rounded-2xl hover:rounded-xl bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-slate-400 hover:text-emerald-400 flex items-center justify-center transition-all cursor-pointer"
-            >
-              <PlusCircle className="w-5 h-5" />
-            </a>
-
-              {/* Bottom user avatar */}
-            <div className="mt-auto pt-3">
-              <div className="w-9 h-9 rounded-full border border-[#ff2b43]/50 overflow-hidden">
-                <img
-                  src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
-                  alt={user.username}
-                  className="w-full h-full object-cover"
+            {/* Search & Action Bar */}
+            <div className="mb-8 flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <input
+                  placeholder="Search servers…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="liquid-glass border-0 h-11 pl-11 pr-4 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-white/40 w-full"
                 />
               </div>
-            </div>
-          </aside>
-        )}
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 sm:p-10 space-y-6 max-w-6xl mx-auto w-full">
-          {isSectionSyncing ? (
-            <SyncingLoader
-              fullScreen={false}
-              title="SYNCING PROTOCOLS"
-              subtitle="CONNECTING TO DEXTERCORP SHARD DATA"
-            />
-          ) : activeSection === 'commands' ? (
-            <CommandsTab
-              commands={commands}
-              isLoading={isLoading}
-              onRefresh={onRefreshCommands}
-            />
-          ) : (
-            <>
-              {/* User Welcome Banner */}
-          <div className="liquid-glass rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
-            {/* Ambient subtle glow */}
-            <div className="absolute top-0 right-0 w-80 h-full bg-white/5 rounded-full blur-[80px] pointer-events-none"></div>
-
-            <div className="flex items-center gap-5 z-10">
-              {/* Avatar with glowing aura */}
-              <div className="relative">
-                <div className="w-20 h-20 rounded-2xl p-1 border border-white/20 shadow-xl overflow-hidden bg-[#12141c]">
-                  <img
-                    src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
-                    alt={user.username}
-                    className="w-full h-full rounded-xl object-cover"
-                  />
-                </div>
-              </div>
-
-              {/* User text details */}
-              <div className="space-y-1">
-                <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-white">
-                  {user.username || 'DXTR AXIO'}
-                </h2>
-                <p className="text-xs text-slate-400">Welcome back to your Dexter Corporation Control Console</p>
-
-                {/* Inline Stats Badges */}
-                <div className="flex flex-wrap items-center gap-3 pt-2 text-[11px] font-mono tracking-wider">
-                  <span className="text-slate-400">
-                    MANAGEABLE:{' '}
-                    <strong className="text-white font-bold text-sm">{manageableCount}</strong>
-                  </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400">
-                    OWNED:{' '}
-                    <strong className="text-white font-bold text-sm">{ownedCount}</strong>
-                  </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-emerald-400">
-                    WITH BOT:{' '}
-                    <strong className="text-white font-bold text-sm">{withBotCount}</strong>
-                  </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400">
-                    NOT ADDED:{' '}
-                    <strong className="text-amber-400 font-bold text-sm">{withoutBotCount}</strong>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons: Get Premium & Logout */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto z-10">
-              <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#ff2b43] to-[#dc182f] hover:from-[#ff4055] hover:to-[#ff2b43] text-white text-xs font-bold shadow-lg shadow-[#ff2b43]/30 transition-transform active:scale-95 cursor-pointer">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Get Premium</span>
-              </button>
-
-              <button
-                onClick={onLogout}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+              <a
+                href={BOT_INVITE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="h-11 px-5 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-md flex items-center gap-2 transition-all shrink-0 cursor-pointer"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Logout</span>
-              </button>
+                <PlusCircle className="h-4 w-4" />
+                <span>Add to Server</span>
+                <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+              </a>
             </div>
-          </div>
 
-          {/* Sync Notice if user only authorized with identify */}
-          {discordGuilds.length === 0 && (
-            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2.5 text-slate-300">
-                <AlertCircle className="w-4 h-4 text-blue-400 shrink-0" />
+            {/* Telemetry Status Counters */}
+            <div className="flex items-center gap-4 mb-8 text-xs font-medium text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>
-                  Want to see all your personal Discord servers to invite DexterCorp? Authorize server read permissions.
+                  {withBotGuilds.length} server{withBotGuilds.length === 1 ? '' : 's'} configured
                 </span>
               </div>
-              <button
-                onClick={() => {
-                  window.location.href = DISCORD_SYNC_URL;
-                }}
-                className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/30 shrink-0 cursor-pointer transition-all"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Sync All Discord Servers</span>
-              </button>
-            </div>
-          )}
-
-          {/* "Your Servers" Section */}
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-orbitron font-bold text-xl text-white">Your Servers</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Configure DexterCorp in connected servers or invite to unadded servers
-                </p>
-              </div>
-
-              {/* Search & Actions */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Search Box */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search server name..."
-                    className="w-44 sm:w-56 pl-9 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff2b43]/50 focus:ring-1 focus:ring-[#ff2b43]/50 transition-all"
-                  />
-                </div>
-
-                {/* Refresh Button */}
-                <button
-                  onClick={onRefreshDiscordGuilds}
-                  title="Refresh servers"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#ff2b43]' : ''}`} />
-                  <span className="hidden sm:inline">Refresh</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Filter Tabs: All, With Bot, Without Bot */}
-            <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-              <button
-                onClick={() => handleFilterChange('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterTab === 'all'
-                    ? 'bg-[#ff2b43] text-white shadow-md shadow-[#ff2b43]/30'
-                    : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white'
-                }`}
-              >
-                All Servers ({manageableCount})
-              </button>
-              <button
-                onClick={() => handleFilterChange('with_bot')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  filterTab === 'with_bot'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                    : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-emerald-400'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                Bot Added ({withBotCount})
-              </button>
-              <button
-                onClick={() => handleFilterChange('without_bot')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  filterTab === 'without_bot'
-                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
-                    : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-amber-400'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                Not Added ({withoutBotCount})
-              </button>
-            </div>
-
-            {/* Grid of Server Cards with SyncingLoader Transition */}
-            {isFilterSyncing ? (
-              <SyncingLoader
-                fullScreen={false}
-                title="FILTERING SERVERS"
-                subtitle="SYNCING LIVE CLUSTER TELEMETRY"
-              />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredGuilds.map((g) => (
-                  <div
-                    key={g.id}
-                    className="liquid-glass hover:scale-[1.01] hover:border-white/20 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-xl relative"
-                >
-                  {/* Top Bar: Ownership Badge + Bot Added Badge */}
-                  <div className="flex items-center justify-between mb-3">
-                    {g.isOwner ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                        <Crown className="w-3 h-3" />
-                        <span>OWNER</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                        <Shield className="w-3 h-3" />
-                        <span>ADMIN</span>
-                      </span>
-                    )}
-
-                    {g.hasBot ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>BOT ADDED</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-slate-400 border border-white/10 font-mono">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                        <span>NOT ADDED</span>
-                      </span>
-                    )}
+              {withoutBotGuilds.length > 0 && (
+                <>
+                  <div className="w-px h-3 bg-white/10" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-slate-500" />
+                    <span>{withoutBotGuilds.length} available to add</span>
                   </div>
+                </>
+              )}
+            </div>
 
-                  {/* Server Icon & Title */}
-                  <div className="flex items-center gap-3.5 mb-3">
+            {/* SECTION 1: Configured Servers */}
+            {withBotGuilds.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 mb-4">
+                  Your Configured Servers
+                </h2>
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {withBotGuilds.map((g) => (
                     <div
-                      onClick={() => {
-                        if (g.hasBot) onSelectGuild(g);
-                        else window.open(BOT_CONFIG.getInviteUrl(g.id), '_blank');
-                      }}
-                      className="w-14 h-14 rounded-2xl bg-white/5 p-1 border border-white/10 group-hover:border-white/30 flex items-center justify-center overflow-hidden shadow-md cursor-pointer shrink-0 transition-colors"
+                      key={g.id}
+                      onClick={() => onSelectGuild(g)}
+                      className="group liquid-glass rounded-2xl p-4 text-left hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 w-full cursor-pointer relative"
                     >
-                      {g.icon ? (
-                        <img src={g.icon} alt={g.name} className="w-full h-full rounded-xl object-cover" />
-                      ) : (
-                        <span className="font-display font-bold text-sm text-white">
-                          {g.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="overflow-hidden">
-                      <h4
-                        onClick={() => {
-                          if (g.hasBot) onSelectGuild(g);
-                          else window.open(BOT_CONFIG.getInviteUrl(g.id), '_blank');
-                        }}
-                        className="font-display font-bold text-sm sm:text-base text-white tracking-tight truncate group-hover:text-slate-200 transition-colors cursor-pointer"
-                      >
-                        {g.name}
-                      </h4>
-                      <p className="text-[10px] text-slate-500 font-mono truncate">ID: {g.id}</p>
-                    </div>
-                  </div>
-
-                  {/* A-Z Server Metrics Bar (Channels, Roles, Members) */}
-                  <div className="grid grid-cols-3 gap-2 w-full py-2.5 px-3 rounded-xl bg-white/5 border border-white/5 text-center text-xs mb-3">
-                    <div>
-                      <span className="text-[9px] text-slate-400 uppercase font-mono block">Members</span>
-                      <span className="font-bold text-white font-mono">{g.memberCount}</span>
-                    </div>
-                    <div className="border-x border-white/10">
-                      <span className="text-[9px] text-slate-400 uppercase font-mono block">Channels</span>
-                      <span className="font-bold text-cyan-400 font-mono">{g.channelsCount ?? (g.hasBot ? 24 : '—')}</span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] text-slate-400 uppercase font-mono block">Roles</span>
-                      <span className="font-bold text-amber-400 font-mono">{g.rolesCount ?? (g.hasBot ? 18 : '—')}</span>
-                    </div>
-                  </div>
-
-                  {/* Live Functions & Protection Status for Added Servers */}
-                  {g.hasBot && (
-                    <div className="w-full bg-[#08090d] border border-white/5 rounded-xl p-2.5 mb-4 text-[10px] space-y-1.5">
-                      <div className="flex items-center justify-between text-slate-400 uppercase font-mono font-bold text-[9px]">
-                        <span>Functions Status</span>
-                        <span className="text-emerald-400 font-bold">
-                          {(g.modules?.antinuke !== false ? 1 : 0) +
-                            (g.modules?.automod !== false ? 1 : 0) +
-                            (g.modules?.welcome !== false ? 1 : 0) +
-                            (g.modules?.logging ? 1 : 0)}{' '}
-                          / 4 Active
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <span
-                          className={`inline-flex items-center justify-between px-2 py-0.5 rounded-md ${
-                            g.modules?.antinuke !== false
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-white/5 text-slate-500'
-                          }`}
-                        >
-                          <span>Anti-Nuke</span>
-                          <span className="font-bold">{g.modules?.antinuke !== false ? '✓ ON' : 'OFF'}</span>
-                        </span>
-                        <span
-                          className={`inline-flex items-center justify-between px-2 py-0.5 rounded-md ${
-                            g.modules?.automod !== false
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-white/5 text-slate-500'
-                          }`}
-                        >
-                          <span>Auto-Mod</span>
-                          <span className="font-bold">{g.modules?.automod !== false ? '✓ ON' : 'OFF'}</span>
-                        </span>
-                        <span
-                          className={`inline-flex items-center justify-between px-2 py-0.5 rounded-md ${
-                            g.modules?.welcome !== false
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-white/5 text-slate-500'
-                          }`}
-                        >
-                          <span>Welcomer</span>
-                          <span className="font-bold">{g.modules?.welcome !== false ? '✓ ON' : 'OFF'}</span>
-                        </span>
-                        <span
-                          className={`inline-flex items-center justify-between px-2 py-0.5 rounded-md ${
-                            g.modules?.logging
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-white/5 text-slate-500'
-                          }`}
-                        >
-                          <span>Logs</span>
-                          <span className="font-bold">{g.modules?.logging ? '✓ ON' : 'OFF'}</span>
-                        </span>
+                      <div className="flex items-center gap-3.5">
+                        {g.icon ? (
+                          <img
+                            src={g.icon}
+                            alt={g.name}
+                            className="h-12 w-12 rounded-xl object-cover flex-shrink-0 group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl liquid-glass grid place-items-center text-base font-bold flex-shrink-0 text-white font-display">
+                            {g.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm truncate mb-1 text-white group-hover:text-slate-200">
+                            {g.name}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {g.isOwner ? (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+                                <Crown className="h-2.5 w-2.5" /> Owner
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-2 py-0.5">
+                                <Shield className="h-2.5 w-2.5" /> Admin
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                              Active
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="h-8 w-8 rounded-lg bg-white/10 grid place-items-center">
+                            <ExternalLink className="h-3.5 w-3.5 text-white" />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  )}
-
-                  {/* Bottom Action Buttons */}
-                  <div className="space-y-2 pt-1">
-                    {g.hasBot ? (
-                      <>
-                        <button
-                          onClick={() => onSelectGuild(g)}
-                          className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-200 text-black text-xs font-semibold shadow-lg shadow-white/10 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <Settings className="w-3.5 h-3.5" />
-                          <span>Configure Server</span>
-                        </button>
-
-                        <button
-                          onClick={() => setSelectedSpecsGuild(g)}
-                          className="w-full py-2 px-3 rounded-2xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          <Info className="w-3.5 h-3.5 text-slate-400" />
-                          <span>View A-Z Server Specs</span>
-                        </button>
-                      </>
-                    ) : (
-                      <a
-                        href={BOT_CONFIG.getInviteUrl(g.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-2.5 px-4 rounded-2xl liquid-glass hover:bg-white/10 text-white text-xs font-semibold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>+ Add Bot to Server</span>
-                      </a>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              ))}
-
-              {/* Dedicated "+ Add Bot to Server" Card */}
-              <div
-                onClick={() => window.open(BOT_INVITE_URL, '_blank')}
-                className="border-2 border-dashed border-white/10 hover:border-emerald-500/50 bg-[#0c0d12]/50 hover:bg-emerald-500/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all duration-200 group shadow-lg cursor-pointer min-h-[260px]"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/20 text-slate-400 group-hover:text-emerald-400 flex items-center justify-center mb-3 transition-colors shadow-inner">
-                  <PlusCircle className="w-6 h-6" />
-                </div>
-                <h4 className="font-orbitron font-bold text-sm sm:text-base text-white tracking-wide mb-1 group-hover:text-emerald-400 transition-colors">
-                  Add Bot to Server
-                </h4>
-                <p className="text-xs text-slate-400 mb-4 max-w-[200px]">
-                  Invite DexterCorp to protect another Discord server
-                </p>
-                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/15 text-emerald-300 text-xs font-bold border border-emerald-500/30 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>+ Invite DexterCorp</span>
-                </span>
               </div>
-            </div>
             )}
 
-            {filteredGuilds.length === 0 && (
-              <div className="p-8 text-center bg-[#0c0d12] border border-white/5 rounded-2xl text-slate-400 text-xs space-y-2">
-                <p>No servers match your current search/filter.</p>
+            {/* SECTION 2: Add Dexter to These Servers */}
+            {withoutBotGuilds.length > 0 && (
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400 mb-4">
+                  Add Dexter to These Servers
+                </h2>
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {withoutBotGuilds.map((g) => (
+                    <a
+                      key={g.id}
+                      href={BOT_CONFIG.getInviteUrl(g.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group liquid-glass rounded-2xl p-4 text-left opacity-60 hover:opacity-100 hover:scale-[1.02] transition-all duration-300 w-full border-dashed cursor-pointer block"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        {g.icon ? (
+                          <img
+                            src={g.icon}
+                            alt={g.name}
+                            className="h-12 w-12 rounded-xl object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl liquid-glass grid place-items-center text-base font-bold flex-shrink-0 text-slate-400 font-display">
+                            {g.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm truncate mb-0.5 text-white">
+                            {g.name}
+                          </div>
+                          <div className="text-xs text-slate-400">Click to invite bot</div>
+                        </div>
+                        <PlusCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 group-hover:rotate-90 transition-transform duration-300" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {filteredAll.length === 0 && (
+              <div className="p-16 text-center liquid-glass rounded-3xl space-y-3">
+                <Server className="w-12 h-12 text-slate-500 mx-auto" />
+                <h4 className="font-display font-bold text-lg text-white">No Servers Found</h4>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  No discord servers match your search &ldquo;{searchQuery}&rdquo;. Try another term or re-sync servers.
+                </p>
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilterTab('all');
-                  }}
-                  className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white cursor-pointer"
+                  onClick={() => setSearchQuery('')}
+                  className="px-4 py-2 rounded-xl bg-white text-black text-xs font-semibold hover:bg-slate-200 cursor-pointer shadow-md"
                 >
-                  Reset Filters
+                  Clear Search
                 </button>
               </div>
             )}
-          </div>
-        </>
-      )}
-    </main>
-      </div>
-
-      {/* A TO Z SERVER SPECS MODAL */}
-      {selectedSpecsGuild && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 font-['Outfit']">
-          <div className="relative w-full max-w-2xl bg-[#0d0e14] border border-cyan-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black max-h-[90vh] overflow-y-auto space-y-6">
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedSpecsGuild(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Modal Header */}
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#161824] p-1 border border-cyan-500/40 overflow-hidden shadow-lg shadow-cyan-950/50 shrink-0">
-                {selectedSpecsGuild.icon ? (
-                  <img
-                    src={selectedSpecsGuild.icon}
-                    alt={selectedSpecsGuild.name}
-                    className="w-full h-full rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-cyan-400 font-orbitron font-bold text-lg">
-                    {selectedSpecsGuild.name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-orbitron font-bold text-xl text-white">
-                    {selectedSpecsGuild.name}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-                    ONLINE
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  Server ID: {selectedSpecsGuild.id} • Owner: {selectedSpecsGuild.ownerId || 'Protected'}
-                </p>
-              </div>
-            </div>
-
-            {/* 4 Stat Tiles: Members, Channels, Roles, Boosts */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                <span className="text-[10px] text-slate-400 uppercase font-mono font-bold block">
-                  Total Members
-                </span>
-                <span className="font-orbitron font-bold text-xl text-white mt-1 block">
-                  {selectedSpecsGuild.memberCount}
-                </span>
-                <span className="text-[10px] text-emerald-400">✓ Humans & Bots</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                <span className="text-[10px] text-slate-400 uppercase font-mono font-bold block">
-                  Total Channels
-                </span>
-                <span className="font-orbitron font-bold text-xl text-cyan-400 mt-1 block">
-                  {selectedSpecsGuild.channelsCount ?? 24}
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  {selectedSpecsGuild.textChannels ?? 14} Text • {selectedSpecsGuild.voiceChannels ?? 10} Voice
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                <span className="text-[10px] text-slate-400 uppercase font-mono font-bold block">
-                  Total Roles
-                </span>
-                <span className="font-orbitron font-bold text-xl text-amber-400 mt-1 block">
-                  {selectedSpecsGuild.rolesCount ?? 18}
-                </span>
-                <span className="text-[10px] text-slate-400">Managed & Custom</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5">
-                <span className="text-[10px] text-slate-400 uppercase font-mono font-bold block">
-                  Server Boosts
-                </span>
-                <span className="font-orbitron font-bold text-xl text-purple-400 mt-1 block">
-                  Tier {selectedSpecsGuild.boostTier ?? 1}
-                </span>
-                <span className="text-[10px] text-purple-300">
-                  {selectedSpecsGuild.boostCount ?? 2} Boosts Active
-                </span>
-              </div>
-            </div>
-
-            {/* Channels Dossier */}
-            <div className="bg-[#12131b] border border-white/5 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Hash className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Channels Breakdown ({selectedSpecsGuild.channelsCount ?? 24} Total)</span>
-                </h4>
-                <span className="text-[10px] font-mono text-slate-400">
-                  Categories: {selectedSpecsGuild.categoryChannels ?? 4}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
-                {selectedSpecsGuild.channels && selectedSpecsGuild.channels.length > 0 ? (
-                  selectedSpecsGuild.channels.map((ch) => (
-                    <span
-                      key={ch.id}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300 font-mono"
-                    >
-                      {ch.type === 2 ? (
-                        <Volume2 className="w-3 h-3 text-emerald-400" />
-                      ) : ch.type === 4 ? (
-                        <Folder className="w-3 h-3 text-amber-400" />
-                      ) : (
-                        <Hash className="w-3 h-3 text-cyan-400" />
-                      )}
-                      <span>{ch.name}</span>
-                    </span>
-                  ))
-                ) : (
-                  ['rules', 'announcements', 'welcome', 'general', 'bot-commands', 'voice-lounge', 'ticket-support'].map((ch, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300 font-mono"
-                    >
-                      <Hash className="w-3 h-3 text-cyan-400" />
-                      <span>{ch}</span>
-                    </span>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Roles Dossier */}
-            <div className="bg-[#12131b] border border-white/5 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Roles Breakdown ({selectedSpecsGuild.rolesCount ?? 18} Roles)</span>
-                </h4>
-                <span className="text-[10px] font-mono text-slate-400">Hierarchy Sorted</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
-                {selectedSpecsGuild.roles && selectedSpecsGuild.roles.length > 0 ? (
-                  selectedSpecsGuild.roles.map((r) => (
-                    <span
-                      key={r.id}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-mono font-medium text-white"
-                    >
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: r.color || '#99aab5' }}
-                      ></span>
-                      <span>{r.name}</span>
-                    </span>
-                  ))
-                ) : (
-                  ['@Owner', '@Administrator', '@Moderator', '@VIP', '@Member', '@Bots'].map((r, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-mono font-medium text-white"
-                    >
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#ff2b43]"></span>
-                      <span>{r}</span>
-                    </span>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Security & Active Functions Audit */}
-            <div className="bg-[#12131b] border border-white/5 rounded-2xl p-4 space-y-3">
-              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Security & Functions Audit</span>
-              </h4>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                  <span className="text-slate-300">Anti-Nuke</span>
-                  <span className="text-emerald-400 font-bold font-mono">ARMED ✓</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                  <span className="text-slate-300">AutoMod</span>
-                  <span className="text-emerald-400 font-bold font-mono">ACTIVE ✓</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                  <span className="text-slate-300">Welcomer</span>
-                  <span className="text-emerald-400 font-bold font-mono">ENABLED ✓</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                  <span className="text-slate-300">Prefix</span>
-                  <span className="text-cyan-400 font-bold font-mono">$</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
-              <button
-                onClick={() => setSelectedSpecsGuild(null)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                Close Specs
-              </button>
-
-              <button
-                onClick={() => {
-                  const target = selectedSpecsGuild;
-                  setSelectedSpecsGuild(null);
-                  onSelectGuild(target);
-                }}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#ff2b43] to-[#dc182f] hover:from-[#ff4055] hover:to-[#ff2b43] text-white text-xs font-bold shadow-lg shadow-[#ff2b43]/30 transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Open Full Server Controls</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </main>
     </div>
   );
 };

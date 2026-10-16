@@ -50,15 +50,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onDirectLo
               <div className="absolute inset-0 bg-white/20 rounded-2xl blur-2xl opacity-60 animate-pulse-glow" />
               <div className="relative w-20 h-20 rounded-2xl border border-white/20 bg-[#12141c] overflow-hidden shadow-2xl flex items-center justify-center">
                 <img
-                  src="https://cdn.discordapp.com/attachments/1349027457531904072/1351659687168586391/giphy.gif"
+                  src="/astra-avatar.png"
                   alt="Dexter Corporation"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Fallback to shield icon
-                    (e.target as HTMLElement).style.display = 'none';
+                    const img = e.target as HTMLImageElement;
+                    if (!img.dataset.fallback) {
+                      img.dataset.fallback = '1';
+                      img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                    }
                   }}
                 />
-                <Shield className="w-10 h-10 text-white absolute inset-0 m-auto pointer-events-none -z-10" />
+                <Shield className="w-10 h-10 text-white/30 absolute inset-0 m-auto pointer-events-none -z-10" />
               </div>
             </div>
           </div>

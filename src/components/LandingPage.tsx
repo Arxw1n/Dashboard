@@ -147,8 +147,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-              <Shield className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
+              <img
+                src="/astra-avatar.png"
+                alt="Dexter"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (!img.dataset.fallback) {
+                    img.dataset.fallback = '1';
+                    img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                  }
+                }}
+              />
             </div>
             <span className="font-display font-bold text-lg tracking-tight text-white">
               Dexter<span className="text-slate-400">Corp</span>
@@ -306,19 +317,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Aurora Glow behind Mascot */}
               <div className="absolute inset-10 bg-white/10 rounded-full blur-3xl opacity-50 pointer-events-none" />
 
-              {/* Mascot Floating Container */}
-              <div className="relative z-10 w-3/4 h-3/4 flex items-center justify-center animate-float">
-                <div className="relative w-full h-full rounded-3xl border border-white/20 bg-[#10121a] overflow-hidden shadow-2xl flex items-center justify-center">
-                  <img
-                    src="https://cdn.discordapp.com/attachments/1349027457531904072/1351659687168586391/giphy.gif"
-                    alt="DexterCorp Sentinel"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                  <Shield className="w-24 h-24 text-white/30 absolute inset-0 m-auto pointer-events-none" />
-                </div>
+              {/* Mascot Floating Container - Exact Obsidian Floating Mascot */}
+              <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center animate-float transform-gpu">
+                <div className="absolute inset-2 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+                <img
+                  src="/astra-avatar.png"
+                  alt="Dexter"
+                  className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_20px_40px_rgba(255,255,255,0.2)]"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (!img.dataset.fallback) {
+                      img.dataset.fallback = '1';
+                      img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                    }
+                  }}
+                />
               </div>
 
               {/* Floating Badge 1: Latency */}
