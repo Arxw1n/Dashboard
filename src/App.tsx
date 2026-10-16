@@ -11,6 +11,8 @@ import { SyncingLoader } from './components/SyncingLoader';
 import { BotStats, CommandItem, GuildItem, UserProfile } from './types';
 import { RefreshCw } from 'lucide-react';
 
+import { LoginPage } from './components/LoginPage';
+
 // Helper to filter Discord guilds where user is Admin/Owner
 function filterDiscordAdminGuilds(guildsList: any[]): any[] {
   if (!Array.isArray(guildsList)) return [];
@@ -36,9 +38,12 @@ const DEFAULT_ADMIN_USER: UserProfile = {
 };
 
 export const App: React.FC = () => {
-  // View Modes based on URL pathname: '/dashboard' or '/' or '/manage' or '/about'
-  const [viewMode, setViewMode] = useState<'landing' | 'dashboard' | 'server_manage' | 'about'>(() => {
+  // View Modes based on URL pathname: '/dashboard' or '/' or '/login' or '/manage' or '/about'
+  const [viewMode, setViewMode] = useState<'landing' | 'login' | 'dashboard' | 'server_manage' | 'about'>(() => {
     const path = window.location.pathname.toLowerCase();
+    if (path.includes('/login')) {
+      return 'login';
+    }
     if (path.includes('/about')) {
       return 'about';
     }
@@ -332,7 +337,9 @@ export const App: React.FC = () => {
       const path = window.location.pathname.toLowerCase();
       setIsTabSwitching(true);
       setTimeout(() => {
-        if (path.includes('/about')) {
+        if (path.includes('/login')) {
+          setViewMode('login');
+        } else if (path.includes('/about')) {
           setViewMode('about');
         } else if (path.includes('/manage') || path.includes('/settings')) {
           setViewMode('server_manage');
@@ -348,7 +355,7 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigateTo = (mode: 'landing' | 'dashboard' | 'server_manage' | 'about', path: string) => {
+  const navigateTo = (mode: 'landing' | 'login' | 'dashboard' | 'server_manage' | 'about', path: string) => {
     setIsTabSwitching(true);
     setTimeout(() => {
       setViewMode(mode);
@@ -399,6 +406,22 @@ export const App: React.FC = () => {
         fullScreen={true}
         title="SYNCING SERVER"
         subtitle="AUTHORIZING DISCORD SESSION & FETCHING ADMIN GUILDS"
+      />
+    );
+  }
+
+  // SCREEN 0: DEDICATED LOGIN PORTAL (Obsidian Security /login replica)
+  if (viewMode === 'login') {
+    return (
+      <LoginPage
+        onLoginSuccess={(u, token) => {
+          setUser(u);
+          if (token) setDiscordToken(token);
+          localStorage.setItem('dextercorp_user', JSON.stringify(u));
+          if (token) localStorage.setItem('dextercorp_token', token);
+          navigateTo('dashboard', '/dashboard');
+        }}
+        onDirectLogin={handleDirectLogin}
       />
     );
   }

@@ -250,24 +250,28 @@ export const ServersTab: React.FC<ServersTabProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-[#070709] text-white flex flex-col font-['Outfit'] selection:bg-[#ff2b43] selection:text-white">
+    <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-['Inter'] selection:bg-white/20 selection:text-white relative">
+      {/* Background ambient lighting & mesh */}
+      <div className="absolute inset-0 bg-mesh pointer-events-none opacity-40"></div>
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[140px] pointer-events-none"></div>
+
       {/* Top Header Bar */}
-      <header className="h-16 border-b border-white/5 bg-[#090a0f]/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
+      <header className="h-16 border-b border-white/5 bg-[#06070a]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
         <div className="flex items-center gap-3">
           {/* Back button */}
           <button
             onClick={onBackToHome}
-            className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ff2b43] to-[#d61a31] hover:from-[#ff4055] hover:to-[#ff2b43] flex items-center justify-center text-white shadow-md shadow-[#ff2b43]/30 transition-transform active:scale-95 cursor-pointer"
+            className="w-9 h-9 rounded-xl liquid-glass hover:bg-white/10 flex items-center justify-center text-white transition-all active:scale-95 cursor-pointer"
             title="Back to Landing Page"
           >
-            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+            <ChevronLeft className="w-5 h-5 stroke-[2]" />
           </button>
 
           {/* Toggle Side Rail Button if collapsed */}
           {!showSideRail && (
             <button
               onClick={() => setShowSideRail(true)}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              className="p-1.5 rounded-xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
               title="Show Connected Servers Rail"
             >
               <PanelLeftOpen className="w-4 h-4 text-emerald-400" />
@@ -276,17 +280,17 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           )}
 
           <div className="flex items-center gap-3">
-            <h1 className="font-orbitron font-bold text-lg sm:text-xl tracking-wider text-white">
-              DASHBOARD
+            <h1 className="font-display font-bold text-lg sm:text-xl tracking-tight text-white">
+              Dashboard
             </h1>
 
             {/* View Switcher: Servers vs Commands Directory */}
-            <div className="flex items-center bg-[#13141f] border border-white/10 rounded-xl p-1 gap-1">
+            <div className="flex items-center liquid-glass rounded-xl p-1 gap-1">
               <button
                 onClick={() => handleSectionChange('servers')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSection === 'servers'
-                    ? 'bg-[#ff2b43] text-white shadow-md shadow-[#ff2b43]/30'
+                    ? 'bg-white text-black shadow-md'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -297,15 +301,15 @@ export const ServersTab: React.FC<ServersTabProps> = ({
 
               <button
                 onClick={() => handleSectionChange('commands')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeSection === 'commands'
-                    ? 'bg-[#ff2b43] text-white shadow-md shadow-[#ff2b43]/30'
+                    ? 'bg-white text-black shadow-md'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                <Terminal className="w-3.5 h-3.5" />
                 <span>Commands</span>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold">({commands.length})</span>
+                <span className="text-[10px] font-mono opacity-80">({commands.length || 72})</span>
               </button>
             </div>
           </div>
@@ -416,28 +420,28 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           ) : (
             <>
               {/* User Welcome Banner */}
-          <div className="bg-[#0e0f15]/90 border border-white/5 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl backdrop-blur-md relative overflow-hidden">
+          <div className="liquid-glass rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
             {/* Ambient subtle glow */}
-            <div className="absolute top-0 right-0 w-80 h-full bg-[#ff2b43]/5 rounded-full blur-[80px] pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-80 h-full bg-white/5 rounded-full blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center gap-5 z-10">
-              {/* Avatar with red glowing ring */}
+              {/* Avatar with glowing aura */}
               <div className="relative">
-                <div className="w-20 h-20 rounded-full p-1 border-2 border-[#ff2b43] shadow-lg shadow-[#ff2b43]/30 overflow-hidden bg-[#0c0d12]">
+                <div className="w-20 h-20 rounded-2xl p-1 border border-white/20 shadow-xl overflow-hidden bg-[#12141c]">
                   <img
                     src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
                     alt={user.username}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-xl object-cover"
                   />
                 </div>
               </div>
 
               {/* User text details */}
               <div className="space-y-1">
-                <h2 className="font-orbitron font-extrabold text-2xl sm:text-3xl tracking-wide text-white">
-                  {user.username ? user.username.toUpperCase() : 'DXTR AXIO'}
+                <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-white">
+                  {user.username || 'DXTR AXIO'}
                 </h2>
-                <p className="text-xs text-slate-400">Welcome back to your DexterCorp Control Console</p>
+                <p className="text-xs text-slate-400">Welcome back to your Dexter Corporation Control Console</p>
 
                 {/* Inline Stats Badges */}
                 <div className="flex flex-wrap items-center gap-3 pt-2 text-[11px] font-mono tracking-wider">
@@ -586,9 +590,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
                 {filteredGuilds.map((g) => (
                   <div
                     key={g.id}
-                    className={`bg-[#0c0d12] hover:bg-[#111219] border ${
-                      g.hasBot ? 'border-white/5 hover:border-[#ff2b43]/40' : 'border-white/5 hover:border-emerald-500/40'
-                    } rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 group shadow-lg relative`}
+                    className="liquid-glass hover:scale-[1.01] hover:border-white/20 rounded-3xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-xl relative"
                 >
                   {/* Top Bar: Ownership Badge + Bot Added Badge */}
                   <div className="flex items-center justify-between mb-3">
@@ -624,18 +626,12 @@ export const ServersTab: React.FC<ServersTabProps> = ({
                         if (g.hasBot) onSelectGuild(g);
                         else window.open(BOT_CONFIG.getInviteUrl(g.id), '_blank');
                       }}
-                      className={`w-14 h-14 rounded-2xl bg-[#161822] p-1 border border-white/10 ${
-                        g.hasBot ? 'group-hover:border-[#ff2b43]/50' : 'group-hover:border-emerald-500/50'
-                      } flex items-center justify-center overflow-hidden shadow-md cursor-pointer shrink-0`}
+                      className="w-14 h-14 rounded-2xl bg-white/5 p-1 border border-white/10 group-hover:border-white/30 flex items-center justify-center overflow-hidden shadow-md cursor-pointer shrink-0 transition-colors"
                     >
                       {g.icon ? (
                         <img src={g.icon} alt={g.name} className="w-full h-full rounded-xl object-cover" />
                       ) : (
-                        <span
-                          className={`font-orbitron font-bold text-sm ${
-                            g.hasBot ? 'text-[#ff2b43]' : 'text-emerald-400'
-                          }`}
-                        >
+                        <span className="font-display font-bold text-sm text-white">
                           {g.name.slice(0, 2).toUpperCase()}
                         </span>
                       )}
@@ -647,9 +643,7 @@ export const ServersTab: React.FC<ServersTabProps> = ({
                           if (g.hasBot) onSelectGuild(g);
                           else window.open(BOT_CONFIG.getInviteUrl(g.id), '_blank');
                         }}
-                        className={`font-orbitron font-bold text-sm sm:text-base text-white tracking-wide truncate ${
-                          g.hasBot ? 'group-hover:text-[#ff2b43]' : 'group-hover:text-emerald-400'
-                        } transition-colors cursor-pointer`}
+                        className="font-display font-bold text-sm sm:text-base text-white tracking-tight truncate group-hover:text-slate-200 transition-colors cursor-pointer"
                       >
                         {g.name}
                       </h4>
@@ -737,17 +731,17 @@ export const ServersTab: React.FC<ServersTabProps> = ({
                       <>
                         <button
                           onClick={() => onSelectGuild(g)}
-                          className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#ff2b43] to-[#dc182f] hover:from-[#ff4055] hover:to-[#ff2b43] text-white text-xs font-bold shadow-lg shadow-[#ff2b43]/30 transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                          className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-200 text-black text-xs font-semibold shadow-lg shadow-white/10 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Settings className="w-3.5 h-3.5" />
-                          <span>+ Configure Server</span>
+                          <span>Configure Server</span>
                         </button>
 
                         <button
                           onClick={() => setSelectedSpecsGuild(g)}
-                          className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full py-2 px-3 rounded-2xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                         >
-                          <Info className="w-3.5 h-3.5 text-cyan-400" />
+                          <Info className="w-3.5 h-3.5 text-slate-400" />
                           <span>View A-Z Server Specs</span>
                         </button>
                       </>
@@ -756,9 +750,9 @@ export const ServersTab: React.FC<ServersTabProps> = ({
                         href={BOT_CONFIG.getInviteUrl(g.id)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white text-xs font-bold border border-emerald-500/30 hover:border-transparent transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-2.5 px-4 rounded-2xl liquid-glass hover:bg-white/10 text-white text-xs font-semibold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <PlusCircle className="w-3.5 h-3.5" />
+                        <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
                         <span>+ Add Bot to Server</span>
                       </a>
                     )}

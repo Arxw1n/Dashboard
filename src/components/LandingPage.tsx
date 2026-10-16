@@ -2,8 +2,7 @@ import { BOT_CONFIG } from '../config';
 import React, { useState, useEffect } from 'react';
 import {
   Shield,
-  ExternalLink,
-  Play,
+  ArrowRight,
   Sparkles,
   ChevronDown,
   Activity,
@@ -11,8 +10,16 @@ import {
   Server,
   Layers,
   LogOut,
+  Lock,
+  Globe,
+  Radio,
+  ExternalLink,
+  CheckCircle2,
+  HelpCircle,
+  Terminal,
 } from 'lucide-react';
 import { BotStats, UserProfile } from '../types';
+import { LoginModal } from './LoginModal';
 
 interface LandingPageProps {
   stats: BotStats;
@@ -34,429 +41,462 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onLogout,
 }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showExtraDropdown, setShowExtraDropdown] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Typing animation for the headline
-  const words = [
-    'Unbeatable Protection',
-    'Extreme Precision',
-    'Advanced Anti-Nuke',
-    'Military-Grade Security',
-    'Intelligent Automod',
+  // Typing headline animation
+  const headlineWords = [
+    'Next-Gen Anti-Nuke',
+    'Real-Time Automod',
+    'Staff Anti-Betray',
+    'Absolute Defense',
   ];
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentText, setCurrentText] = useState('');
+  const [wordIdx, setWordIdx] = useState(0);
+  const [typedText, setTypedText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const currentWord = words[currentWordIndex];
-    const typingSpeed = isDeleting ? 35 : 75;
+    const word = headlineWords[wordIdx];
+    const speed = isDeleting ? 40 : 80;
 
     const timeout = setTimeout(() => {
       if (!isDeleting) {
-        if (currentText.length < currentWord.length) {
-          setCurrentText(currentWord.slice(0, currentText.length + 1));
+        if (typedText.length < word.length) {
+          setTypedText(word.slice(0, typedText.length + 1));
         } else {
-          // Pause at end of word
-          setTimeout(() => setIsDeleting(true), 2000);
+          setTimeout(() => setIsDeleting(true), 2200);
         }
       } else {
-        if (currentText.length > 0) {
-          setCurrentText(currentWord.slice(0, currentText.length - 1));
+        if (typedText.length > 0) {
+          setTypedText(word.slice(0, typedText.length - 1));
         } else {
           setIsDeleting(false);
-          setCurrentWordIndex((prev) => (prev + 1) % words.length);
+          setWordIdx((prev) => (prev + 1) % headlineWords.length);
         }
       }
-    }, typingSpeed);
+    }, speed);
 
     return () => clearTimeout(timeout);
-  }, [currentText, isDeleting, currentWordIndex]);
+  }, [typedText, isDeleting, wordIdx]);
 
   const BOT_INVITE_URL = BOT_CONFIG.getInviteUrl();
-  const SUPPORT_URL = 'https://discord.gg/codexdev';
+  const SUPPORT_URL = 'https://discord.gg/dextercorp';
 
-  // Handle clicking DASHBOARD link
-  const handleDashboardClick = () => {
-    if (user && user.isLoggedIn) {
-      onNavigateDashboard();
-    } else {
-      setShowLoginModal(true);
-    }
-  };
+  const faqs = [
+    {
+      q: 'What is Dexter Corporation?',
+      a: 'Dexter Corporation is an advanced next-generation Discord security, anti-nuke, and moderation sentinel bot designed to protect online communities from rogue staff, nuke attacks, automated raids, and malicious links.',
+    },
+    {
+      q: 'How does the Anti-Nuke system protect my server?',
+      a: 'The bot continuously monitors high-risk events (mass kicks, bans, role & channel deletions, webhook creations). If a suspicious threshold is breached, the bot instantly strips permissions from the offending account, bans the intruder, and rolls back server changes.',
+    },
+    {
+      q: 'What is the Anti-Betray Staff Guard?',
+      a: 'Anti-Betray is a specialized security engine that strictly rate-limits administrators and moderators. It prevents compromised staff accounts from destroying the server or hijacking ownership privileges.',
+    },
+    {
+      q: 'Is Dexter Corporation free to use?',
+      a: 'Yes! Core security features, the interactive Message Sender, verification gates, and full anti-nuke protection are 100% free with unlimited server protection.',
+    },
+  ];
+
+  const features = [
+    {
+      icon: Shield,
+      title: 'Anti-Nuke Protection',
+      desc: 'Real-time defense against mass kicks, bans, channel deletion, and rogue administrator mutinies.',
+    },
+    {
+      icon: Zap,
+      title: 'Automated Auto-Mod',
+      desc: 'Millisecond inspection filtering invite links, phishing domains, spam, zalgo, and mass mentions.',
+    },
+    {
+      icon: Lock,
+      title: 'Anti-Betray Staff Guard',
+      desc: 'Enforces strict rate-limits on moderator and admin actions to stop insider attacks in their tracks.',
+    },
+    {
+      icon: CheckCircle2,
+      title: 'Verification Gate',
+      desc: 'Interactive verification gates and captcha barriers to filter out automated self-bots and raiders.',
+    },
+    {
+      icon: Terminal,
+      title: 'Message Sender V2',
+      desc: 'Craft rich interactive Discord cards with custom animated emojis, dividers, and action buttons.',
+    },
+    {
+      icon: Activity,
+      title: 'Instant Automated Rollbacks',
+      desc: 'Continuous state auditing with auto-recovery that reverts destructive mutations in under 50ms.',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#070709] text-white flex flex-col font-['Outfit'] relative overflow-x-hidden selection:bg-[#ff2b43] selection:text-white">
-      {/* Top Red Ambient Lighting Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#ff2b43]/15 rounded-full blur-[140px] pointer-events-none -z-0"></div>
+    <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-['Inter'] relative overflow-x-hidden selection:bg-white/20 selection:text-white">
+      {/* Background Ambient Glow & Mesh */}
+      <div className="absolute inset-0 bg-mesh pointer-events-none opacity-40 -z-0"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/5 rounded-full blur-[160px] pointer-events-none -z-0"></div>
 
-      {/* Header Navbar (Screenshot 1) */}
-      <header className="relative z-20 w-full max-w-6xl mx-auto px-4 pt-6">
-        <div className="bg-[#101117]/80 backdrop-blur-xl border border-white/10 rounded-full px-5 py-2.5 flex items-center justify-between shadow-2xl shadow-black/80">
+      {/* Floating Obsidian Navbar */}
+      <header className="relative z-30 w-full max-w-6xl mx-auto px-4 pt-6">
+        <div className="liquid-glass rounded-full px-6 py-3 flex items-center justify-between shadow-2xl">
           {/* Logo */}
           <div
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer group"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ff2b43] to-[#ff596e] p-0.5 flex items-center justify-center shadow-lg shadow-[#ff2b43]/40">
-              <div className="w-full h-full rounded-full bg-[#0d0e12] flex items-center justify-center">
-                <Shield className="w-4 h-4 text-[#ff2b43]" />
-              </div>
+            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="font-orbitron font-bold text-lg tracking-wider text-white">
-              DEXTER<span className="text-[#ff2b43]">CORP</span>
+            <span className="font-display font-bold text-lg tracking-tight text-white">
+              Dexter<span className="text-slate-400">Corp</span>
             </span>
           </div>
 
-          {/* Navigation Links - Matches Image 2 */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold tracking-wider text-slate-300 uppercase relative">
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="hover:text-white transition-colors cursor-pointer text-[#ff2b43] border-b border-[#ff2b43] pb-0.5"
-            >
-              HOME
-            </button>
-            <button
-              onClick={handleDashboardClick}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              DASHBOARD
-            </button>
-
-            {/* EXTRA Dropdown Menu (Matches Image 2) */}
-            <div className="relative">
-              <button
-                onClick={() => setShowExtraDropdown(!showExtraDropdown)}
-                onMouseEnter={() => setShowExtraDropdown(true)}
-                className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
-              >
-                <span>EXTRA</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showExtraDropdown ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Dropdown Popup */}
-              {showExtraDropdown && (
-                <div
-                  onMouseLeave={() => setShowExtraDropdown(false)}
-                  className="absolute top-8 left-1/2 -translate-x-1/2 w-44 bg-[#0e1017] border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black/90 z-50 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl"
-                >
-                  <a
-                    href="#stats"
-                    onClick={() => setShowExtraDropdown(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all"
-                  >
-                    <Activity className="w-3.5 h-3.5 text-[#ff2b43]" />
-                    <span>Status</span>
-                  </a>
-
-                  <button
-                    onClick={() => {
-                      setShowExtraDropdown(false);
-                      if (onNavigateAbout) onNavigateAbout();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-[#ff2b43]/15 transition-all text-left"
-                  >
-                    <span className="w-3.5 h-3.5 flex items-center justify-center font-bold text-[#ff2b43]">ℹ️</span>
-                    <span>About</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setShowExtraDropdown(false);
-                      handleDashboardClick();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all text-left"
-                  >
-                    <span className="w-3.5 h-3.5 flex items-center justify-center font-bold text-cyan-400">⚡</span>
-                    <span>Commands</span>
-                  </button>
-
-                  <a
-                    href={SUPPORT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setShowExtraDropdown(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all"
-                  >
-                    <span className="w-3.5 h-3.5 flex items-center justify-center text-cyan-400">📖</span>
-                    <span>Documentation</span>
-                  </a>
-                </div>
-              )}
-            </div>
-
-            <a
-              href={SUPPORT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors flex items-center gap-1"
-            >
-              SUPPORT
+          {/* Nav Links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-300">
+            <a href="#features" className="hover:text-white transition-colors">
+              Features
             </a>
-            <div className="flex items-center gap-1 text-slate-300 px-2 py-1 rounded-md bg-white/5 border border-white/10">
-              <Sparkles className="w-3 h-3 text-[#ff2b43]" />
-              <span className="text-[11px] font-bold">PREMIUM</span>
-            </div>
+            <a href="#protection" className="hover:text-white transition-colors">
+              Protection
+            </a>
+            <a href="#faq" className="hover:text-white transition-colors">
+              FAQ
+            </a>
+            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+              Support
+            </a>
           </nav>
 
-          {/* Right Action: Language & Login Button */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 cursor-pointer">
-              <span>🇬🇧</span>
-              <span className="font-semibold">EN</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
-            </div>
-
+          {/* Action Button */}
+          <div className="flex items-center gap-2">
             {user && user.isLoggedIn ? (
               <div className="flex items-center gap-2">
                 <button
                   onClick={onNavigateDashboard}
-                  className="flex items-center gap-2 pl-2 pr-4 py-1 rounded-full bg-[#181922] hover:bg-[#20222e] border border-[#ff2b43]/40 text-white text-xs font-semibold transition-all cursor-pointer shadow-md"
-                  title="Open Dashboard"
+                  className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
                 >
-                  <img
-                    src={user.avatar}
-                    alt={user.username}
-                    className="w-5 h-5 rounded-full object-cover border border-[#ff2b43]"
-                  />
-                  <span className="max-w-[100px] truncate">{user.username}</span>
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Dashboard</span>
                 </button>
                 {onLogout && (
                   <button
                     onClick={onLogout}
-                    className="p-1.5 rounded-full bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 transition-colors cursor-pointer"
+                    className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
                     title="Logout"
                   >
-                    <LogOut className="w-3.5 h-3.5" />
+                    <LogOut className="w-4 h-4" />
                   </button>
                 )}
               </div>
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="px-6 py-1.5 rounded-full bg-gradient-to-r from-[#ff2b43] to-[#e61932] hover:from-[#ff4257] hover:to-[#ff2b43] text-white text-xs font-bold tracking-wider uppercase shadow-lg shadow-[#ff2b43]/30 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-white text-black font-semibold text-xs hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-1.5 shadow-md transform hover:-translate-y-0.5"
               >
-                LOGIN
+                <Lock className="w-3.5 h-3.5" />
+                <span>Portal Login</span>
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* Main Hero Section (Screenshot 1 & Typing Animation) */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 pt-16 pb-16 max-w-4xl mx-auto">
-        {/* Main Headline with Typing Animation */}
-        <h1 className="font-orbitron font-extrabold text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.15] text-white mb-6">
-          Secure your server <br />
-          <span className="text-[#ff2b43] text-glow-red inline-block min-h-[1.25em]">
-            {currentText}
-            <span className="inline-block w-1 sm:w-1.5 h-7 sm:h-12 bg-[#ff2b43] ml-1.5 animate-pulse align-middle"></span>
-          </span>
-        </h1>
-
-        {/* Subtitle description */}
-        <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed mb-8">
-          DexterCorp protects your community with advanced anti-nuke systems,
-          intelligent automod, and high-fidelity utility tools.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
-          <a
-            href={BOT_INVITE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff2b43] to-[#dc1b30] hover:from-[#ff4459] hover:to-[#ff2b43] text-white text-sm font-bold tracking-wide shadow-xl shadow-[#ff2b43]/35 transition-all transform hover:-translate-y-0.5 cursor-pointer"
-          >
-            <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Add to Discord</span>
-          </a>
-
-          <a
-            href={SUPPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#13141b]/90 hover:bg-[#1a1c24] border border-white/10 hover:border-white/20 text-slate-200 text-sm font-semibold transition-all cursor-pointer"
-          >
-            <span>Support Server</span>
-          </a>
-        </div>
-
-        {/* Stats Card Box (Screenshot 1) */}
-        <div className="w-full max-w-2xl bg-[#0e0f15]/90 border border-white/10 rounded-2xl p-6 shadow-2xl backdrop-blur-md mb-6">
-          <div className="grid grid-cols-3 divide-x divide-white/10 text-center">
-            <div className="px-3">
-              <p className="font-orbitron font-extrabold text-xl sm:text-3xl text-white">
-                {stats.guilds > 0 ? stats.guilds.toLocaleString() : '16,714'}
-              </p>
-              <p className="text-[10px] sm:text-xs text-slate-400 tracking-wider font-semibold uppercase mt-1">
-                ACTIVE SERVERS
-              </p>
+      {/* HERO SECTION (Matches Obsidian Qt) */}
+      <section className="container max-w-[1400px] mx-auto px-6 pt-16 pb-24 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Column: Headline & CTA */}
+          <div className="space-y-6">
+            {/* Live Telemetry Pill */}
+            <div className="inline-flex items-center gap-2 liquid-glass rounded-full px-4 py-1.5 text-xs font-medium text-slate-300">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              </span>
+              <span>Protecting 2,500+ Discord Communities</span>
             </div>
-            <div className="px-3">
-              <p className="font-orbitron font-extrabold text-xl sm:text-3xl text-white">
-                {stats.users > 0 ? stats.users.toLocaleString() : '51,10,540'}
-              </p>
-              <p className="text-[10px] sm:text-xs text-slate-400 tracking-wider font-semibold uppercase mt-1">
-                GLOBAL USERS
-              </p>
+
+            {/* Huge Headline */}
+            <h1 className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.08] tracking-tight text-white">
+              Absolute Defense.{' '}
+              <span className="text-gradient block mt-1">
+                {typedText}
+                <span className="animate-pulse">|</span>
+              </span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-400 max-w-lg leading-relaxed">
+              The next-generation Discord security sentinel. Built from the ground up to prevent rogue staff mutinies, nuke attacks, and automated raids in real-time.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <a
+                href={BOT_INVITE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="py-3.5 px-6 rounded-2xl bg-white hover:bg-slate-200 text-black font-semibold text-sm shadow-xl shadow-white/10 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 cursor-pointer"
+              >
+                <span>Add to Discord</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+
+              {user && user.isLoggedIn ? (
+                <button
+                  onClick={onNavigateDashboard}
+                  className="py-3.5 px-6 rounded-2xl liquid-glass hover:bg-white/10 text-white font-semibold text-sm transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Globe className="w-4 h-4 text-slate-300" />
+                  <span>Open Dashboard</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="py-3.5 px-6 rounded-2xl liquid-glass hover:bg-white/10 text-white font-semibold text-sm transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Lock className="w-4 h-4 text-slate-300" />
+                  <span>Access Control Node</span>
+                </button>
+              )}
             </div>
-            <div className="px-3">
-              <p className="font-orbitron font-extrabold text-xl sm:text-3xl text-white">
-                132+
-              </p>
-              <p className="text-[10px] sm:text-xs text-slate-400 tracking-wider font-semibold uppercase mt-1">
-                COMMANDS
-              </p>
+
+            {/* Live Ping & Support Link */}
+            <div className="flex items-center gap-4 text-xs pt-1">
+              <div className="flex items-center gap-2 font-semibold text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Systems 100% Operational</span>
+              </div>
+              <div className="w-px h-3 bg-white/10" />
+              <a
+                href={SUPPORT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+              >
+                <span>Join Support Server</span>
+                <span className="text-[10px]">&rarr;</span>
+              </a>
+            </div>
+
+            {/* 3 Live Telemetry Stat Cards */}
+            <div className="grid grid-cols-3 gap-3 pt-4 max-w-md">
+              <div className="liquid-glass rounded-2xl p-4 text-center hover:scale-[1.03] transition-transform">
+                <div className="font-display font-bold text-2xl text-white">2.5K+</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">Protected Guilds</div>
+              </div>
+
+              <div className="liquid-glass rounded-2xl p-4 text-center hover:scale-[1.03] transition-transform">
+                <div className="font-display font-bold text-2xl text-white">1.2M+</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">Total Users</div>
+              </div>
+
+              <div className="liquid-glass rounded-2xl p-4 text-center hover:scale-[1.03] transition-transform">
+                <div className="font-display font-bold text-2xl text-emerald-400">99.9%</div>
+                <div className="text-[11px] text-slate-400 mt-0.5">Uptime SLA</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Bottom System Status */}
-        <div className="flex items-center gap-3 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-badge-red"></span>
-            <span className="text-emerald-400 font-semibold">Global Systems Online</span>
-          </div>
-          <span className="text-slate-600">|</span>
-          <a
-            href={SUPPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-slate-200 transition-colors flex items-center gap-1 text-slate-400"
-          >
-            <span>Join Support Server</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </main>
+          {/* Right Column: Floating Mascot & Telemetry Cards */}
+          <div className="relative flex items-center justify-center">
+            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
+              {/* Aurora Glow behind Mascot */}
+              <div className="absolute inset-10 bg-white/10 rounded-full blur-3xl opacity-50 pointer-events-none" />
 
-      {/* Live Statistics Section (Matching Screenshot 5) */}
-      <section id="stats" className="w-full max-w-5xl mx-auto px-4 pb-20 pt-4">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-white/5">
-          <div>
-            <h2 className="font-orbitron font-bold text-xl sm:text-2xl text-white tracking-wide">
-              Live Statistics
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Real-time bot performance metrics</p>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Live</span>
-          </div>
-        </div>
+              {/* Mascot Floating Container */}
+              <div className="relative z-10 w-3/4 h-3/4 flex items-center justify-center animate-float">
+                <div className="relative w-full h-full rounded-3xl border border-white/20 bg-[#10121a] overflow-hidden shadow-2xl flex items-center justify-center">
+                  <img
+                    src="https://cdn.discordapp.com/attachments/1349027457531904072/1351659687168586391/giphy.gif"
+                    alt="DexterCorp Sentinel"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                  <Shield className="w-24 h-24 text-white/30 absolute inset-0 m-auto pointer-events-none" />
+                </div>
+              </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#0d0e14] border border-white/5 rounded-2xl p-5 hover:border-[#ff2b43]/30 transition-all">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider">CLUSTER LATENCY</span>
-              <Activity className="w-3.5 h-3.5 text-[#ff2b43]" />
+              {/* Floating Badge 1: Latency */}
+              <div className="absolute top-6 right-2 sm:right-6 z-20 liquid-glass rounded-2xl px-4 py-2.5 text-xs shadow-2xl">
+                <div className="text-[10px] text-slate-400 font-medium">Core Latency</div>
+                <div className="font-display font-bold text-white text-sm">24ms</div>
+              </div>
+
+              {/* Floating Badge 2: Commands */}
+              <div className="absolute bottom-6 sm:bottom-10 left-0 z-20 liquid-glass rounded-2xl px-4 py-2.5 text-xs shadow-2xl">
+                <div className="text-[10px] text-slate-400 font-medium">Active Commands</div>
+                <div className="font-display font-bold text-white text-sm">147+ Built-in</div>
+              </div>
+
+              {/* Floating Badge 3: Nuke Saves */}
+              <div className="absolute top-1/2 -translate-y-1/2 left-0 sm:left-2 z-20 liquid-glass rounded-2xl px-4 py-2.5 text-xs shadow-2xl">
+                <div className="text-[10px] text-slate-400 font-medium">Nuke Saves</div>
+                <div className="font-display font-bold text-emerald-400 text-sm">1,450 Attacks Neutralized</div>
+              </div>
             </div>
-            <p className="font-orbitron font-bold text-2xl text-white">{stats.ping || 18}ms</p>
-            <p className="text-[10px] text-emerald-400 font-semibold mt-1">✓ Nominal Response</p>
-          </div>
-
-          <div className="bg-[#0d0e14] border border-white/5 rounded-2xl p-5 hover:border-[#ff2b43]/30 transition-all">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider">HYBRID CLUSTERS</span>
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            </div>
-            <p className="font-orbitron font-bold text-2xl text-white">4 Shards</p>
-            <p className="text-[10px] text-cyan-400 font-semibold mt-1">✓ Cluster 0 Online</p>
-          </div>
-
-          <div className="bg-[#0d0e14] border border-white/5 rounded-2xl p-5 hover:border-[#ff2b43]/30 transition-all">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider">CORE COMMANDS</span>
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-            </div>
-            <p className="font-orbitron font-bold text-2xl text-white">132 Loaded</p>
-            <p className="text-[10px] text-amber-400 font-semibold mt-1">✓ Anti-Nuke Protected</p>
-          </div>
-
-          <div className="bg-[#0d0e14] border border-white/5 rounded-2xl p-5 hover:border-[#ff2b43]/30 transition-all">
-            <div className="flex items-center justify-between text-slate-400 text-xs font-mono mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider">SYSTEM UPTIME</span>
-              <Server className="w-3.5 h-3.5 text-emerald-400" />
-            </div>
-            <p className="font-orbitron font-bold text-2xl text-white">99.98%</p>
-            <p className="text-[10px] text-emerald-400 font-semibold mt-1">✓ High Fidelity Core</p>
           </div>
         </div>
       </section>
 
-      {/* LOGIN MODAL (Screenshot 2) */}
-      {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-sm bg-[#0e0f14] border border-[#ff2b43]/30 rounded-3xl p-8 text-center shadow-2xl shadow-black relative overflow-hidden">
-            {/* Top Close Button */}
-            <button
-              onClick={() => setShowLoginModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
-            >
-              ✕
-            </button>
+      {/* FEATURES GRID SECTION (Matches Obsidian Xt) */}
+      <section id="features" className="container max-w-[1400px] mx-auto px-6 py-20 relative z-10">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <span className="inline-block text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+            SYSTEM MODULES
+          </span>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white">
+            Engineered for absolute server defense
+          </h2>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Every security protocol is tuned for instant sub-millisecond execution to counter threats before permissions can be altered.
+          </p>
+        </div>
 
-            {/* Glowing Anime/Cyber Avatar (Screenshot 2) */}
-            <div className="relative inline-flex items-center justify-center mx-auto mb-6">
-              <div className="w-20 h-20 rounded-full p-1 border-2 border-[#ff2b43] shadow-lg shadow-[#ff2b43]/40 flex items-center justify-center relative">
-                <div className="absolute inset-0 rounded-full border border-[#ff2b43] animate-ping opacity-25"></div>
-                <img
-                  src="/astra-avatar.webp"
-                  alt="DexterCorp Mascot"
-                  className="w-full h-full rounded-full object-cover"
-                />
+        <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {features.map((feat, idx) => (
+            <div
+              key={idx}
+              className="liquid-glass rounded-2xl p-7 group cursor-default hover:-translate-y-1.5 transition-all duration-300"
+            >
+              {/* Icon Container with Hover Rotation */}
+              <div className="relative mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                  <feat.icon className="w-5 h-5 text-white" />
+                </div>
               </div>
+
+              <h3 className="font-display font-semibold text-lg text-white mb-2 group-hover:text-slate-200 transition-colors">
+                {feat.title}
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {feat.desc}
+              </p>
+
+              {/* Bottom Subtle Shimmer Line */}
+              <div className="mt-5 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
+          ))}
+        </div>
+      </section>
 
-            {/* Title */}
-            <h2 className="font-orbitron font-bold text-2xl text-[#ff2b43] tracking-wide mb-2 text-glow-red">
-              Welcome to DexterCorp
+      {/* FAQ SECTION (Matches Obsidian Yt) */}
+      <section id="faq" className="container max-w-3xl mx-auto px-6 py-20 relative z-10">
+        <div className="text-center space-y-2 mb-10">
+          <span className="inline-block text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+            KNOWLEDGE BASE
+          </span>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-tight text-white">
+            Questions, answered
+          </h2>
+        </div>
+
+        <div className="liquid-glass rounded-3xl p-4 sm:p-6 space-y-3">
+          {faqs.map((faq, idx) => (
+            <div
+              key={idx}
+              className="border-b border-white/5 last:border-b-0 pb-3"
+            >
+              <button
+                type="button"
+                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                className="w-full py-3 px-2 flex items-center justify-between text-left font-display font-semibold text-sm sm:text-base text-white hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <span>{faq.q}</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${
+                    openFaq === idx ? 'rotate-180 text-white' : ''
+                  }`}
+                />
+              </button>
+
+              {openFaq === idx && (
+                <p className="px-2 pt-1 pb-3 text-xs text-slate-400 leading-relaxed animate-in fade-in">
+                  {faq.a}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA BANNER SECTION (Matches Obsidian it) */}
+      <section className="container max-w-5xl mx-auto px-6 py-20 relative z-10">
+        <div className="liquid-glass rounded-3xl p-10 md:p-16 text-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-white/5 opacity-50 pointer-events-none" />
+
+          {/* Rotating Sparkles */}
+          <Sparkles className="absolute top-8 left-12 h-6 w-6 text-white/20 animate-spin" style={{ animationDuration: '12s' }} />
+          <Sparkles className="absolute bottom-10 right-14 h-6 w-6 text-white/15 animate-spin" style={{ animationDuration: '16s' }} />
+
+          <div className="relative z-10 space-y-4">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white">
+              Ready to upgrade your server?
             </h2>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed mb-6">
-              Login to access your dashboard and manage your servers with premium tools.
+            <p className="text-slate-400 text-sm max-w-xl mx-auto">
+              Join over 2,500 Discord communities protected by Dexter Corporation. Free forever, no credit card required.
             </p>
 
-            {/* Red Discord Login Button (Screenshot 2) */}
-            <button
-              onClick={() => {
-                setShowLoginModal(false);
-                onLoginWithDiscord();
-              }}
-              className="w-full flex items-center justify-center gap-2.5 py-3 px-5 rounded-xl bg-gradient-to-r from-[#ff2b43] to-[#dc182f] hover:from-[#ff4055] hover:to-[#ff2b43] text-white font-bold text-sm shadow-xl shadow-[#ff2b43]/40 transition-all transform hover:-translate-y-0.5 cursor-pointer mb-2.5"
-            >
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
-              </svg>
-              <span>Login with Discord</span>
-            </button>
-
-            {/* Quick Access Developer Login */}
-            <button
-              onClick={() => {
-                setShowLoginModal(false);
-                onDirectLogin();
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-all cursor-pointer mb-3"
-            >
-              <span>⚡ Quick Access as DXTR AXIO</span>
-            </button>
-
-            {/* Terms text */}
-            <p className="text-[10px] text-slate-500 leading-normal">
-              By logging in, you agree to our{' '}
-              <a href="#" className="text-slate-400 hover:underline">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-slate-400 hover:underline">
-                Privacy Policy
+            <div className="pt-4 flex flex-wrap gap-3 justify-center">
+              <a
+                href={BOT_INVITE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="py-3 px-6 rounded-2xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-xl shadow-white/10 transition-all flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
+              >
+                <span>Invite DexterCorp</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </a>
-              .
-            </p>
+
+              <a
+                href={SUPPORT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="py-3 px-6 rounded-2xl liquid-glass hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>Get Support</span>
+              </a>
+            </div>
           </div>
         </div>
-      )}
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/5 py-10 relative z-10 text-xs text-slate-500">
+        <div className="container max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-white" />
+            <span className="font-display font-semibold text-white">Dexter Corporation</span>
+            <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <a href="#features" className="hover:text-white transition-colors">
+              Features
+            </a>
+            <a href="#faq" className="hover:text-white transition-colors">
+              FAQ
+            </a>
+            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+              Community
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={(demoUser) => {
+          onDirectLogin();
+          setShowLoginModal(false);
+        }}
+      />
     </div>
   );
 };

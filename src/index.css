@@ -2,94 +2,171 @@
 
 @layer base {
   :root {
-    --bg-main: #070709;
-    --bg-card: #0e0f14;
-    --bg-card-hover: #14151c;
-    --border-glow: rgba(255, 43, 67, 0.3);
-    --accent-red: #ff2b43;
-    --accent-red-hover: #e62038;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 85%;
+    --accent-foreground: 0 0% 5%;
+    --border: 0 0% 18%;
+    --glass-bg: 0 0% 10%;
+    --glass-border: 0 0% 30%;
+    --glass-shine: 0 0% 100%;
+    --glass-opacity: 0.55;
+    --gradient-aurora: linear-gradient(135deg, #ffffff, #a6a6a6 50%, #595959);
+    --gradient-mesh: radial-gradient(at 20% 30%, rgba(255, 255, 255, 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 20%, rgba(255, 255, 255, 0.04) 0px, transparent 50%),
+      radial-gradient(at 70% 90%, rgba(255, 255, 255, 0.04) 0px, transparent 50%);
+    --gradient-text: linear-gradient(135deg, #ffffff 0%, #d1d5db 50%, #9ca3af 100%);
+    --shadow-glow: 0 20px 60px -20px rgba(255, 255, 255, 0.25);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 
 body {
-  background-color: #070709;
+  background-color: #06070a;
   background-image: 
-    radial-gradient(at 50% 0%, rgba(255, 43, 67, 0.12) 0px, transparent 60%),
-    radial-gradient(at 0% 100%, rgba(220, 38, 38, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(255, 43, 67, 0.05) 0px, transparent 50%);
+    radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.06) 0px, transparent 55%),
+    radial-gradient(at 10% 40%, rgba(255, 43, 67, 0.05) 0px, transparent 45%),
+    radial-gradient(at 90% 70%, rgba(88, 101, 242, 0.05) 0px, transparent 45%);
   background-attachment: fixed;
   color: #f1f5f9;
   min-height: 100vh;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Obsidian Typography */
+.font-display {
+  font-family: 'Space Grotesk', 'Outfit', sans-serif;
+  letter-spacing: -0.025em;
 }
 
 .font-orbitron {
-  font-family: 'Orbitron', 'Outfit', sans-serif;
+  font-family: 'Orbitron', 'Space Grotesk', sans-serif;
 }
 
 .font-rajdhani {
   font-family: 'Rajdhani', sans-serif;
 }
 
-/* Glassmorphism panel with sleek red accent */
+/* Obsidian Liquid Glass Card */
+.liquid-glass {
+  background: rgba(14, 16, 22, 0.65);
+  backdrop-filter: blur(16px) saturate(145%);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.liquid-glass:before {
+  content: "";
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 50%);
+  pointer-events: none;
+  border-radius: inherit;
+  position: absolute;
+  inset: 0;
+}
+
+.liquid-glass:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 255, 255, 0.05);
+}
+
+/* Legacy Glass Panel support */
 .glass-panel {
-  background: rgba(14, 15, 20, 0.85);
+  background: rgba(12, 14, 19, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
 }
 
-.glass-panel-hover:hover {
-  background: rgba(20, 21, 28, 0.95);
-  border-color: rgba(255, 43, 67, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px -10px rgba(255, 43, 67, 0.3);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Glowing text gradients */
-.gradient-text-red {
-  background: linear-gradient(135deg, #ff4d63 0%, #ff2b43 50%, #d91c33 100%);
+/* Obsidian Text Gradient */
+.text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 40%, #94a3b8 100%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
-.text-glow-red {
-  text-shadow: 0 0 25px rgba(255, 43, 67, 0.7);
+.bg-aurora {
+  background: linear-gradient(135deg, #ffffff, #94a3b8 50%, #475569);
 }
 
-.glow-red {
-  box-shadow: 0 0 35px -5px rgba(255, 43, 67, 0.5);
+.bg-mesh {
+  background-image: var(--gradient-mesh);
 }
 
-.glow-red-sm {
-  box-shadow: 0 0 20px -3px rgba(255, 43, 67, 0.35);
+/* Keyframe Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-/* Red button */
-.btn-red-gradient {
-  background: linear-gradient(135deg, #ff2b43 0%, #dc1e35 100%);
-  box-shadow: 0 4px 20px -2px rgba(255, 43, 67, 0.45);
-  transition: all 0.2s ease-in-out;
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
 }
 
-.btn-red-gradient:hover {
-  background: linear-gradient(135deg, #ff475d 0%, #e62239 100%);
-  box-shadow: 0 6px 25px -2px rgba(255, 43, 67, 0.6);
-  transform: translateY(-1px);
-}
-
-/* Pulse animation for live online dot */
-@keyframes pulseGlowRed {
+@keyframes float {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 43, 67, 0.7);
+    transform: translateY(0px);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(255, 43, 67, 0);
+    transform: translateY(-10px);
   }
 }
 
-.pulse-badge-red {
-  animation: pulseGlowRed 2s infinite;
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #08090d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e222f;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #33394d;
 }
