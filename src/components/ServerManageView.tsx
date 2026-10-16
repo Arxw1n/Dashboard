@@ -169,13 +169,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [ticketRole, setTicketRole] = useState('');
   const [ticketLogsChannel, setTicketLogsChannel] = useState('');
   const [ticketLimit, setTicketLimit] = useState('1');
-  const [ticketPanelTitle, setTicketPanelTitle] = useState('🎫 Support Desk & Inquiries');
+  const [ticketPanelTitle, setTicketPanelTitle] = useState('ðŸŽ« Support Desk & Inquiries');
   const [ticketPanelDesc, setTicketPanelDesc] = useState(
     'Welcome to our support desk! If you require assistance, have billing questions, or wish to report an issue, please open a private ticket below.'
   );
   const [ticketPanelColor, setTicketPanelColor] = useState('#5865F2');
   const [ticketButtonText, setTicketButtonText] = useState('Open Support Ticket');
-  const [ticketButtonEmoji, setTicketButtonEmoji] = useState('📩');
+  const [ticketButtonEmoji, setTicketButtonEmoji] = useState('ðŸ“©');
   const [ticketButtonStyle, setTicketButtonStyle] = useState<number>(1);
   const [ticketAuthorName, setTicketAuthorName] = useState('');
   const [ticketAuthorIcon, setTicketAuthorIcon] = useState('');
@@ -193,13 +193,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [unverifiedRole, setUnverifiedRole] = useState('');
   const [verifyIgnoredChannels, setVerifyIgnoredChannels] = useState<string[]>([]);
   const [verifyMethod, setVerifyMethod] = useState<'button' | 'code'>('button');
-  const [verifyGateTitle, setVerifyGateTitle] = useState('🛡️ Server Verification Gate');
+  const [verifyGateTitle, setVerifyGateTitle] = useState('ðŸ›¡ï¸ Server Verification Gate');
   const [verifyGateDesc, setVerifyGateDesc] = useState(
     'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'
   );
   const [verifyGateColor, setVerifyGateColor] = useState('#10b981');
   const [verifyButtonText, setVerifyButtonText] = useState('Verify Account');
-  const [verifyButtonEmoji, setVerifyButtonEmoji] = useState('✅');
+  const [verifyButtonEmoji, setVerifyButtonEmoji] = useState('âœ…');
   const [verifyButtonStyle, setVerifyButtonStyle] = useState<number>(3);
   const [verifyAuthorName, setVerifyAuthorName] = useState('');
   const [verifyAuthorIcon, setVerifyAuthorIcon] = useState('');
@@ -218,10 +218,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
   // Embed Editor State
   const [contentMessage, setContentMessage] = useState('Welcome {user}!');
-  const [embedTitle, setEmbedTitle] = useState('🏠 Welcome to Dexter Corporation 👿');
+  const [embedTitle, setEmbedTitle] = useState('ðŸ  Welcome to Dexter Corporation ðŸ‘¿');
   const [embedColor, setEmbedColor] = useState('#ff0033');
   const [description, setDescription] = useState(
-    "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} · {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
+    "Hey ðŸ¥· {user}!\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
   );
   const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
   const [authorIconUrl, setAuthorIconUrl] = useState('');
@@ -230,9 +230,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [welcomerButtons, setWelcomerButtons] = useState<Array<{ label: string; url: string; emoji?: string }>>([
-    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
-    { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📕' },
-    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“¢' },
+    { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“•' },
+    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: 'ðŸŽ«' },
   ]);
 
   // 2. Anti-Nuke Settings
@@ -250,6 +250,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   });
   const [whitelist, setWhitelist] = useState<string[]>(['1500056784000253973', '141279118800092']);
   const [newWhitelistUser, setNewWhitelistUser] = useState('');
+  const [idCopied, setIdCopied] = useState(false);
+  const [antiMentionPunishment, setAntiMentionPunishment] = useState('timeout');
+  const [antiMentionDuration, setAntiMentionDuration] = useState('24');
+  const [detectionMode, setDetectionMode] = useState('instant');
+  const [recoveryPacing, setRecoveryPacing] = useState('2000');
+  const [logChannel, setLogChannel] = useState('');
 
   // 3. Automod Settings
   const [automodEnabled, setAutomodEnabled] = useState(true);
@@ -304,11 +310,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   // 8. Autoreact Settings
   const [autoreactEnabled, setAutoreactEnabled] = useState(true);
   const [autoreactRules, setAutoreactRules] = useState([
-    { id: '1', channel: 'suggestions', emojis: '👍 👎' },
-    { id: '2', channel: 'announcements', emojis: '❤️ 🎉 🔥' },
+    { id: '1', channel: 'suggestions', emojis: 'ðŸ‘ ðŸ‘Ž' },
+    { id: '2', channel: 'announcements', emojis: 'â¤ï¸ ðŸŽ‰ ðŸ”¥' },
   ]);
   const [newReactChannel, setNewReactChannel] = useState('suggestions');
-  const [newReactEmojis, setNewReactEmojis] = useState('👍 👎');
+  const [newReactEmojis, setNewReactEmojis] = useState('ðŸ‘ ðŸ‘Ž');
 
   // 9. Autoresponder Settings
   const [autoresponderEnabled, setAutoresponderEnabled] = useState(true);
@@ -351,7 +357,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [senderPreMessage, setSenderPreMessage] = useState(
     'Hey, welcome to **Dexter Corporation**! The easiest way to personalize, protect, and dispatch rich interactive messages to your Discord server.'
   );
-  const [senderEmbedTitle, setSenderEmbedTitle] = useState('🛡️ Dexter Components V2');
+  const [senderEmbedTitle, setSenderEmbedTitle] = useState('ðŸ›¡ï¸ Dexter Components V2');
   const [senderEmbedColor, setSenderEmbedColor] = useState('#ff0033');
   const [senderEmbedDesc, setSenderEmbedDesc] = useState(
     '### Welcome to Dexter Corporation\nCustomize your layout with rich text, dividers, custom emojis, and media cards.'
@@ -398,14 +404,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     '<:86067verified86x:1554068835227930624>',
     '<a:Admin128:1554066211636248597>',
     '<a:736775redcheck:1554068843981439036>',
-    '🚀',
-    '💎',
-    '🛡️',
-    '📜',
-    '📢',
-    '🎫',
-    '⚡',
-    '👑',
+    'ðŸš€',
+    'ðŸ’Ž',
+    'ðŸ›¡ï¸',
+    'ðŸ“œ',
+    'ðŸ“¢',
+    'ðŸŽ«',
+    'âš¡',
+    'ðŸ‘‘',
   ]);
   const [emojiToast, setEmojiToast] = useState('');
 
@@ -856,7 +862,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         id: Date.now().toString(),
         label: 'New Link',
         url: 'https://discord.gg',
-        emoji: '🔗',
+        emoji: 'ðŸ”—',
       },
     ]);
   };
@@ -940,8 +946,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     if (type === 'rules') {
       handleApplyTemplate({
         preMessage: 'Hey @everyone, please make sure to read and agree to our server rules before participating in the community!',
-        title: '📜 Official Server Rules & Guidelines',
-        description: '### Welcome to ' + guild.name + '\n\n<:2392verified:1554068820828626944> **1. Respect Everyone**\nTreat all members with respect. No harassment, hate speech, or toxicity.\n\n<:2392verified:1554068820828626944> **2. No Spam or Self-Promotion**\nDo not advertise other Discord servers, social media, or paid services in public channels or DMs.\n\n<:2392verified:1554068820828626944> **3. Follow Discord ToS**\nAdhere strictly to Discord\'s Terms of Service and Community Guidelines.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nClick below to verify or accept our terms.',
+        title: 'ðŸ“œ Official Server Rules & Guidelines',
+        description: '### Welcome to ' + guild.name + '\n\n<:2392verified:1554068820828626944> **1. Respect Everyone**\nTreat all members with respect. No harassment, hate speech, or toxicity.\n\n<:2392verified:1554068820828626944> **2. No Spam or Self-Promotion**\nDo not advertise other Discord servers, social media, or paid services in public channels or DMs.\n\n<:2392verified:1554068820828626944> **3. Follow Discord ToS**\nAdhere strictly to Discord\'s Terms of Service and Community Guidelines.\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nClick below to verify or accept our terms.',
         color: '#10b981',
         authorName: guild.name + ' Administration',
         authorIcon: '',
@@ -958,13 +964,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       });
     } else if (type === 'announcement') {
       handleApplyTemplate({
-        preMessage: '📢 @everyone **IMPORTANT COMMUNITY ANNOUNCEMENT** — Major security and bot system upgrades are live!',
-        title: '🚨 Important System Announcement & Security Dispatch',
-        description: '### DexterCorp V2 Deployment Complete\n\n<a:flame:1554068992648290415> **Sentinel Anti-Nuke** is now active 24/7 across all server shards.\n<a:1706redcrownfire:1554068818337468476> **Verification Gate** updated to prevent malicious automated bot accounts.\n<a:73288animatedarrowred:1554068830689431563> All members are encouraged to check the documentation below.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nStay safe and report any anomalies to our security staff.',
+        preMessage: 'ðŸ“¢ @everyone **IMPORTANT COMMUNITY ANNOUNCEMENT** â€” Major security and bot system upgrades are live!',
+        title: 'ðŸš¨ Important System Announcement & Security Dispatch',
+        description: '### DexterCorp V2 Deployment Complete\n\n<a:flame:1554068992648290415> **Sentinel Anti-Nuke** is now active 24/7 across all server shards.\n<a:1706redcrownfire:1554068818337468476> **Verification Gate** updated to prevent malicious automated bot accounts.\n<a:73288animatedarrowred:1554068830689431563> All members are encouraged to check the documentation below.\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nStay safe and report any anomalies to our security staff.',
         color: '#ff2b43',
         authorName: 'DexterCorp Sentinel Core',
         authorIcon: '',
-        footerText: 'Automated Threat Dispatch · Shard #01',
+        footerText: 'Automated Threat Dispatch Â· Shard #01',
         footerIcon: '',
         thumbnailUrl: '',
         imageUrl: '',
@@ -977,13 +983,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       });
     } else if (type === 'verification') {
       handleApplyTemplate({
-        preMessage: '🛡️ Welcome to **' + guild.name + '**! Complete verification below to gain access to all channels.',
-        title: '🔒 Member Security Verification Gate',
+        preMessage: 'ðŸ›¡ï¸ Welcome to **' + guild.name + '**! Complete verification below to gain access to all channels.',
+        title: 'ðŸ”’ Member Security Verification Gate',
         description: '### Human Verification Required\n\nTo protect the server against automated raids, spam bots, and unauthorized accounts, please verify your account.\n\n<:86067verified86x:1554068835227930624> **Instant Verification**\n<a:73288animatedarrowred:1554068830689431563> Click the verification button below to instantly receive the **Verified Member** role.',
         color: '#5865F2',
         authorName: 'DexterCorp Gatekeeper',
         authorIcon: '',
-        footerText: 'Dexter Corporation · Anti-Raid Active',
+        footerText: 'Dexter Corporation Â· Anti-Raid Active',
         footerIcon: '',
         thumbnailUrl: '',
         imageUrl: '',
@@ -995,9 +1001,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       });
     } else if (type === 'booster') {
       handleApplyTemplate({
-        preMessage: '✨ **BOOST OUR SERVER** and unlock exclusive VIP perks and badges today!',
-        title: '💎 VIP Server Booster Perks & Privileges',
-        description: '### Exclusive Booster Rewards\n\nSupport **' + guild.name + '** by boosting and get instant access to:\n\n✨ **Custom Pink Booster Role & Colored Name**\n✨ **Access to Secret VIP Voice & Chat Lounges**\n✨ **Permission to attach files, images, and external emojis**\n✨ **Direct priority support in tickets**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nThank you to all our generous server boosters!',
+        preMessage: 'âœ¨ **BOOST OUR SERVER** and unlock exclusive VIP perks and badges today!',
+        title: 'ðŸ’Ž VIP Server Booster Perks & Privileges',
+        description: '### Exclusive Booster Rewards\n\nSupport **' + guild.name + '** by boosting and get instant access to:\n\nâœ¨ **Custom Pink Booster Role & Colored Name**\nâœ¨ **Access to Secret VIP Voice & Chat Lounges**\nâœ¨ **Permission to attach files, images, and external emojis**\nâœ¨ **Direct priority support in tickets**\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nThank you to all our generous server boosters!',
         color: '#ec4899',
         authorName: 'DexterCorp Booster Rewards',
         authorIcon: '',
@@ -1008,8 +1014,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         showDivider: true,
         spoiler: false,
         buttons: [
-          { id: '1', label: 'Boost Server', url: 'https://discord.gg/dextercorp', emoji: '💎' },
-          { id: '2', label: 'Claim Perks', url: 'https://discord.gg/dextercorp', emoji: '✨' },
+          { id: '1', label: 'Boost Server', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ’Ž' },
+          { id: '2', label: 'Claim Perks', url: 'https://discord.gg/dextercorp', emoji: 'âœ¨' },
         ],
       });
     }
@@ -1308,7 +1314,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               onClick={() => setShowAuditLogs(true)}
               className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs transition-all cursor-pointer"
             >
-              <FileText className="w-3.5 h-3.5 text-cyan-400" />
+              <FileText className="w-3.5 h-3.5 text-slate-300" />
               <span>Audit Logs</span>
             </button>
           </div>
@@ -1380,13 +1386,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setWelcomerEnabled(!welcomerEnabled)}
-                    className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                      welcomerEnabled ? 'bg-[#ff2b43]' : 'bg-slate-700'
+                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer border ${
+                      welcomerEnabled ? 'bg-white border-white' : 'bg-white/10 border-white/10'
                     }`}
                   >
                     <span
-                      className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                        welcomerEnabled ? 'translate-x-6' : 'translate-x-0'
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all ${
+                        welcomerEnabled ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
                       }`}
                     />
                   </button>
@@ -1395,15 +1401,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowVariablesGuide(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
                   >
-                    <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-300" />
                     <span>Variables Guide</span>
                   </button>
 
                   <button
                     onClick={handleResetWelcomer}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-rose-400 hover:text-rose-300 text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl liquid-glass hover:bg-white/10 text-slate-400 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Reset</span>
@@ -1420,33 +1426,33 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('🏠 Welcome to Dexter Corporation 👿');
+                      setEmbedTitle('ðŸ  Welcome to Dexter Corporation ðŸ‘¿');
                       setEmbedColor('#ff0033');
                       setDescription(
-                        "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} · {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
+                        "Hey ðŸ¥· {user}!\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
                       );
                       setMainImageUrl('');
                       setThumbnailUrl('');
-                      setAuthorName('DEXTER CORPORATION™');
-                      setFooterText('Dexter Corporation • Member #{server_membercount}');
+                      setAuthorName('DEXTER CORPORATIONâ„¢');
+                      setFooterText('Dexter Corporation â€¢ Member #{server_membercount}');
                       setFooterIconUrl('{server_icon}');
                       setContentMessage('Hey {user}, welcome to **Dexter Corporation**!');
                       setWelcomerButtons([
-                        { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
-                        { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📕' },
-                        { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+                        { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“¢' },
+                        { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“•' },
+                        { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: 'ðŸŽ«' },
                       ]);
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-red-600/25 hover:bg-red-600/35 border border-red-500/50 text-xs font-bold text-red-300 transition-all cursor-pointer shadow-sm shadow-red-950/40 flex items-center gap-1.5"
+                    className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white transition-all cursor-pointer flex items-center gap-1.5"
                   >
-                    🔥 Dexter Corporation Style
+                    ðŸ”¥ Dexter Corporation Style
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setEmbedTitle('Welcome to {server_name}!');
                       setEmbedColor('#ff2b43');
-                      setDescription("We're glad to have you here. You are member #{server_membercount}!\n• Make sure to check out the rules.\n• Choose your roles and enjoy your stay.");
+                      setDescription("We're glad to have you here. You are member #{server_membercount}!\nâ€¢ Make sure to check out the rules.\nâ€¢ Choose your roles and enjoy your stay.");
                       setMainImageUrl('');
                       setThumbnailUrl('{user_avatar}');
                       setAuthorName('DEXTERCORP SECURITY');
@@ -1454,12 +1460,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    🛡️ Crimson Security
+                    ðŸ›¡ï¸ Crimson Security
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('✧ Welcome to {server_name} ✧');
+                      setEmbedTitle('âœ§ Welcome to {server_name} âœ§');
                       setEmbedColor('#10b981');
                       setDescription("Hey {user}, welcome! Read the guidelines in rules and get verified to start chatting.");
                       setMainImageUrl('');
@@ -1469,12 +1475,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    🌿 Clean Minimal (No Image)
+                    ðŸŒ¿ Clean Minimal (No Image)
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('🔥 Welcome to {server_name}!');
+                      setEmbedTitle('ðŸ”¥ Welcome to {server_name}!');
                       setEmbedColor('#8b5cf6');
                       setDescription("Welcome {user}! Hop into chat and introduce yourself.\nCheck announcements for ongoing events!");
                       setMainImageUrl('');
@@ -1484,7 +1490,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    🎮 Gaming & Events
+                    ðŸŽ® Gaming & Events
                   </button>
                 </div>
                 <button
@@ -1497,7 +1503,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   }}
                   className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 transition-all cursor-pointer"
                 >
-                  ✕ Clear All Images
+                  âœ• Clear All Images
                 </button>
               </div>
 
@@ -1512,7 +1518,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={targetChannel}
                       onChange={(e) => setTargetChannel(e.target.value)}
-                      className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors cursor-pointer"
+                      className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors cursor-pointer"
                     >
                       <option value="">-- Select a server channel --</option>
                       {availableChannels.length > 0
@@ -1541,7 +1547,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       placeholder="Or Channel ID / #name"
                       value={targetChannel}
                       onChange={(e) => setTargetChannel(e.target.value)}
-                      className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-white/40"
                       title="Direct Channel Snowflake ID or Name"
                     />
                   </div>
@@ -1557,7 +1563,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <select
                     value={messageType}
                     onChange={(e) => setMessageType(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors cursor-pointer"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors cursor-pointer"
                   >
                     <option value="Rich Embed">Rich Embed</option>
                     <option value="Text Only">Text Only</option>
@@ -1576,7 +1582,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   placeholder="e.g. 60 (Optional)"
                   value={autoDeleteDuration}
                   onChange={(e) => setAutoDeleteDuration(e.target.value)}
-                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors placeholder:text-slate-600 font-mono"
+                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors placeholder:text-slate-600 font-mono"
                 />
                 <p className="text-[10px] text-slate-500">
                   Leave blank to keep messages permanently. Minimum 3s, maximum 300s.
@@ -1599,7 +1605,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     type="text"
                     value={contentMessage}
                     onChange={(e) => setContentMessage(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors font-mono"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors font-mono"
                   />
                 </div>
 
@@ -1612,7 +1618,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={embedTitle}
                       onChange={(e) => setEmbedTitle(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                     />
                   </div>
 
@@ -1631,7 +1637,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         type="text"
                         value={embedColor}
                         onChange={(e) => setEmbedColor(e.target.value)}
-                        className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-[#ff2b43]"
+                        className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-white/40"
                       />
                     </div>
                   </div>
@@ -1668,7 +1674,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     rows={5}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors resize-none leading-relaxed font-mono"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-white/40 transition-colors resize-none leading-relaxed font-mono"
                   />
                 </div>
 
@@ -1681,7 +1687,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                     />
                   </div>
 
@@ -1694,7 +1700,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       placeholder="https://... or {user_avatar}"
                       value={authorIconUrl}
                       onChange={(e) => setAuthorIconUrl(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                     />
                   </div>
                 </div>
@@ -1708,7 +1714,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={footerText}
                       onChange={(e) => setFooterText(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                     />
                   </div>
 
@@ -1721,7 +1727,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       placeholder="https://... or {server_icon}"
                       value={footerIconUrl}
                       onChange={(e) => setFooterIconUrl(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
                     />
                   </div>
                 </div>
@@ -1738,7 +1744,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           onClick={() => setThumbnailUrl('')}
                           className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
                         >
-                          ✕ Clear
+                          âœ• Clear
                         </button>
                       )}
                     </div>
@@ -1748,7 +1754,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         placeholder="Leave empty or enter image URL (https://... or {user_avatar})"
                         value={thumbnailUrl}
                         onChange={(e) => setThumbnailUrl(e.target.value)}
-                        className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors font-mono"
+                        className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors font-mono"
                       />
                       <button
                         type="button"
@@ -1771,7 +1777,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           onClick={() => setMainImageUrl('')}
                           className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
                         >
-                          ✕ Clear Image
+                          âœ• Clear Image
                         </button>
                       )}
                     </div>
@@ -1780,7 +1786,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       placeholder="Leave empty or enter image URL (https://...)"
                       value={mainImageUrl}
                       onChange={(e) => setMainImageUrl(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors font-mono"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors font-mono"
                     />
                   </div>
 
@@ -1799,7 +1805,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       {(welcomerButtons || []).length < 5 && (
                         <button
                           type="button"
-                          onClick={() => setWelcomerButtons([...(welcomerButtons || []), { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: '🔗' }])}
+                          onClick={() => setWelcomerButtons([...(welcomerButtons || []), { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ”—' }])}
                           className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-400 border border-cyan-500/20 text-xs font-semibold cursor-pointer"
                         >
                           + Add Button
@@ -1812,14 +1818,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         <div key={bIdx} className="flex flex-col sm:flex-row items-center gap-2 bg-[#0a0b10] p-2.5 rounded-lg border border-white/5">
                           <input
                             type="text"
-                            placeholder="Emoji (e.g. 📢)"
+                            placeholder="Emoji (e.g. ðŸ“¢)"
                             value={btn?.emoji || ''}
                             onChange={(e) => {
                               const updated = [...(welcomerButtons || [])];
                               if (updated[bIdx]) updated[bIdx].emoji = e.target.value;
                               setWelcomerButtons(updated);
                             }}
-                            className="w-full sm:w-20 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-[#ff2b43]"
+                            className="w-full sm:w-20 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-white/40"
                             title="Button Emoji"
                           />
                           <input
@@ -1831,7 +1837,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                               if (updated[bIdx]) updated[bIdx].label = e.target.value;
                               setWelcomerButtons(updated);
                             }}
-                            className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                            className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white/40"
                           />
                           <input
                             type="text"
@@ -1842,7 +1848,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                               if (updated[bIdx]) updated[bIdx].url = e.target.value;
                               setWelcomerButtons(updated);
                             }}
-                            className="w-full flex-1 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
+                            className="w-full flex-1 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-white/40"
                           />
                           <button
                             type="button"
@@ -1852,7 +1858,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 cursor-pointer"
                             title="Remove Button"
                           >
-                            ✕
+                            âœ•
                           </button>
                         </div>
                       ))}
@@ -1864,128 +1870,334 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* TAB 2: ANTINUKE */}
+          {/* TAB 2: ANTINUKE - OBSIDIAN BLACK & WHITE THEME */}
           {/* ======================================================== */}
           {activeModule === 'antinuke' && (
-            <div className="space-y-6">
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex items-center justify-between shadow-lg">
-                <div className="flex items-center gap-3">
-                  <ShieldAlert className="w-6 h-6 text-[#ff2b43]" />
+            <div className="space-y-5">
+              {/* Breadcrumb & Header */}
+              <div>
+                <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-slate-400">
+                  <span>SECURITY</span>
+                  <span>&gt;</span>
+                  <span className="text-white font-semibold">ANTI-NUKE</span>
+                </div>
+                <h2 className="font-display font-bold text-2xl text-white tracking-tight mt-1">
+                  Anti-Nuke Protection
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Configure protection against unauthorized guild deletions, role modifications, and bot integrations.
+                </p>
+              </div>
+
+              {/* Master Alert Banner */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3">
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full mt-1 sm:mt-0 shrink-0 ${
+                      antinukeEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                    }`}
+                  />
                   <div>
-                    <h3 className="font-orbitron font-bold text-base text-white">
-                      Anti-Nuke Protection Core
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Real-time prevention of mass bans, kicks, and server nukes
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
+                        ANTI-NUKE IS {antinukeEnabled ? 'ACTIVE' : 'DISABLED'}
+                      </span>
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded liquid-glass text-slate-400">
+                        {antinukeEnabled ? 'PROTECTING' : 'TURN ON IN HEADER'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      To start using this feature, turn on the master switch in the top right.
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setAntinukeEnabled(!antinukeEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                    antinukeEnabled ? 'bg-[#ff2b43]' : 'bg-slate-700'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                      antinukeEnabled ? 'translate-x-6' : 'translate-x-0'
+
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  <button
+                    onClick={() => setAntinukeEnabled(!antinukeEnabled)}
+                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer border ${
+                      antinukeEnabled ? 'bg-white border-white' : 'bg-white/10 border-white/10'
                     }`}
-                  />
-                </button>
-              </div>
-
-              {/* Punishment Selector */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-2">
-                <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                  ACTION ON VIOLATION (PUNISHMENT)
-                </label>
-                <select
-                  value={antinukePunishment}
-                  onChange={(e) => setAntinukePunishment(e.target.value)}
-                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] cursor-pointer"
-                >
-                  <option value="ban">🔨 Instant Permanent Ban</option>
-                  <option value="kick">👢 Kick from Server</option>
-                  <option value="quarantine">🔒 Strip All Roles (Quarantine)</option>
-                </select>
-              </div>
-
-              {/* Security Shield Switches */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  {
-                    key: 'antiBan',
-                    label: 'Anti-Ban Protection',
-                    desc: 'Blocks unauthorized member bans',
-                  },
-                  {
-                    key: 'antiKick',
-                    label: 'Anti-Kick Protection',
-                    desc: 'Blocks unauthorized member kicks',
-                  },
-                  {
-                    key: 'antiChannelDelete',
-                    label: 'Anti-Channel Delete',
-                    desc: 'Prevents mass channel deletions',
-                  },
-                  {
-                    key: 'antiRoleDelete',
-                    label: 'Anti-Role Delete',
-                    desc: 'Prevents role stripping and deletion',
-                  },
-                  {
-                    key: 'antiBot',
-                    label: 'Anti-Bot Addition',
-                    desc: 'Blocks unauthorized bot invites',
-                  },
-                  {
-                    key: 'antiWebhook',
-                    label: 'Anti-Webhook Abuse',
-                    desc: 'Prevents unauthorized webhooks',
-                  },
-                  {
-                    key: 'antiVanity',
-                    label: 'Anti-Vanity Protect',
-                    desc: 'Shields server vanity URL from theft',
-                  },
-                  {
-                    key: 'antiPrune',
-                    label: 'Anti-Prune Shield',
-                    desc: 'Blocks mass pruning of offline members',
-                  },
-                ].map((f) => (
-                  <div
-                    key={f.key}
-                    className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 flex items-center justify-between"
                   >
-                    <div>
-                      <p className="font-semibold text-xs text-white">{f.label}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">{f.desc}</p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setAntinukeFeatures((p) => ({
-                          ...p,
-                          [f.key]: !(p as any)[f.key],
-                        }))
-                      }
-                      className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
-                        (antinukeFeatures as any)[f.key] ? 'bg-[#ff2b43]' : 'bg-slate-700'
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all ${
+                        antinukeEnabled ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
                       }`}
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                          (antinukeFeatures as any)[f.key] ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                ))}
+                    />
+                  </button>
+                  <button
+                    onClick={() => setShowVariablesGuide(true)}
+                    className="px-3.5 py-1.5 rounded-xl liquid-glass hover:bg-white/10 text-xs text-slate-300 hover:text-white border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <span>How to Setup (Guide)</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
 
-              {/* Whitelist Manager */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
-                <h4 className="font-orbitron font-bold text-xs text-slate-300 uppercase tracking-wider">
+              {/* 4 Metric Top Cards (Screenshot 3) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="liquid-glass border border-white/5 rounded-2xl p-4">
+                  <p className="font-display font-bold text-base text-white">
+                    {antinukeEnabled ? 'Active' : 'Inactive'}
+                  </p>
+                  <p className="text-[10px] font-mono uppercase text-slate-400 mt-1">Protection</p>
+                </div>
+                <div className="liquid-glass border border-white/5 rounded-2xl p-4">
+                  <p className="font-display font-bold text-base text-white">18/18</p>
+                  <p className="text-[10px] font-mono uppercase text-slate-400 mt-1">Events Protected</p>
+                </div>
+                <div className="liquid-glass border border-white/5 rounded-2xl p-4">
+                  <p className="font-display font-bold text-base text-white">
+                    {antinukePunishment.toUpperCase()}
+                  </p>
+                  <p className="text-[10px] font-mono uppercase text-slate-400 mt-1">Punishment</p>
+                </div>
+                <div className="liquid-glass border border-white/5 rounded-2xl p-4">
+                  <p className="font-display font-bold text-base text-white">
+                    {detectionMode.toUpperCase()}
+                  </p>
+                  <p className="text-[10px] font-mono uppercase text-slate-400 mt-1">Mode</p>
+                </div>
+              </div>
+
+              {/* Section 1: Log Channel */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-slate-400" />
+                  <div>
+                    <h4 className="font-display font-semibold text-xs text-white">Log Channel</h4>
+                    <p className="text-[11px] text-slate-400">Security events will be reported here</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <select
+                    value={logChannel || targetChannel}
+                    onChange={(e) => setLogChannel(e.target.value)}
+                    className="w-full bg-[#0a0c10] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer appearance-none"
+                  >
+                    <option value="">Select log channel...</option>
+                    {guild.channels && guild.channels.length > 0 ? (
+                      guild.channels.map((ch) => (
+                        <option key={ch.id} value={ch.name}>
+                          #{ch.name}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="mod-logs">#mod-logs</option>
+                        <option value="security-audit">#security-audit</option>
+                        <option value="bot-alerts">#bot-alerts</option>
+                      </>
+                    )}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-3 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Section 2: Punishment Mode - Black and White Segmented Group */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-slate-400" />
+                  <div>
+                    <h4 className="font-display font-semibold text-xs text-white">Punishment Mode</h4>
+                    <p className="text-[11px] text-slate-400">Applied to violators globally</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 p-1 bg-[#0a0c10] border border-white/5 rounded-2xl">
+                  {[
+                    { id: 'ban', label: 'BAN' },
+                    { id: 'kick', label: 'KICK' },
+                    { id: 'quarantine', label: 'STRIP' },
+                  ].map((btn) => {
+                    const isActive = antinukePunishment === btn.id;
+                    return (
+                      <button
+                        key={btn.id}
+                        type="button"
+                        onClick={() => setAntinukePunishment(btn.id)}
+                        className={`py-2 px-4 rounded-xl text-xs font-semibold tracking-wider transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-white/10 text-white border border-white/60 shadow-sm'
+                            : 'bg-transparent text-slate-400 hover:text-white border border-transparent hover:bg-white/5'
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 3: Anti-Mention Punishment & Slider */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-slate-400" />
+                  <div>
+                    <h4 className="font-display font-semibold text-xs text-white">
+                      Anti-Mention Punishment
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      Punishment specifically for @everyone / @here pings
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1 bg-[#0a0c10] border border-white/5 rounded-2xl">
+                  {[
+                    { id: 'timeout', label: 'TIMEOUT' },
+                    { id: 'timeout_warn', label: 'TIMEOUT + WARN' },
+                    { id: 'ban', label: 'BAN' },
+                    { id: 'kick', label: 'KICK' },
+                    { id: 'strip', label: 'STRIP' },
+                  ].map((btn) => {
+                    const isActive = antiMentionPunishment === btn.id;
+                    return (
+                      <button
+                        key={btn.id}
+                        type="button"
+                        onClick={() => setAntiMentionPunishment(btn.id)}
+                        className={`py-2 px-3 rounded-xl text-xs font-semibold tracking-wider transition-all cursor-pointer text-center ${
+                          isActive
+                            ? 'bg-white/10 text-white border border-white/60 shadow-sm'
+                            : 'bg-transparent text-slate-400 hover:text-white border border-transparent hover:bg-white/5'
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400 font-medium">Timeout Duration</span>
+                    <span className="font-mono text-white font-bold">{antiMentionDuration} Hours</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="168"
+                    value={antiMentionDuration}
+                    onChange={(e) => setAntiMentionDuration(e.target.value)}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                  />
+                  <p className="text-[10px] text-slate-500 font-mono">
+                    Max 168 hours (7 days) as per Discord limits.
+                  </p>
+                </div>
+              </div>
+
+              {/* Section 4: Detection Mode */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-slate-400" />
+                  <div>
+                    <h4 className="font-display font-semibold text-xs text-white">Detection Mode</h4>
+                    <p className="text-[11px] text-slate-400">How violations are detected</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-[#0a0c10] border border-white/5 rounded-2xl">
+                  {[
+                    { id: 'instant', label: 'âš¡ INSTANT' },
+                    { id: 'threshold', label: 'ðŸ“Š THRESHOLD' },
+                  ].map((btn) => {
+                    const isActive = detectionMode === btn.id;
+                    return (
+                      <button
+                        key={btn.id}
+                        type="button"
+                        onClick={() => setDetectionMode(btn.id)}
+                        className={`py-2 px-4 rounded-xl text-xs font-semibold tracking-wider transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-white/10 text-white border border-white/60 shadow-sm'
+                            : 'bg-transparent text-slate-400 hover:text-white border border-transparent hover:bg-white/5'
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 5: Recovery Pacing */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="w-4 h-4 text-slate-400" />
+                  <div>
+                    <h4 className="font-display font-semibold text-xs text-white">Recovery Pacing</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Configure pacing limits for recovering deleted/modified resources to avoid Discord rate limits.
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400 font-medium">Pacing Delay</span>
+                    <span className="font-mono text-white font-bold">{recoveryPacing}ms</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="500"
+                    max="10000"
+                    step="250"
+                    value={recoveryPacing}
+                    onChange={(e) => setRecoveryPacing(e.target.value)}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                  />
+                  <p className="text-[10px] text-slate-500 font-mono">
+                    Lower values recover faster but increase the risk of Discord API rate limits (429).
+                  </p>
+                </div>
+              </div>
+
+              {/* Section 6: Security Shield Switches */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                <h4 className="font-display font-semibold text-xs text-white">Event Shield Triggers</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    { key: 'antiBan', label: 'Anti-Ban Protection', desc: 'Blocks unauthorized member bans' },
+                    { key: 'antiKick', label: 'Anti-Kick Protection', desc: 'Blocks unauthorized member kicks' },
+                    { key: 'antiChannelDelete', label: 'Anti-Channel Delete', desc: 'Prevents mass channel deletions' },
+                    { key: 'antiRoleDelete', label: 'Anti-Role Delete', desc: 'Prevents role stripping and deletion' },
+                    { key: 'antiBot', label: 'Anti-Bot Addition', desc: 'Blocks unauthorized bot invites' },
+                    { key: 'antiWebhook', label: 'Anti-Webhook Abuse', desc: 'Prevents unauthorized webhooks' },
+                    { key: 'antiVanity', label: 'Anti-Vanity Protect', desc: 'Shields server vanity URL from theft' },
+                    { key: 'antiPrune', label: 'Anti-Prune Shield', desc: 'Blocks mass pruning of offline members' },
+                  ].map((f) => (
+                    <div
+                      key={f.key}
+                      className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-xs text-white">{f.label}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{f.desc}</p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setAntinukeFeatures((p) => ({
+                            ...p,
+                            [f.key]: !(p as any)[f.key],
+                          }))
+                        }
+                        className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                          (antinukeFeatures as any)[f.key] ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                            (antinukeFeatures as any)[f.key] ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 7: Whitelist Manager */}
+              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                <h4 className="font-display font-semibold text-xs text-white uppercase tracking-wider">
                   Whitelisted Trusted Administrators
                 </h4>
                 <div className="flex gap-2">
@@ -1994,11 +2206,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     placeholder="Enter Discord User ID to whitelist..."
                     value={newWhitelistUser}
                     onChange={(e) => setNewWhitelistUser(e.target.value)}
-                    className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
+                    className="flex-1 bg-[#0a0c10] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-white/40"
                   />
                   <button
                     onClick={addWhitelistUser}
-                    className="px-4 py-2 rounded-xl bg-[#ff2b43] hover:bg-[#e61932] text-white text-xs font-bold transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-black text-xs font-semibold transition-all cursor-pointer shadow-md active:scale-95"
                   >
                     + Add Whitelist
                   </button>
@@ -2008,12 +2220,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   {whitelist.map((id) => (
                     <div
                       key={id}
-                      className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5 text-xs font-mono"
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs font-mono"
                     >
                       <span className="text-slate-300 font-semibold">{id}</span>
                       <button
                         onClick={() => removeWhitelistUser(id)}
-                        className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                        className="text-slate-500 hover:text-white p-1 cursor-pointer transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -2065,11 +2277,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   onChange={(e) => setAutomodPunishment(e.target.value)}
                   className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
                 >
-                  <option value="timeout_5m">⏱️ Timeout Member (5 Minutes)</option>
-                  <option value="timeout_1h">⏱️ Timeout Member (1 Hour)</option>
-                  <option value="timeout_24h">⏱️ Timeout Member (24 Hours)</option>
-                  <option value="kick">👢 Kick Member</option>
-                  <option value="warn">⚠️ Delete Message & Warn</option>
+                  <option value="timeout_5m">â±ï¸ Timeout Member (5 Minutes)</option>
+                  <option value="timeout_1h">â±ï¸ Timeout Member (1 Hour)</option>
+                  <option value="timeout_24h">â±ï¸ Timeout Member (24 Hours)</option>
+                  <option value="kick">ðŸ‘¢ Kick Member</option>
+                  <option value="warn">âš ï¸ Delete Message & Warn</option>
                 </select>
               </div>
 
@@ -2167,7 +2379,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         onClick={() => removeBlockedWord(word)}
                         className="text-slate-500 hover:text-rose-400 cursor-pointer"
                       >
-                        ✕
+                        âœ•
                       </button>
                     </span>
                   ))}
@@ -2177,301 +2389,405 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* TAB 4: OVERVIEW - A TO Z SERVER STATS & FUNCTIONS AUDIT */}
+          {/* TAB 4: OVERVIEW - OBSIDIAN LIVE PROTECTION POSTURE */}
           {/* ======================================================== */}
-          {activeModule === 'overview' && (
-            <div className="space-y-6">
-              {/* Top 4 Metric Tiles: Members, Channels, Roles, Boosts */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5">
-                  <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">
-                    TOTAL MEMBERS
-                  </span>
-                  <p className="font-orbitron font-bold text-2xl text-white mt-1">
-                    {guild.memberCount || 420}
-                  </p>
-                  <p className="text-[10px] text-emerald-400 mt-1">✓ Live Synchronized</p>
-                </div>
-
-                <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5">
-                  <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">
-                    TOTAL CHANNELS
-                  </span>
-                  <p className="font-orbitron font-bold text-2xl text-cyan-400 mt-1">
-                    {guild.channelsCount || 70}
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    {guild.textChannels || 45} Text • {guild.voiceChannels || 25} Voice
-                  </p>
-                </div>
-
-                <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5">
-                  <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">
-                    TOTAL ROLES
-                  </span>
-                  <p className="font-orbitron font-bold text-2xl text-amber-400 mt-1">
-                    {guild.rolesCount || 45}
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-1">Security Hierarchy</p>
-                </div>
-
-                <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5">
-                  <span className="text-[10px] text-slate-400 font-mono uppercase font-bold">
-                    SERVER BOOSTS
-                  </span>
-                  <p className="font-orbitron font-bold text-2xl text-purple-400 mt-1">
-                    Tier {guild.boostTier || 1}
-                  </p>
-                  <p className="text-[10px] text-purple-300 mt-1">
-                    {guild.boostCount || 2} Boosts Active
-                  </p>
-                </div>
-              </div>
-
-              {/* Complete Live Functions Status & Audit Checklist */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-6 space-y-4 shadow-lg">
-                <div className="flex items-center justify-between">
+          {activeModule === 'overview' && (() => {
+            const activeLayers = (antinukeEnabled ? 1 : 0) + (automodEnabled ? 1 : 0) + (loggingEnabled ? 1 : 0);
+            const coverageScore = Math.round((activeLayers / 4) * 100);
+            return (
+              <div className="space-y-5">
+                {/* Header: Live Protection Posture */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
                   <div>
-                    <h4 className="font-orbitron font-bold text-base text-white flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-emerald-400" />
-                      <span>Security & Automation Functions Audit</span>
-                    </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Live status of all enabled and disabled protection modules for {guild.name}
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-400 font-bold">
+                        LIVE PROTECTION POSTURE
+                      </span>
+                    </div>
+                    <h2 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight mt-1">
+                      {guild.name}
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      See what protects your community now, what needs attention, and where to take action.
                     </p>
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">
-                    {(antinukeEnabled ? 1 : 0) +
-                      (automodEnabled ? 1 : 0) +
-                      (welcomerEnabled ? 1 : 0) +
-                      (loggingEnabled ? 1 : 0) +
-                      (autoroleEnabled ? 1 : 0) +
-                      (customRoleEnabled ? 1 : 0)}{' '}
-                    / 6 Active Modules
-                  </span>
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="px-3.5 py-2 rounded-xl liquid-glass hover:bg-white/10 text-xs text-slate-300 hover:text-white border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Refresh</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
-                  {/* Anti-Nuke Status */}
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-xs text-white">Anti-Nuke Core</p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Punishment: {antinukePunishment.toUpperCase()}
-                      </p>
+                {/* 2-Column: Your Protection Layers + Protection Score (Screenshot 2) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                  {/* Left Column: Your protection layers */}
+                  <div className="lg:col-span-7 liquid-glass rounded-2xl p-5 border border-white/5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-slate-400 font-medium">Security coverage</span>
+                        <h3 className="font-display font-bold text-base text-white mt-0.5">
+                          Your protection layers
+                        </h3>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full liquid-glass border border-white/10 text-[11px] font-mono text-slate-300">
+                        {activeLayers}/4 ACTIVE
+                      </span>
                     </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                        antinukeEnabled
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {antinukeEnabled ? '✓ ENABLED' : '✗ DISABLED'}
-                    </span>
+
+                    {/* 4 Layers List */}
+                    <div className="space-y-2.5">
+                      {/* Layer 1: Anti-Nuke */}
+                      <div
+                        onClick={() => handleSelectModule('antinuke')}
+                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between cursor-pointer transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
+                            <ShieldAlert className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-display font-semibold text-xs text-white">
+                                Anti-Nuke
+                              </span>
+                              <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10">
+                                {antinukeEnabled ? 'ACTIVE' : 'SETUP'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Stops destructive server actions
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="text-xs font-mono text-slate-400">
+                              {antinukeEnabled ? '100%' : '0%'}
+                            </span>
+                            <div className="w-16 h-1 rounded-full bg-white/10 mt-1 overflow-hidden">
+                              <div
+                                className="h-full bg-white transition-all duration-500"
+                                style={{ width: antinukeEnabled ? '100%' : '0%' }}
+                              />
+                            </div>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                        </div>
+                      </div>
+
+                      {/* Layer 2: Anti-Betray */}
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-300">
+                            <ShieldCheck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-display font-semibold text-xs text-white">
+                                Anti-Betray
+                              </span>
+                              <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10">
+                                SETUP
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Watches trusted staff activity
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="text-xs font-mono text-slate-400">0%</span>
+                            <div className="w-16 h-1 rounded-full bg-white/10 mt-1 overflow-hidden">
+                              <div className="h-full bg-white/40" style={{ width: '0%' }} />
+                            </div>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-600" />
+                        </div>
+                      </div>
+
+                      {/* Layer 3: AutoMod */}
+                      <div
+                        onClick={() => handleSelectModule('automod')}
+                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between cursor-pointer transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
+                            <Bot className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-display font-semibold text-xs text-white">
+                                AutoMod
+                              </span>
+                              <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10">
+                                {automodEnabled ? 'ACTIVE' : 'SETUP'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Filters harmful content automatically
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="text-xs font-mono text-slate-400">
+                              {automodEnabled ? '100%' : '0%'}
+                            </span>
+                            <div className="w-16 h-1 rounded-full bg-white/10 mt-1 overflow-hidden">
+                              <div
+                                className="h-full bg-white transition-all duration-500"
+                                style={{ width: automodEnabled ? '100%' : '0%' }}
+                              />
+                            </div>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                        </div>
+                      </div>
+
+                      {/* Layer 4: Audit Logging */}
+                      <div
+                        onClick={() => handleSelectModule('logging')}
+                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between cursor-pointer transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-300 group-hover:text-white transition-colors">
+                            <ScrollText className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-display font-semibold text-xs text-white">
+                                Audit Logging
+                              </span>
+                              <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10">
+                                {loggingEnabled ? 'ACTIVE' : 'SETUP'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Keeps an incident-ready trail
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="text-xs font-mono text-slate-400">
+                              {loggingEnabled ? '100%' : '0%'}
+                            </span>
+                            <div className="w-16 h-1 rounded-full bg-white/10 mt-1 overflow-hidden">
+                              <div
+                                className="h-full bg-white transition-all duration-500"
+                                style={{ width: loggingEnabled ? '100%' : '0%' }}
+                              />
+                            </div>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* NEXT BEST ACTION Card (Screenshot 2) */}
+                    <div className="p-3.5 rounded-xl liquid-glass border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] font-mono tracking-wider uppercase text-slate-400 font-bold block">
+                          NEXT BEST ACTION
+                        </span>
+                        <p className="text-xs text-slate-300 mt-0.5">
+                          {antinukeEnabled
+                            ? 'Anti-Nuke active. Ensure audit logs channel is properly linked.'
+                            : 'Enable Anti-Nuke to increase server coverage by 35%'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleSelectModule('antinuke')}
+                        className="px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-lg cursor-pointer active:scale-95"
+                      >
+                        <span>Configure</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* AutoMod Status */}
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                  {/* Right Column: Protection Score Circular Gauge (Screenshot 2) */}
+                  <div className="lg:col-span-5 liquid-glass rounded-2xl p-5 border border-white/5 flex flex-col justify-between">
                     <div>
-                      <p className="font-bold text-xs text-white">AutoMod Sentinel</p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        {blockedWords.length} Filter Phrases
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400 font-medium">Protection score</span>
+                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                          LIVE
+                        </span>
+                      </div>
+                      <h3 className="font-display font-bold text-base text-white mt-0.5">
+                        {coverageScore < 50 ? 'Needs attention' : 'Optimal Protection'}
+                      </h3>
                     </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                        automodEnabled
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {automodEnabled ? '✓ ENABLED' : '✗ DISABLED'}
-                    </span>
-                  </div>
 
-                  {/* Welcomer Status */}
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-xs text-white">Welcomer Greeter</p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Channel: #{targetChannel}
-                      </p>
+                    {/* SVG Radial Gauge */}
+                    <div className="flex flex-col items-center justify-center py-6">
+                      <div className="relative w-44 h-44 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            className="stroke-white/10"
+                            strokeWidth="6"
+                            fill="transparent"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            className="stroke-white transition-all duration-1000 ease-out"
+                            strokeWidth="6"
+                            strokeDasharray={2 * Math.PI * 38}
+                            strokeDashoffset={2 * Math.PI * 38 * (1 - coverageScore / 100)}
+                            strokeLinecap="round"
+                            fill="transparent"
+                          />
+                        </svg>
+                        <div className="absolute flex flex-col items-center">
+                          <span className="font-display font-bold text-3xl text-white">
+                            {coverageScore}%
+                          </span>
+                          <span className="text-[10px] font-mono tracking-widest text-slate-400 uppercase mt-0.5">
+                            COVERAGE
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                        welcomerEnabled
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {welcomerEnabled ? '✓ ENABLED' : '✗ DISABLED'}
-                    </span>
-                  </div>
 
-                  {/* Logging Status */}
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-xs text-white">Action Logging</p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Target: #{modLogsChannel}
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                        loggingEnabled
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {loggingEnabled ? '✓ ENABLED' : '✗ DISABLED'}
-                    </span>
-                  </div>
-
-                  {/* Auto-Role Status */}
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-xs text-white">Auto-Role System</p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Role: @{autoroleHumans}
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                        autoroleEnabled
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {autoroleEnabled ? '✓ ENABLED' : '✗ DISABLED'}
-                    </span>
-                  </div>
-
-                  {/* Custom Roles Status */}
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-xs text-white">Custom Roles</p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Prefix: {customRolePrefix}
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                        customRoleEnabled
-                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {customRoleEnabled ? '✓ ENABLED' : '✗ DISABLED'}
-                    </span>
+                    <p className="text-center text-xs text-slate-400 pb-1">
+                      {antinukeEnabled
+                        ? 'All configured modules running in real-time.'
+                        : 'Anti-Nuke is the highest-impact improvement available.'}
+                    </p>
                   </div>
                 </div>
-              </div>
 
-              {/* Channels & Roles Dossier */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Channels List */}
-                <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                      <Hash className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Server Channels ({guild.channelsCount || 70})</span>
-                    </h4>
-                    <span className="text-[10px] font-mono text-slate-400">
-                      Categories: {guild.categoryChannels || 6}
-                    </span>
+                {/* 4 Metric Tiles: MEMBERS, CHANNELS, ROLES, NUKE SAVES (Screenshot 2) */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="liquid-glass border border-white/5 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-400 shrink-0">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider font-bold block">
+                        MEMBERS
+                      </span>
+                      <p className="font-display font-bold text-lg text-white mt-0.5">
+                        {guild.memberCount || 3}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-                    {guild.channels && guild.channels.length > 0 ? (
-                      guild.channels.map((ch) => (
-                        <span
-                          key={ch.id}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] text-slate-300 font-mono"
+                  <div className="liquid-glass border border-white/5 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-400 shrink-0">
+                      <Hash className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider font-bold block">
+                        CHANNELS
+                      </span>
+                      <p className="font-display font-bold text-lg text-white mt-0.5">
+                        {guild.channelsCount || 4}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="liquid-glass border border-white/5 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-400 shrink-0">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider font-bold block">
+                        ROLES
+                      </span>
+                      <p className="font-display font-bold text-lg text-white mt-0.5">
+                        {guild.rolesCount || 1}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="liquid-glass border border-white/5 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl liquid-glass flex items-center justify-center text-slate-400 shrink-0">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider font-bold block">
+                        NUKE SAVES
+                      </span>
+                      <p className="font-display font-bold text-lg text-white mt-0.5">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Server details Card (Screenshot 2) */}
+                <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-white">
+                    <Zap className="w-4 h-4 text-slate-400" />
+                    <span>Server details</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs pt-1">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                        SERVER NAME
+                      </span>
+                      <p className="font-semibold text-white mt-1 truncate">{guild.name}</p>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                        SERVER ID
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="font-mono text-slate-300 text-xs">{guild.id}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(guild.id);
+                            setIdCopied(true);
+                            setTimeout(() => setIdCopied(false), 2000);
+                          }}
+                          className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                          title="Copy Server ID"
                         >
-                          {ch.type === 2 ? (
-                            <Volume2 className="w-3 h-3 text-emerald-400" />
-                          ) : ch.type === 4 ? (
-                            <Folder className="w-3 h-3 text-amber-400" />
+                          {idCopied ? (
+                            <Check className="w-3.5 h-3.5 text-white" />
                           ) : (
-                            <Hash className="w-3 h-3 text-cyan-400" />
+                            <Copy className="w-3.5 h-3.5" />
                           )}
-                          <span>{ch.name}</span>
-                        </span>
-                      ))
-                    ) : (
-                      ['rules', 'announcements', 'welcome', 'general', 'bot-commands', 'voice-lounge', 'ticket-support'].map((ch, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] text-slate-300 font-mono"
-                        >
-                          <Hash className="w-3 h-3 text-cyan-400" />
-                          <span>{ch}</span>
-                        </span>
-                      ))
-                    )}
-                  </div>
-                </div>
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Roles List */}
-                <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Server Roles ({guild.rolesCount || 45})</span>
-                    </h4>
-                    <span className="text-[10px] font-mono text-slate-400">Position Sorted</span>
-                  </div>
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                        ACCESS LEVEL
+                      </span>
+                      <p className="font-semibold text-white mt-1">Server Owner</p>
+                    </div>
 
-                  <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-                    {guild.roles && guild.roles.length > 0 ? (
-                      guild.roles.map((r) => (
-                        <span
-                          key={r.id}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-mono font-medium text-white"
-                        >
-                          <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                            style={{ backgroundColor: r.color || '#99aab5' }}
-                          ></span>
-                          <span>{r.name}</span>
-                        </span>
-                      ))
-                    ) : (
-                      ['@Owner', '@Administrator', '@Moderator', '@VIP', '@Member', '@Bots'].map((r, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-mono font-medium text-white"
-                        >
-                          <span className="w-2.5 h-2.5 rounded-full bg-[#ff2b43]"></span>
-                          <span>{r}</span>
-                        </span>
-                      ))
-                    )}
+                    <div>
+                      <span className="text-[10px] font-mono uppercase text-slate-400 font-bold block">
+                        PREMIUM STATUS
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-1 text-slate-300 font-medium">
+                        <Zap className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Active</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Bot Integration & Cluster Telemetry */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-6 space-y-4">
-                <h4 className="font-orbitron font-bold text-sm text-white">Bot Shards & Cluster Telemetry</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-300">
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <p className="text-[10px] text-slate-400 uppercase font-bold">Cluster / Shard</p>
-                    <p className="font-mono text-white font-bold text-sm mt-0.5">Cluster 0 / Shard 0</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <p className="text-[10px] text-slate-400 uppercase font-bold">Shard Latency</p>
-                    <p className="font-mono text-emerald-400 font-bold text-sm mt-0.5">18ms Nominal</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-                    <p className="text-[10px] text-slate-400 uppercase font-bold">Command Prefix</p>
-                    <p className="font-mono text-white font-bold text-sm mt-0.5">{prefix}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ======================================================== */}
           {/* TAB 5: SETTINGS */}
@@ -2490,7 +2806,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={prefix}
                       onChange={(e) => setPrefix(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-white/40"
                     />
                   </div>
 
@@ -2502,7 +2818,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={botNickname}
                       onChange={(e) => setBotNickname(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     />
                   </div>
                 </div>
@@ -2515,10 +2831,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="English">English</option>
-                      <option value="Hindi">Hindi / हिन्दी</option>
+                      <option value="Hindi">Hindi / à¤¹à¤¿à¤¨à¥à¤¦à¥€</option>
                       <option value="Spanish">Spanish</option>
                     </select>
                   </div>
@@ -2530,7 +2846,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="UTC">UTC (Universal Time)</option>
                       <option value="IST">IST (Indian Standard Time)</option>
@@ -2582,7 +2898,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={modLogsChannel}
                       onChange={(e) => setModLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="">-- Select Logs Channel --</option>
                       {availableChannels.length > 0 ? (
@@ -2604,7 +2920,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={memberLogsChannel}
                       onChange={(e) => setMemberLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="">-- Select Join/Leave Channel --</option>
                       {availableChannels.length > 0 ? (
@@ -2628,7 +2944,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={messageLogsChannel}
                       onChange={(e) => setMessageLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="">-- Select Message Logs Channel --</option>
                       {availableChannels.length > 0 ? (
@@ -2650,7 +2966,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={voiceLogsChannel}
                       onChange={(e) => setVoiceLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="">-- Select Voice Logs Channel --</option>
                       {availableChannels.length > 0 ? (
@@ -2684,10 +3000,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
                           channelId: target,
                           welcome: {
-                            content: `🛡️ **[DexterCorp Security Audit Log]** Test event triggered from web dashboard.`,
+                            content: `ðŸ›¡ï¸ **[DexterCorp Security Audit Log]** Test event triggered from web dashboard.`,
                             embeds: {
-                              title: '📋 Security & Audit Logging Verified',
-                              description: `**Event:** Real-Time Dashboard Audit Verification\n**Operator:** <@${user.id}>\n**Guild:** ${guild.name} (\`${guild.id}\`)\n**Status:** 🟢 Live Synchronized across all bot clusters`,
+                              title: 'ðŸ“‹ Security & Audit Logging Verified',
+                              description: `**Event:** Real-Time Dashboard Audit Verification\n**Operator:** <@${user.id}>\n**Guild:** ${guild.name} (\`${guild.id}\`)\n**Status:** ðŸŸ¢ Live Synchronized across all bot clusters`,
                               color: '#f59e0b',
                               author: { name: 'DEXTERCORP AUDIT SENTINEL' },
                               footer: { text: 'DexterCorp Core v2.5' }
@@ -2702,7 +3018,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>{logTestSent ? '✓ Audit Log Sent to Discord!' : 'Send Test Log to Channel'}</span>
+                    <span>{logTestSent ? 'âœ“ Audit Log Sent to Discord!' : 'Send Test Log to Channel'}</span>
                   </button>
                 </div>
               </div>
@@ -2952,7 +3268,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   </select>
                   <input
                     type="text"
-                    placeholder="Emojis (e.g. 👍 👎)"
+                    placeholder="Emojis (e.g. ðŸ‘ ðŸ‘Ž)"
                     value={newReactEmojis}
                     onChange={(e) => setNewReactEmojis(e.target.value)}
                     className="bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
@@ -3182,7 +3498,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   onClick={handleStartGiveaway}
                   className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
                 >
-                  🎉 Start Live Giveaway
+                  ðŸŽ‰ Start Live Giveaway
                 </button>
 
                 <div className="space-y-2 pt-2">
@@ -3197,11 +3513,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <div>
                         <p className="font-bold text-white">{g.prize}</p>
                         <p className="text-[10px] text-slate-400">
-                          Channel: #{g.channel} • {g.winners} Winner(s)
+                          Channel: #{g.channel} â€¢ {g.winners} Winner(s)
                         </p>
                       </div>
                       <span className="px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20 font-mono text-[10px] font-bold">
-                        ⏳ Ends in {g.endsIn}
+                        â³ Ends in {g.endsIn}
                       </span>
                     </div>
                   ))}
@@ -3307,7 +3623,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     ) : senderSent ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-emerald-300" />
-                        <span>✓ Sent!</span>
+                        <span>âœ“ Sent!</span>
                       </>
                     ) : (
                       <>
@@ -3522,7 +3838,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         : 'bg-white/5 border-white/5 text-slate-400'
                     }`}
                   >
-                    <span>{senderShowDivider ? '✓ Divider Line Active' : '+ Add Separator Line'}</span>
+                    <span>{senderShowDivider ? 'âœ“ Divider Line Active' : '+ Add Separator Line'}</span>
                   </button>
                   <button
                     type="button"
@@ -3559,7 +3875,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     type="text"
                     value={senderEmbedTitle}
                     onChange={(e) => setSenderEmbedTitle(e.target.value)}
-                    placeholder="e.g. 📢 Official Community Announcement"
+                    placeholder="e.g. ðŸ“¢ Official Community Announcement"
                     className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -3722,7 +4038,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           <label className="text-[9px] font-bold text-slate-400 uppercase">EMOJI</label>
                           <input
                             type="text"
-                            placeholder="📢 or <:name:id>"
+                            placeholder="ðŸ“¢ or <:name:id>"
                             value={btn.emoji || ''}
                             onChange={(e) => handleUpdateSenderButton(btn.id, 'emoji', e.target.value)}
                             className="w-full bg-[#0e0f15] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
@@ -3779,7 +4095,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ) : senderSent ? (
                   <>
                     <Check className="w-4 h-4 text-emerald-300" />
-                    <span>✓ Message Dispatched Successfully!</span>
+                    <span>âœ“ Message Dispatched Successfully!</span>
                   </>
                 ) : (
                   <>
@@ -4046,7 +4362,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="e.g. <:pepe_cool:123456789> or 🚀"
+                          placeholder="e.g. <:pepe_cool:123456789> or ðŸš€"
                           value={customEmojiInput}
                           onChange={(e) => setCustomEmojiInput(e.target.value)}
                           className="flex-1 bg-[#1a1b26] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
@@ -4149,65 +4465,65 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     onClick={() => {
-                      setTicketPanelTitle('🎫 Support Desk & Inquiries');
+                      setTicketPanelTitle('ðŸŽ« Support Desk & Inquiries');
                       setTicketPanelDesc(
                         'Welcome to our support desk! If you require assistance, have questions, or wish to report an issue, please open a private ticket below.'
                       );
                       setTicketPanelColor('#5865F2');
                       setTicketButtonText('Open Support Ticket');
-                      setTicketButtonEmoji('📩');
+                      setTicketButtonEmoji('ðŸ“©');
                     }}
                     className="py-2 px-3 rounded-lg bg-white/5 hover:bg-[#5865F2]/20 border border-white/5 hover:border-[#5865F2]/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">🛠️ General Help</div>
+                    <div className="font-bold text-xs text-white">ðŸ› ï¸ General Help</div>
                     <div className="text-[10px] text-slate-400 truncate">Standard support desk</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setTicketPanelTitle('🛒 Billing & Store Support');
+                      setTicketPanelTitle('ðŸ›’ Billing & Store Support');
                       setTicketPanelDesc(
                         'Need help with a recent order, subscription, payment receipt, or store inquiry? Click below to speak directly with our billing team.'
                       );
                       setTicketPanelColor('#10b981');
                       setTicketButtonText('Billing Inquiry');
-                      setTicketButtonEmoji('💳');
+                      setTicketButtonEmoji('ðŸ’³');
                     }}
                     className="py-2 px-3 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">🛒 Store & Billing</div>
+                    <div className="font-bold text-xs text-white">ðŸ›’ Store & Billing</div>
                     <div className="text-[10px] text-slate-400 truncate">Orders & payments</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setTicketPanelTitle('🛡️ Player Report & Ban Appeals');
+                      setTicketPanelTitle('ðŸ›¡ï¸ Player Report & Ban Appeals');
                       setTicketPanelDesc(
                         'Submit rule violation reports, user evidence, or appeal a server mute/ban. Our moderation leadership will review your ticket.'
                       );
                       setTicketPanelColor('#ef4444');
                       setTicketButtonText('Submit Report / Appeal');
-                      setTicketButtonEmoji('⚖️');
+                      setTicketButtonEmoji('âš–ï¸');
                     }}
                     className="py-2 px-3 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/5 hover:border-red-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">🛡️ Reports & Appeals</div>
+                    <div className="font-bold text-xs text-white">ðŸ›¡ï¸ Reports & Appeals</div>
                     <div className="text-[10px] text-slate-400 truncate">Mod cases & bans</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setTicketPanelTitle('💼 Partnerships & Affiliates');
+                      setTicketPanelTitle('ðŸ’¼ Partnerships & Affiliates');
                       setTicketPanelDesc(
                         'Looking to partner with our community, run a cross-promotion, or sponsor an event? Open a ticket to connect with our PR team.'
                       );
                       setTicketPanelColor('#f59e0b');
                       setTicketButtonText('Apply for Partner');
-                      setTicketButtonEmoji('🤝');
+                      setTicketButtonEmoji('ðŸ¤');
                     }}
                     className="py-2 px-3 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/5 hover:border-amber-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">💼 Partnerships</div>
+                    <div className="font-bold text-xs text-white">ðŸ’¼ Partnerships</div>
                     <div className="text-[10px] text-slate-400 truncate">Sponsors & affiliates</div>
                   </button>
                 </div>
@@ -4264,7 +4580,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         .filter((c) => c.type === 4)
                         .map((ch) => (
                           <option key={ch.id} value={ch.id}>
-                            📁 {ch.name}
+                            ðŸ“ {ch.name}
                           </option>
                         ))}
                       {availableChannels.filter((c) => c.type === 4).length === 0 &&
@@ -4392,7 +4708,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={ticketPanelTitle}
                       onChange={(e) => setTicketPanelTitle(e.target.value)}
-                      placeholder="e.g. 🎫 Support Desk & Inquiries"
+                      placeholder="e.g. ðŸŽ« Support Desk & Inquiries"
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
                     />
                   </div>
@@ -4432,7 +4748,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         type="text"
                         value={ticketButtonEmoji}
                         onChange={(e) => setTicketButtonEmoji(e.target.value)}
-                        placeholder="e.g. 📩 or 🎫"
+                        placeholder="e.g. ðŸ“© or ðŸŽ«"
                         className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
                       />
                     </div>
@@ -4443,7 +4759,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                       <span>BUTTON COLOR PALETTE (DISCORD STYLE)</span>
                       <span className="text-[10px] text-[#5865F2] font-mono font-semibold">
-                        {ticketButtonStyle === 3 ? '🟢 Success Green' : ticketButtonStyle === 1 ? '🔵 Blurple Blue' : ticketButtonStyle === 2 ? '⚪ Secondary Grey' : '🔴 Danger Red'}
+                        {ticketButtonStyle === 3 ? 'ðŸŸ¢ Success Green' : ticketButtonStyle === 1 ? 'ðŸ”µ Blurple Blue' : ticketButtonStyle === 2 ? 'âšª Secondary Grey' : 'ðŸ”´ Danger Red'}
                       </span>
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -4466,7 +4782,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             }`}
                           >
                             <span className={`w-4 h-4 rounded-full ${btnColor.bg} border border-white/20 shrink-0 flex items-center justify-center text-[10px]`}>
-                              {isSelected ? '✓' : ''}
+                              {isSelected ? 'âœ“' : ''}
                             </span>
                             <span className="truncate">{btnColor.label}</span>
                           </button>
@@ -4593,7 +4909,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     onClick={handleDeployTicketPanel}
                     disabled={ticketDeploying}
-                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#5865F2] to-[#4752c4] hover:from-[#6775f5] hover:to-[#5865F2] text-white font-bold text-xs shadow-lg shadow-[#5865F2]/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                   >
                     {ticketDeploying ? (
                       <>
@@ -4603,7 +4919,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     ) : ticketDeploySuccess ? (
                       <>
                         <Check className="w-4 h-4 text-emerald-300" />
-                        <span>✓ Ticket Panel Live on Discord!</span>
+                        <span>âœ“ Ticket Panel Live on Discord!</span>
                       </>
                     ) : (
                       <>
@@ -4676,52 +4992,52 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     onClick={() => {
-                      setVerifyGateTitle('🛡️ Server Verification Gate');
+                      setVerifyGateTitle('ðŸ›¡ï¸ Server Verification Gate');
                       setVerifyGateDesc(
                         'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'
                       );
                       setVerifyGateColor('#10b981');
                       setVerifyButtonText('Verify Account');
-                      setVerifyButtonEmoji('✅');
+                      setVerifyButtonEmoji('âœ…');
                       setVerifyMethod('button');
                     }}
                     className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">⚡ Instant 1-Click</div>
+                    <div className="font-bold text-xs text-white">âš¡ Instant 1-Click</div>
                     <div className="text-[10px] text-slate-400">Fastest member onboarding</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setVerifyGateTitle('🔐 Captcha Security Challenge');
+                      setVerifyGateTitle('ðŸ” Captcha Security Challenge');
                       setVerifyGateDesc(
                         'Automated raid protection is active. Click the button below to solve an interactive verification challenge and unlock member privileges.'
                       );
                       setVerifyGateColor('#06b6d4');
                       setVerifyButtonText('Solve Captcha Challenge');
-                      setVerifyButtonEmoji('🧩');
+                      setVerifyButtonEmoji('ðŸ§©');
                       setVerifyMethod('code');
                     }}
                     className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/5 hover:border-cyan-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">🧩 Modal Captcha</div>
+                    <div className="font-bold text-xs text-white">ðŸ§© Modal Captcha</div>
                     <div className="text-[10px] text-slate-400">Deter scripted spam accounts</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setVerifyGateTitle('📜 Community Rules Agreement');
+                      setVerifyGateTitle('ðŸ“œ Community Rules Agreement');
                       setVerifyGateDesc(
                         'By clicking verify below, you acknowledge having read and agreed to follow all community server rules and Discord TOS guidelines.'
                       );
                       setVerifyGateColor('#8b5cf6');
                       setVerifyButtonText('I Agree & Enter Server');
-                      setVerifyButtonEmoji('📜');
+                      setVerifyButtonEmoji('ðŸ“œ');
                       setVerifyMethod('button');
                     }}
                     className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">📜 Rules Agreement</div>
+                    <div className="font-bold text-xs text-white">ðŸ“œ Rules Agreement</div>
                     <div className="text-[10px] text-slate-400">Policy consent gateway</div>
                   </button>
                 </div>
@@ -4823,7 +5139,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                         }`}
                       >
-                        ⚡ 1-Click Button
+                        âš¡ 1-Click Button
                       </button>
                       <button
                         type="button"
@@ -4834,7 +5150,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                         }`}
                       >
-                        🧩 Captcha Modal
+                        ðŸ§© Captcha Modal
                       </button>
                     </div>
                     <p className="text-[10px] text-slate-500">
@@ -4881,7 +5197,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={verifyGateTitle}
                       onChange={(e) => setVerifyGateTitle(e.target.value)}
-                      placeholder="e.g. 🛡️ Server Verification Gate"
+                      placeholder="e.g. ðŸ›¡ï¸ Server Verification Gate"
                       className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -4921,7 +5237,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         type="text"
                         value={verifyButtonEmoji}
                         onChange={(e) => setVerifyButtonEmoji(e.target.value)}
-                        placeholder="e.g. ✅ or 🛡️"
+                        placeholder="e.g. âœ… or ðŸ›¡ï¸"
                         className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
@@ -4932,7 +5248,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                       <span>BUTTON COLOR PALETTE (DISCORD STYLE)</span>
                       <span className="text-[10px] text-emerald-400 font-mono font-semibold">
-                        {verifyButtonStyle === 3 ? '🟢 Success Green' : verifyButtonStyle === 1 ? '🔵 Blurple Blue' : verifyButtonStyle === 2 ? '⚪ Secondary Grey' : '🔴 Danger Red'}
+                        {verifyButtonStyle === 3 ? 'ðŸŸ¢ Success Green' : verifyButtonStyle === 1 ? 'ðŸ”µ Blurple Blue' : verifyButtonStyle === 2 ? 'âšª Secondary Grey' : 'ðŸ”´ Danger Red'}
                       </span>
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -4955,7 +5271,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             }`}
                           >
                             <span className={`w-4 h-4 rounded-full ${btnColor.bg} border border-white/20 shrink-0 flex items-center justify-center text-[10px]`}>
-                              {isSelected ? '✓' : ''}
+                              {isSelected ? 'âœ“' : ''}
                             </span>
                             <span className="truncate">{btnColor.label}</span>
                           </button>
@@ -5082,7 +5398,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     onClick={handleDeployVerificationGate}
                     disabled={verifyDeploying}
-                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                   >
                     {verifyDeploying ? (
                       <>
@@ -5092,7 +5408,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     ) : verifyDeploySuccess ? (
                       <>
                         <Check className="w-4 h-4 text-emerald-300" />
-                        <span>✓ Verification Gate Live on Discord!</span>
+                        <span>âœ“ Verification Gate Live on Discord!</span>
                       </>
                     ) : (
                       <>
@@ -5116,21 +5432,21 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#ff2b43] to-[#dc182f] hover:from-[#ff4055] hover:to-[#ff2b43] text-white font-bold text-sm shadow-xl shadow-[#ff2b43]/30 transition-all transform active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-sm shadow-xl transition-all transform active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSaving ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-black" />
                   <span>Saving to Bot Shards...</span>
                 </>
               ) : saveSuccess ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>Configuration Saved Live!</span>
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  <span className="text-emerald-700">Configuration Saved Live!</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
+                  <Save className="w-4 h-4 text-black" />
                   <span>Save Configuration</span>
                 </>
               )}
@@ -5211,7 +5527,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-1">
                       <h4 className="font-bold text-white text-xs">
-                        {renderPreview(ticketPanelTitle) || '🎫 Support Desk & Inquiries'}
+                        {renderPreview(ticketPanelTitle) || 'ðŸŽ« Support Desk & Inquiries'}
                       </h4>
                       <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
                         {renderPreview(ticketPanelDesc) ||
@@ -5266,7 +5582,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       ticketButtonStyle
                     )}`}
                   >
-                    <span>{ticketButtonEmoji || '📩'}</span>
+                    <span>{ticketButtonEmoji || 'ðŸ“©'}</span>
                     <span>{ticketButtonText || 'Open Support Ticket'}</span>
                   </button>
                 </div>
@@ -5286,7 +5602,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ) : ticketDeploySuccess ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>✓ Ticket Panel Live on Discord!</span>
+                    <span>âœ“ Ticket Panel Live on Discord!</span>
                   </>
                 ) : (
                   <>
@@ -5349,7 +5665,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-1">
                       <h4 className="font-bold text-white text-xs">
-                        {renderPreview(verifyGateTitle) || '🛡️ Server Verification Gate'}
+                        {renderPreview(verifyGateTitle) || 'ðŸ›¡ï¸ Server Verification Gate'}
                       </h4>
                       <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
                         {renderPreview(verifyGateDesc) ||
@@ -5404,7 +5720,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       verifyButtonStyle
                     )}`}
                   >
-                    <span>{verifyButtonEmoji || '✅'}</span>
+                    <span>{verifyButtonEmoji || 'âœ…'}</span>
                     <span>{verifyButtonText || 'Verify Account'}</span>
                   </button>
                 </div>
@@ -5414,7 +5730,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               <button
                 onClick={handleDeployVerificationGate}
                 disabled={verifyDeploying}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-200 text-xs font-semibold text-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
               >
                 {verifyDeploying ? (
                   <>
@@ -5424,7 +5740,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ) : verifyDeploySuccess ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>✓ Verification Gate Live on Discord!</span>
+                    <span>âœ“ Verification Gate Live on Discord!</span>
                   </>
                 ) : (
                   <>
@@ -5565,7 +5881,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       >
                         {renderDiscordEmojiInline(btn.emoji)}
                         <span>{btn.label || 'Link'}</span>
-                        <span className="text-[10px] text-slate-400">↗</span>
+                        <span className="text-[10px] text-slate-400">â†—</span>
                       </div>
                     ))}
                   </div>
@@ -5584,7 +5900,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     {senderSending
                       ? 'Dispatching...'
                       : senderSent
-                      ? '✓ Dispatched to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)
+                      ? 'âœ“ Dispatched to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)
                       : 'Send to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)}
                   </span>
                 </button>
@@ -5708,7 +6024,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       >
                         {btn?.emoji && <span>{btn.emoji}</span>}
                         <span>{btn?.label || 'Link'}</span>
-                        <span className="text-[10px] text-slate-400">↗</span>
+                        <span className="text-[10px] text-slate-400">â†—</span>
                       </div>
                     ))}
                   </div>
@@ -5719,11 +6035,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               <div className="pt-2">
                 <button
                   onClick={handleSendTestMessage}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-200 text-black text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
                 >
-                  <Send className="w-3.5 h-3.5 text-[#ff2b43]" />
+                  <Send className="w-3.5 h-3.5 text-black" />
                   <span>
-                    {testSent ? '✓ Sent Test Message to #' + targetChannel : 'Send Test Message'}
+                    {testSent ? 'âœ“ Sent Test Message to #' + targetChannel : 'Send Test Message'}
                   </span>
                 </button>
               </div>
@@ -5735,35 +6051,35 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       {/* Variables Guide Modal */}
       {showVariablesGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="w-full max-w-md bg-[#0e0f14] border border-[#ff2b43]/30 rounded-2xl p-6 text-left shadow-2xl">
+          <div className="w-full max-w-md bg-[#0a0c10] border border-white/10 rounded-2xl p-6 text-left shadow-2xl">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
-              <h3 className="font-orbitron font-bold text-sm text-white">Variables Guide</h3>
+              <h3 className="font-display font-bold text-sm text-white">Variables Guide</h3>
               <button
                 onClick={() => setShowVariablesGuide(false)}
                 className="text-slate-400 hover:text-white cursor-pointer"
               >
-                ✕
+                âœ•
               </button>
             </div>
             <div className="space-y-3 text-xs">
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                <code className="text-[#ff2b43] font-mono font-bold">{'{user}'}</code>
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <code className="text-white font-mono font-bold">{'{user}'}</code>
                 <p className="text-slate-400 text-[11px] mt-0.5">Mentions the joining member.</p>
               </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                <code className="text-[#ff2b43] font-mono font-bold">{'{server_name}'}</code>
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <code className="text-white font-mono font-bold">{'{server_name}'}</code>
                 <p className="text-slate-400 text-[11px] mt-0.5">The current server's name.</p>
               </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                <code className="text-[#ff2b43] font-mono font-bold">{'{server_membercount}'}</code>
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <code className="text-white font-mono font-bold">{'{server_membercount}'}</code>
                 <p className="text-slate-400 text-[11px] mt-0.5">Total member count after joining.</p>
               </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                <code className="text-[#ff2b43] font-mono font-bold">{'{user_avatar}'}</code>
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <code className="text-white font-mono font-bold">{'{user_avatar}'}</code>
                 <p className="text-slate-400 text-[11px] mt-0.5">Direct URL to user avatar picture.</p>
               </div>
-              <div className="p-2 rounded-lg bg-white/5 border border-white/5">
-                <code className="text-[#ff2b43] font-mono font-bold">{'{server_icon}'}</code>
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <code className="text-white font-mono font-bold">{'{server_icon}'}</code>
                 <p className="text-slate-400 text-[11px] mt-0.5">Direct URL to server icon image.</p>
               </div>
             </div>
@@ -5783,7 +6099,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 onClick={() => setShowAuditLogs(false)}
                 className="text-slate-400 hover:text-white cursor-pointer"
               >
-                ✕
+                âœ•
               </button>
             </div>
             <div className="space-y-2 max-h-72 overflow-y-auto text-xs font-mono">
