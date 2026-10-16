@@ -228,7 +228,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [footerText, setFooterText] = useState('Enjoy your stay in {server_name}');
   const [footerIconUrl, setFooterIconUrl] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [mainImageUrl, setMainImageUrl] = useState('');
+  const [mainImageUrl, setMainImageUrl] = useState('https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dm5ma3lsMTE5MWpxa25xb2x4eTc4NXFhcjlycTVnMXV6eGZjbnlscSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WW5p7jd8ImZ16q4w2r/giphy.gif');
   const [welcomerButtons, setWelcomerButtons] = useState<Array<{ label: string; url: string; emoji?: string }>>([
     { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“¢' },
     { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“•' },
@@ -2420,6 +2420,34 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <RefreshCw className="w-3.5 h-3.5" />
                       <span>Refresh</span>
                     </button>
+                  </div>
+                </div>
+
+                {/* Dexter Sentinel Operational Banner */}
+                <div className="liquid-glass rounded-2xl border border-white/10 p-1 relative overflow-hidden group shadow-xl">
+                  <div className="relative h-32 sm:h-36 w-full rounded-[14px] overflow-hidden">
+                    <img
+                      src="/dexter-banner.gif"
+                      alt="Dexter Sentinel"
+                      className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        if (!img.dataset.fallback) {
+                          img.dataset.fallback = '1';
+                          img.src = 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dm5ma3lsMTE5MWpxa25xb2x4eTc4NXFhcjlycTVnMXV6eGZjbnlscSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WW5p7jd8ImZ16q4w2r/giphy.gif';
+                        }
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#06070a] via-[#06070a]/30 to-transparent"></div>
+                    <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-slate-300 font-bold flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        DEXTER DEFENSE ENGINE • LIVE POSTURE
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full liquid-glass text-slate-300 border border-white/10">
+                        CLUSTER 0 • SYNCHRONIZED
+                      </span>
+                    </div>
                   </div>
                 </div>
 

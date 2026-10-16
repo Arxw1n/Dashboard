@@ -29,12 +29,16 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: #06070a;
   background-image: 
-    radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.06) 0px, transparent 55%),
-    radial-gradient(at 10% 40%, rgba(255, 43, 67, 0.05) 0px, transparent 45%),
-    radial-gradient(at 90% 70%, rgba(88, 101, 242, 0.05) 0px, transparent 45%);
+    radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.07) 0px, transparent 55%),
+    radial-gradient(at 10% 40%, rgba(255, 255, 255, 0.02) 0px, transparent 45%),
+    radial-gradient(at 90% 70%, rgba(255, 255, 255, 0.02) 0px, transparent 45%);
   background-attachment: fixed;
   color: #f1f5f9;
   min-height: 100vh;
@@ -51,28 +55,28 @@ body {
 }
 
 .font-orbitron {
-  font-family: 'Orbitron', 'Space Grotesk', sans-serif;
+  font-family: 'Space Grotesk', 'Orbitron', sans-serif;
 }
 
 .font-rajdhani {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Space Grotesk', 'Rajdhani', sans-serif;
 }
 
-/* Obsidian Liquid Glass Card */
+/* Obsidian Liquid Glass Card - Smooth & Slow Easing */
 .liquid-glass {
   background: rgba(14, 16, 22, 0.65);
-  backdrop-filter: blur(16px) saturate(145%);
-  -webkit-backdrop-filter: blur(16px) saturate(145%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(145%);
+  -webkit-backdrop-filter: blur(20px) saturate(145%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
-  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-glass:before {
   content: "";
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 50%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 50%);
   pointer-events: none;
   border-radius: inherit;
   position: absolute;
@@ -80,17 +84,18 @@ body {
 }
 
 .liquid-glass:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 255, 255, 0.04);
 }
 
 /* Legacy Glass Panel support */
 .glass-panel {
   background: rgba(12, 14, 19, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Obsidian Text Gradient */
@@ -109,7 +114,7 @@ body {
   background-image: var(--gradient-mesh);
 }
 
-/* Keyframe Animations */
+/* Smooth & Slow Keyframe Animations */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -121,7 +126,7 @@ body {
 
 .animate-shimmer {
   background-size: 200% auto;
-  animation: shimmer 4s linear infinite;
+  animation: shimmer 8s linear infinite;
 }
 
 @keyframes float {
@@ -129,12 +134,12 @@ body {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
 
 .animate-float {
-  animation: float 4s ease-in-out infinite;
+  animation: float 7s ease-in-out infinite;
 }
 
 @keyframes pulseGlow {
@@ -144,29 +149,30 @@ body {
   }
   50% {
     opacity: 0.7;
-    transform: scale(1.05);
+    transform: scale(1.04);
   }
 }
 
 .animate-pulse-glow {
-  animation: pulseGlow 3s ease-in-out infinite;
+  animation: pulseGlow 6s ease-in-out infinite;
 }
 
-/* Scrollbar */
+/* Scrollbar - Clean Obsidian */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #08090d;
+  background: #06070a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e222f;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  transition: background 0.3s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #33394d;
+  background: rgba(255, 255, 255, 0.25);
 }

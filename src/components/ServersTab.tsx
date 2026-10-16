@@ -275,6 +275,46 @@ export const ServersTab: React.FC<ServersTabProps> = ({
           />
         ) : (
           <>
+            {/* Dexter Corporation Animated Banner Showcase */}
+            <div className="mb-8 liquid-glass rounded-3xl border border-white/10 p-1 relative overflow-hidden group shadow-2xl">
+              <div className="relative h-44 sm:h-52 w-full rounded-[22px] overflow-hidden">
+                <img
+                  src="/dexter-banner.gif"
+                  alt="Dexter Corporation Sentinel"
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (!img.dataset.fallback) {
+                      img.dataset.fallback = '1';
+                      img.src = 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dm5ma3lsMTE5MWpxa25xb2x4eTc4NXFhcjlycTVnMXV6eGZjbnlscSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WW5p7jd8ImZ16q4w2r/giphy.gif';
+                    }
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#06070a] via-[#06070a]/40 to-transparent"></div>
+                <div className="absolute bottom-4 left-5 right-5 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase font-bold">
+                        DEXTER CORPORATION SENTINEL ACTIVE
+                      </span>
+                    </div>
+                    <h2 className="font-display font-bold text-xl sm:text-2xl text-white tracking-tight drop-shadow-md">
+                      Next-Gen Discord Shield Architecture
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-mono">
+                    <span className="liquid-glass px-3 py-1 rounded-full text-slate-300 border border-white/10">
+                      Cluster 0 • 18ms
+                    </span>
+                    <span className="liquid-glass px-3 py-1 rounded-full text-emerald-400 border border-emerald-500/20">
+                      100% Synced
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Header Area */}
             <div className="mb-10 animate-in fade-in slide-in-from-top-2 duration-300">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">

@@ -317,21 +317,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Aurora Glow behind Mascot */}
               <div className="absolute inset-10 bg-white/10 rounded-full blur-3xl opacity-50 pointer-events-none" />
 
-              {/* Mascot Floating Container - Exact Obsidian Floating Mascot */}
-              <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center animate-float transform-gpu">
-                <div className="absolute inset-2 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-                <img
-                  src="/astra-avatar.png"
-                  alt="Dexter"
-                  className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_20px_40px_rgba(255,255,255,0.2)]"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    if (!img.dataset.fallback) {
-                      img.dataset.fallback = '1';
-                      img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
-                    }
-                  }}
-                />
+              {/* Mascot Floating Container - Animated Sentinel Showcase */}
+              <div className="relative z-10 w-full max-w-[460px] flex items-center justify-center animate-float transform-gpu">
+                <div className="absolute inset-2 bg-white/10 rounded-3xl blur-3xl pointer-events-none" />
+                <div className="liquid-glass p-2.5 rounded-3xl border border-white/20 shadow-2xl relative overflow-hidden group w-full">
+                  <img
+                    src="/dexter-banner.gif"
+                    alt="Dexter Corporation Sentinel"
+                    className="w-full h-auto max-h-[320px] rounded-2xl object-cover filter drop-shadow-[0_20px_40px_rgba(255,255,255,0.15)] group-hover:scale-[1.02] transition-transform duration-700"
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      if (!img.dataset.fallback) {
+                        img.dataset.fallback = '1';
+                        img.src = 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dm5ma3lsMTE5MWpxa25xb2x4eTc4NXFhcjlycTVnMXV6eGZjbnlscSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WW5p7jd8ImZ16q4w2r/giphy.gif';
+                      }
+                    }}
+                  />
+                  <div className="mt-2.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-300">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      DEXTERCORP DEFENSE SENTINEL
+                    </span>
+                    <span className="text-white font-bold tracking-wider">LIVE</span>
+                  </div>
+                </div>
               </div>
 
               {/* Floating Badge 1: Latency */}
