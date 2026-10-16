@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const { id } = req.query;
   const guildId = id;
-  const { channelId, embed, content } = req.body || {};
+  const { channelId, embed, content, buttons, components, webhook } = req.body || {};
 
   const botToken =
     process.env.DISCORD_BOT_TOKEN ||
@@ -133,12 +133,88 @@ export default async function handler(req, res) {
       payload.embeds = [embedObj];
     }
 
-    const sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+    // Action Row Buttons (e.g. link buttons)
+    const rawButtons = buttons || components;
+    if (Array.isArray(rawButtons) && rawButtons.length > 0) {
+      const parsedButtons = rawButtons
+        .filter((b) => b && b.label && b.url && isValidUrl(b.url))
+        .slice(0, 5)
+        .map((b) => {
+          const btn = {
+            type: 2,
+            style: 5,
+            label: String(b.label).slice(0, 80),
+            url: b.url,
+          };
+          if (b.emoji) {
+            const customMatch = String(b.emoji).match(/<(a?):([a-zA-Z0-9_]+):(\d+)>/);
+            if (customMatch) {
+              btn.emoji = {
+                name: customMatch[2],
+                id: customMatch[3],
+                animated: customMatch[1] === 'a',
+              };
+            } else {
+              btn.emoji = { name: String(b.emoji).trim() };
+            }
+          }
+          return btn;
+        });
+
+      if (parsedButtons.length > 0) {
+        payload.components = [
+          {
+            type: 1,
+            components: parsedButtons,
+          },
+        ];
+      }
+    }
+
+    // Webhook profile override dispatch if requested
+    let sendUrl = `https://discord.com/api/v10/channels/${resolvedChannelId}/messages`;
+    let headers = {
+      Authorization: `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+    };
+
+    if (webhook && (webhook.name || webhook.avatar_url)) {
+      try {
+        // Attempt to create or fetch a webhook for this channel
+        const whListRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/webhooks`, {
+          headers: { Authorization: `Bot ${botToken}` },
+        });
+        if (whListRes.ok) {
+          const whList = await whListRes.json();
+          let hook = whList.find((w) => w.token);
+          if (!hook) {
+            const createWhRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/webhooks`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bot ${botToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ name: webhook.name || 'Dexter Sentinel' }),
+            });
+            if (createWhRes.ok) {
+              hook = await createWhRes.json();
+            }
+          }
+          if (hook && hook.token) {
+            sendUrl = `https://discord.com/api/v10/webhooks/${hook.id}/${hook.token}?wait=true`;
+            headers = { 'Content-Type': 'application/json' };
+            if (webhook.name) payload.username = webhook.name;
+            if (webhook.avatar_url && isValidUrl(webhook.avatar_url)) payload.avatar_url = webhook.avatar_url;
+          }
+        }
+      } catch (whErr) {
+        console.warn('Webhook dispatch fallback:', whErr);
+      }
+    }
+
+    const sendRes = await fetch(sendUrl, {
       method: 'POST',
-      headers: {
-        Authorization: `Bot ${botToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 

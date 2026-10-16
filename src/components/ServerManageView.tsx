@@ -39,10 +39,90 @@ import {
   ShieldCheck,
   Terminal,
   Ticket,
+  Bookmark,
+  Download,
+  Upload,
+  Copy,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Layers,
 } from 'lucide-react';
 import { GuildItem, GuildSettings, UserProfile, CommandItem } from '../types';
 import { SyncingLoader } from './SyncingLoader';
 import { CommandsTab } from './CommandsTab';
+
+// Helper to render Discord emojis in preview text
+const DiscordFormattedText: React.FC<{ text: string }> = ({ text }) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return (
+    <div className="space-y-1">
+      {lines.map((line, lIdx) => {
+        const parts = line.split(/(<(?:a)?:[a-zA-Z0-9_]+:\d+>)/g);
+        return (
+          <div key={lIdx} className="leading-relaxed break-words min-h-[1.2em]">
+            {parts.map((part, pIdx) => {
+              const emojiMatch = part.match(/<(a)?:([a-zA-Z0-9_]+):(\d+)>/);
+              if (emojiMatch) {
+                const isAnimated = emojiMatch[1] === 'a';
+                const emojiName = emojiMatch[2];
+                const emojiId = emojiMatch[3];
+                const url = `https://cdn.discordapp.com/emojis/${emojiId}.${isAnimated ? 'gif' : 'png'}?size=48&quality=lossless`;
+                return (
+                  <img
+                    key={pIdx}
+                    src={url}
+                    alt={emojiName}
+                    title={`:${emojiName}:`}
+                    className="inline-block w-4 h-4 align-sub mx-0.5 object-contain"
+                  />
+                );
+              }
+              if (part.includes('**')) {
+                const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+                return (
+                  <span key={pIdx}>
+                    {boldParts.map((bp, bpIdx) => {
+                      if (bp.startsWith('**') && bp.endsWith('**')) {
+                        return (
+                          <strong key={bpIdx} className="font-bold text-white">
+                            {bp.slice(2, -2)}
+                          </strong>
+                        );
+                      }
+                      return bp;
+                    })}
+                  </span>
+                );
+              }
+              return <span key={pIdx}>{part}</span>;
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const renderDiscordEmojiInline = (emojiStr?: string) => {
+  if (!emojiStr) return null;
+  const customMatch = emojiStr.match(/<(a)?:([a-zA-Z0-9_]+):(\d+)>/);
+  if (customMatch) {
+    const isAnimated = customMatch[1] === 'a';
+    const emojiName = customMatch[2];
+    const emojiId = customMatch[3];
+    return (
+      <img
+        src={`https://cdn.discordapp.com/emojis/${emojiId}.${isAnimated ? 'gif' : 'png'}?size=48&quality=lossless`}
+        alt={emojiName}
+        className="w-4 h-4 object-contain inline-block mr-1 align-sub"
+      />
+    );
+  }
+  return <span className="mr-1">{emojiStr}</span>;
+};
 
 interface ServerManageViewProps {
   guild: GuildItem;
@@ -266,9 +346,68 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     },
   ]);
 
-  // 11. Embed Builder Settings
-  const [builderChannel, setBuilderChannel] = useState('announcements');
-  const [builderSent, setBuilderSent] = useState(false);
+  // 11. Message Sender (formerly Embed Builder) Independent State
+  const [senderChannel, setSenderChannel] = useState('announcements');
+  const [senderPreMessage, setSenderPreMessage] = useState(
+    'Hey, welcome to **Dexter Corporation**! The easiest way to personalize, protect, and dispatch rich interactive messages to your Discord server.'
+  );
+  const [senderEmbedTitle, setSenderEmbedTitle] = useState('🛡️ Dexter Components V2');
+  const [senderEmbedColor, setSenderEmbedColor] = useState('#ff0033');
+  const [senderEmbedDesc, setSenderEmbedDesc] = useState(
+    '### Welcome to Dexter Corporation\nCustomize your layout with rich text, dividers, custom emojis, and media cards.'
+  );
+  const [senderAuthorName, setSenderAuthorName] = useState('Dexter Corporation');
+  const [senderAuthorIcon, setSenderAuthorIcon] = useState('');
+  const [senderFooterText, setSenderFooterText] = useState('DexterCorp Security & Dispatch');
+  const [senderFooterIcon, setSenderFooterIcon] = useState('');
+  const [senderThumbnailUrl, setSenderThumbnailUrl] = useState('');
+  const [senderImageUrl, setSenderImageUrl] = useState('');
+  const [senderShowDivider, setSenderShowDivider] = useState(true);
+  const [senderSpoiler, setSenderSpoiler] = useState(false);
+  const [senderWebhookName, setSenderWebhookName] = useState('');
+  const [senderWebhookAvatar, setSenderWebhookAvatar] = useState('');
+  const [senderThreadName, setSenderThreadName] = useState('');
+  const [showProfileOverride, setShowProfileOverride] = useState(false);
+  const [showThreadTargeting, setShowThreadTargeting] = useState(false);
+  const [senderButtons, setSenderButtons] = useState<Array<{ id: string; label: string; url: string; emoji?: string }>>([
+    { id: '1', label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '<a:73288animatedarrowred:1554068830689431563>' },
+    { id: '2', label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '<:2392verified:1554068820828626944>' },
+  ]);
+  const [senderSent, setSenderSent] = useState(false);
+  const [senderSending, setSenderSending] = useState(false);
+
+  // Modals & Emojis for Message Sender
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showEmojiModal, setShowEmojiModal] = useState(false);
+  const [emojiTargetField, setEmojiTargetField] = useState<'preMessage' | 'title' | 'description'>('preMessage');
+  const [savedTemplates, setSavedTemplates] = useState<Array<{ id: string; name: string; data: any }>>(() => {
+    try {
+      const stored = localStorage.getItem(`dexter_templates_${guild.id}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [customEmojiInput, setCustomEmojiInput] = useState('');
+  const [serverCustomEmojis, setServerCustomEmojis] = useState<string[]>([
+    '<a:73288animatedarrowred:1554068830689431563>',
+    '<:2392verified:1554068820828626944>',
+    '<a:flame:1554068992648290415>',
+    '<a:1706redcrownfire:1554068818337468476>',
+    '<:86067verified86x:1554068835227930624>',
+    '<a:Admin128:1554066211636248597>',
+    '<a:736775redcheck:1554068843981439036>',
+    '🚀',
+    '💎',
+    '🛡️',
+    '📜',
+    '📢',
+    '🎫',
+    '⚡',
+    '👑',
+  ]);
+  const [emojiToast, setEmojiToast] = useState('');
 
   // Live Guild Text Channels & Roles fetched from Discord API
   const [availableChannels, setAvailableChannels] = useState<{ id: string; name: string; type?: number }[]>([]);
@@ -288,7 +427,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             }
             return curr;
           });
-          setBuilderChannel((curr) => {
+          setSenderChannel((curr) => {
             if (!curr || curr === 'announcements' || curr === 'general') {
               return chRes.data[0].id;
             }
@@ -660,44 +799,307 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setTimeout(() => setTestSent(false), 3500);
   };
 
-  // Send builder embed to channel with dual-endpoint fallback
-  const handleSendBuilderEmbed = async () => {
-    setBuilderSent(true);
+  // Message Sender: Dispatch Message with Dual Fallback & Loading States
+  const handleSendMessageSender = async () => {
+    setSenderSending(true);
+    setSenderSent(false);
+
     const payload = {
-      channelId: builderChannel,
+      channelId: senderChannel,
+      content: senderPreMessage,
       embed: {
-        title: embedTitle,
-        description: description,
-        color: embedColor,
-        author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
-        thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-        image: mainImageUrl ? { url: mainImageUrl } : undefined,
-        footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
+        title: senderEmbedTitle,
+        description: senderEmbedDesc,
+        color: senderEmbedColor,
+        author: senderAuthorName ? { name: senderAuthorName, icon_url: senderAuthorIcon } : undefined,
+        thumbnail: senderThumbnailUrl ? { url: senderThumbnailUrl } : undefined,
+        image: senderImageUrl ? { url: senderImageUrl } : undefined,
+        footer: senderFooterText ? { text: senderFooterText, icon_url: senderFooterIcon } : undefined,
       },
-      welcome: {
-        content: '',
-        embeds: {
-          title: embedTitle,
-          description: description,
-          color: embedColor,
-          author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
-          thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-          image: mainImageUrl ? { url: mainImageUrl } : undefined,
-          footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
-        },
-      },
+      buttons: senderButtons,
+      webhook: senderWebhookName || senderWebhookAvatar ? {
+        name: senderWebhookName,
+        avatar_url: senderWebhookAvatar,
+      } : undefined,
     };
 
     try {
-      try {
-        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/embed/send`), payload);
-      } catch {
-        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), payload);
-      }
+      await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/embed/send`), payload);
+      setSenderSent(true);
     } catch (e) {
-      console.warn('Builder send fallback:', e);
+      console.warn('Message sender primary error, trying fallback:', e);
+      try {
+        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
+          channelId: senderChannel,
+          welcome: {
+            content: senderPreMessage,
+            buttons: senderButtons,
+            embeds: payload.embed,
+          },
+        });
+        setSenderSent(true);
+      } catch (err2) {
+        console.error('All send fallbacks failed:', err2);
+      }
+    } finally {
+      setSenderSending(false);
+      setTimeout(() => setSenderSent(false), 4000);
     }
-    setTimeout(() => setBuilderSent(false), 3500);
+  };
+
+  // Add Action Button
+  const handleAddSenderButton = () => {
+    if (senderButtons.length >= 5) return;
+    setSenderButtons([
+      ...senderButtons,
+      {
+        id: Date.now().toString(),
+        label: 'New Link',
+        url: 'https://discord.gg',
+        emoji: '🔗',
+      },
+    ]);
+  };
+
+  // Remove Action Button
+  const handleRemoveSenderButton = (id: string) => {
+    setSenderButtons(senderButtons.filter((b) => b.id !== id));
+  };
+
+  // Update Action Button
+  const handleUpdateSenderButton = (id: string, field: 'label' | 'url' | 'emoji', val: string) => {
+    setSenderButtons(
+      senderButtons.map((b) => (b.id === id ? { ...b, [field]: val } : b))
+    );
+  };
+
+  // Save current design as template
+  const handleSaveCurrentTemplate = () => {
+    if (!newTemplateName.trim()) return;
+    const newTemplate = {
+      id: Date.now().toString(),
+      name: newTemplateName.trim(),
+      data: {
+        preMessage: senderPreMessage,
+        title: senderEmbedTitle,
+        description: senderEmbedDesc,
+        color: senderEmbedColor,
+        authorName: senderAuthorName,
+        authorIcon: senderAuthorIcon,
+        footerText: senderFooterText,
+        footerIcon: senderFooterIcon,
+        thumbnailUrl: senderThumbnailUrl,
+        imageUrl: senderImageUrl,
+        showDivider: senderShowDivider,
+        spoiler: senderSpoiler,
+        buttons: senderButtons,
+      },
+    };
+    const updated = [newTemplate, ...savedTemplates];
+    setSavedTemplates(updated);
+    try {
+      localStorage.setItem(`dexter_templates_${guild.id}`, JSON.stringify(updated));
+    } catch (err) {
+      console.warn('Template save error:', err);
+    }
+    setNewTemplateName('');
+  };
+
+  // Apply saved or preset template
+  const handleApplyTemplate = (data: any) => {
+    if (!data) return;
+    if (data.preMessage !== undefined) setSenderPreMessage(data.preMessage);
+    if (data.title !== undefined) setSenderEmbedTitle(data.title);
+    if (data.description !== undefined) setSenderEmbedDesc(data.description);
+    if (data.color !== undefined) setSenderEmbedColor(data.color);
+    if (data.authorName !== undefined) setSenderAuthorName(data.authorName);
+    if (data.authorIcon !== undefined) setSenderAuthorIcon(data.authorIcon);
+    if (data.footerText !== undefined) setSenderFooterText(data.footerText);
+    if (data.footerIcon !== undefined) setSenderFooterIcon(data.footerIcon);
+    if (data.thumbnailUrl !== undefined) setSenderThumbnailUrl(data.thumbnailUrl);
+    if (data.imageUrl !== undefined) setSenderImageUrl(data.imageUrl);
+    if (data.showDivider !== undefined) setSenderShowDivider(data.showDivider);
+    if (data.spoiler !== undefined) setSenderSpoiler(data.spoiler);
+    if (Array.isArray(data.buttons)) setSenderButtons(data.buttons);
+    setShowTemplatesModal(false);
+  };
+
+  // Delete saved template
+  const handleDeleteTemplate = (id: string) => {
+    const updated = savedTemplates.filter((t) => t.id !== id);
+    setSavedTemplates(updated);
+    try {
+      localStorage.setItem(`dexter_templates_${guild.id}`, JSON.stringify(updated));
+    } catch (err) {
+      console.warn('Template delete error:', err);
+    }
+  };
+
+  // Apply Obsidian Instant Presets
+  const handleApplyPreset = (type: 'rules' | 'announcement' | 'verification' | 'booster') => {
+    if (type === 'rules') {
+      handleApplyTemplate({
+        preMessage: 'Hey @everyone, please make sure to read and agree to our server rules before participating in the community!',
+        title: '📜 Official Server Rules & Guidelines',
+        description: '### Welcome to ' + guild.name + '\n\n<:2392verified:1554068820828626944> **1. Respect Everyone**\nTreat all members with respect. No harassment, hate speech, or toxicity.\n\n<:2392verified:1554068820828626944> **2. No Spam or Self-Promotion**\nDo not advertise other Discord servers, social media, or paid services in public channels or DMs.\n\n<:2392verified:1554068820828626944> **3. Follow Discord ToS**\nAdhere strictly to Discord\'s Terms of Service and Community Guidelines.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nClick below to verify or accept our terms.',
+        color: '#10b981',
+        authorName: guild.name + ' Administration',
+        authorIcon: '',
+        footerText: 'Violations will result in automated timeout or ban',
+        footerIcon: '',
+        thumbnailUrl: '',
+        imageUrl: '',
+        showDivider: true,
+        spoiler: false,
+        buttons: [
+          { id: '1', label: 'Accept Rules', url: 'https://discord.gg/dextercorp', emoji: '<a:736775redcheck:1554068843981439036>' },
+          { id: '2', label: 'Support Ticket', url: 'https://discord.gg/dextercorp', emoji: '<:2392verified:1554068820828626944>' },
+        ],
+      });
+    } else if (type === 'announcement') {
+      handleApplyTemplate({
+        preMessage: '📢 @everyone **IMPORTANT COMMUNITY ANNOUNCEMENT** — Major security and bot system upgrades are live!',
+        title: '🚨 Important System Announcement & Security Dispatch',
+        description: '### DexterCorp V2 Deployment Complete\n\n<a:flame:1554068992648290415> **Sentinel Anti-Nuke** is now active 24/7 across all server shards.\n<a:1706redcrownfire:1554068818337468476> **Verification Gate** updated to prevent malicious automated bot accounts.\n<a:73288animatedarrowred:1554068830689431563> All members are encouraged to check the documentation below.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nStay safe and report any anomalies to our security staff.',
+        color: '#ff2b43',
+        authorName: 'DexterCorp Sentinel Core',
+        authorIcon: '',
+        footerText: 'Automated Threat Dispatch · Shard #01',
+        footerIcon: '',
+        thumbnailUrl: '',
+        imageUrl: '',
+        showDivider: true,
+        spoiler: false,
+        buttons: [
+          { id: '1', label: 'Changelog', url: 'https://discord.gg/dextercorp', emoji: '<a:73288animatedarrowred:1554068830689431563>' },
+          { id: '2', label: 'Report Issue', url: 'https://discord.gg/dextercorp', emoji: '<a:Admin128:1554066211636248597>' },
+        ],
+      });
+    } else if (type === 'verification') {
+      handleApplyTemplate({
+        preMessage: '🛡️ Welcome to **' + guild.name + '**! Complete verification below to gain access to all channels.',
+        title: '🔒 Member Security Verification Gate',
+        description: '### Human Verification Required\n\nTo protect the server against automated raids, spam bots, and unauthorized accounts, please verify your account.\n\n<:86067verified86x:1554068835227930624> **Instant Verification**\n<a:73288animatedarrowred:1554068830689431563> Click the verification button below to instantly receive the **Verified Member** role.',
+        color: '#5865F2',
+        authorName: 'DexterCorp Gatekeeper',
+        authorIcon: '',
+        footerText: 'Dexter Corporation · Anti-Raid Active',
+        footerIcon: '',
+        thumbnailUrl: '',
+        imageUrl: '',
+        showDivider: true,
+        spoiler: false,
+        buttons: [
+          { id: '1', label: 'Verify Account', url: 'https://discord.gg/dextercorp', emoji: '<:86067verified86x:1554068835227930624>' },
+        ],
+      });
+    } else if (type === 'booster') {
+      handleApplyTemplate({
+        preMessage: '✨ **BOOST OUR SERVER** and unlock exclusive VIP perks and badges today!',
+        title: '💎 VIP Server Booster Perks & Privileges',
+        description: '### Exclusive Booster Rewards\n\nSupport **' + guild.name + '** by boosting and get instant access to:\n\n✨ **Custom Pink Booster Role & Colored Name**\n✨ **Access to Secret VIP Voice & Chat Lounges**\n✨ **Permission to attach files, images, and external emojis**\n✨ **Direct priority support in tickets**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nThank you to all our generous server boosters!',
+        color: '#ec4899',
+        authorName: 'DexterCorp Booster Rewards',
+        authorIcon: '',
+        footerText: 'Boost via Discord Nitro to unlock immediately',
+        footerIcon: '',
+        thumbnailUrl: '',
+        imageUrl: '',
+        showDivider: true,
+        spoiler: false,
+        buttons: [
+          { id: '1', label: 'Boost Server', url: 'https://discord.gg/dextercorp', emoji: '💎' },
+          { id: '2', label: 'Claim Perks', url: 'https://discord.gg/dextercorp', emoji: '✨' },
+        ],
+      });
+    }
+  };
+
+  // Export current template as JSON
+  const handleExportTemplate = () => {
+    const data = {
+      guild: guild.name,
+      exportedAt: new Date().toISOString(),
+      template: {
+        preMessage: senderPreMessage,
+        title: senderEmbedTitle,
+        description: senderEmbedDesc,
+        color: senderEmbedColor,
+        authorName: senderAuthorName,
+        authorIcon: senderAuthorIcon,
+        footerText: senderFooterText,
+        footerIcon: senderFooterIcon,
+        thumbnailUrl: senderThumbnailUrl,
+        imageUrl: senderImageUrl,
+        showDivider: senderShowDivider,
+        spoiler: senderSpoiler,
+        buttons: senderButtons,
+      },
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dexter_template_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import template from JSON
+  const handleImportTemplate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const json = JSON.parse(evt.target?.result as string);
+        const t = json.template || json;
+        handleApplyTemplate(t);
+      } catch (err) {
+        console.warn('Import parse error:', err);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Add custom emoji to active server list
+  const handleAddCustomEmoji = () => {
+    if (!customEmojiInput.trim()) return;
+    if (serverCustomEmojis.length >= 15) return;
+    if (!serverCustomEmojis.includes(customEmojiInput.trim())) {
+      setServerCustomEmojis([...serverCustomEmojis, customEmojiInput.trim()]);
+    }
+    setCustomEmojiInput('');
+  };
+
+  // Insert emoji into targeted input and copy to clipboard
+  const handleInsertEmoji = (emoji: string) => {
+    if (emojiTargetField === 'preMessage') {
+      setSenderPreMessage((prev) => (prev ? prev + ' ' + emoji : emoji));
+    } else if (emojiTargetField === 'title') {
+      setSenderEmbedTitle((prev) => (prev ? prev + ' ' + emoji : emoji));
+    } else if (emojiTargetField === 'description') {
+      setSenderEmbedDesc((prev) => (prev ? prev + ' ' + emoji : emoji));
+    }
+    try {
+      navigator.clipboard?.writeText(emoji);
+    } catch {}
+    setEmojiToast(`Inserted & copied ${emoji} to clipboard!`);
+    setTimeout(() => setEmojiToast(''), 2500);
+  };
+
+  // Clear Message Sender
+  const handleClearMessageSender = () => {
+    setSenderPreMessage('');
+    setSenderEmbedTitle('');
+    setSenderEmbedDesc('');
+    setSenderAuthorName('');
+    setSenderAuthorIcon('');
+    setSenderFooterText('');
+    setSenderFooterIcon('');
+    setSenderThumbnailUrl('');
+    setSenderImageUrl('');
+    setSenderButtons([]);
   };
 
   // Add whitelist user
@@ -818,7 +1220,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     { id: 'autoreact', label: 'Autoreact', icon: Smile },
     { id: 'autoresponder', label: 'Autoresponder', icon: MessageSquare },
     { id: 'giveaway', label: 'Giveaway', icon: Gift },
-    { id: 'embed_builder', label: 'Embed Builder', icon: Code },
+    { id: 'embed_builder', label: 'Message Sender', icon: Send },
   ];
 
   return (
@@ -2799,177 +3201,385 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           {/* ======================================================== */}
           {/* TAB 12: EMBED BUILDER */}
           {/* ======================================================== */}
-          {activeModule === 'embed_builder' && (
-            <div className="space-y-6">
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex items-center justify-between shadow-lg">
-                <div className="flex items-center gap-3">
-                  <Code className="w-6 h-6 text-emerald-400" />
-                  <div>
-                    <h3 className="font-orbitron font-bold text-base text-white">
-                      Interactive Embed Builder
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Craft rich announcement cards with live visual feedback
-                    </p>
-                  </div>
+          {/* ======================================================== */}
+          {/* TAB 12: MESSAGE SENDER (OBSIDIAN EDITION) */}
+          {/* ======================================================== */}
+          {(activeModule === 'embed_builder' || activeModule === 'message_sender') && (
+            <div className="space-y-6 animate-in fade-in">
+              {/* Toast Notification */}
+              {emojiToast && (
+                <div className="fixed top-20 right-6 z-50 bg-[#1e2029] border border-emerald-500/40 text-emerald-300 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>{emojiToast}</span>
                 </div>
-              </div>
+              )}
 
-              {/* Embed Builder Quick Presets Bar */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+              {/* Obsidian Top Action Bar */}
+              <div className="bg-[#0e0f15] border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    TEMPLATE PRESETS:
-                  </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      setEmbedTitle('📢 Community Announcement');
-                      setEmbedColor('#3b82f6');
-                      setDescription('Hey @everyone!\n\nWe have exciting updates rolling out to our server today. Please read the changelog below:\n\n• New bot security systems active\n• Updated role hierarchy & privileges\n• Community events scheduled this weekend!');
-                      setAuthorName(guild.name);
-                      setFooterText('DexterCorp Security Dispatch');
-                      setMainImageUrl('');
-                      setThumbnailUrl('');
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                    onClick={() => setShowTemplatesModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all cursor-pointer"
                   >
-                    📢 Announcement
+                    <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Templates</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('📜 Official Server Guidelines');
-                      setEmbedColor('#10b981');
-                      setDescription('Welcome to **' + guild.name + '**! To keep our community safe, please follow these rules:\n\n1. Be respectful to all members.\n2. No spam, advertising, or unsolicited DMs.\n3. Keep discussions in the appropriate channels.\n4. Follow Discord Terms of Service.');
-                      setAuthorName(guild.name + ' Administration');
-                      setFooterText('Violations will result in automated timeout or ban');
-                      setMainImageUrl('');
-                      setThumbnailUrl('');
+                      setEmojiTargetField('preMessage');
+                      setShowEmojiModal(true);
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all cursor-pointer"
                   >
-                    📜 Rules & Info
+                    <Smile className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Custom Emojis</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => {
-                      setEmbedTitle('💎 Server Booster Perks');
-                      setEmbedColor('#ec4899');
-                      setDescription('Boost **' + guild.name + '** to unlock exclusive VIP benefits!\n\n✨ Exclusive Booster Role & Color\n✨ Access to VIP voice & text channels\n✨ Permission to post embeds & attach files\n✨ Direct priority support');
-                      setAuthorName('Booster Rewards Program');
-                      setFooterText('Thank you for supporting our server!');
-                      setMainImageUrl('');
-                      setThumbnailUrl('');
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                    onClick={handleExportTemplate}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all cursor-pointer"
+                    title="Export Template JSON"
                   >
-                    💎 Booster Perks
+                    <Download className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Export</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => {
-                      setEmbedTitle('🚨 Security Alert & Protection Active');
-                      setEmbedColor('#ff2b43');
-                      setDescription('DexterCorp Sentinel is monitoring this server 24/7.\n\n🛡️ Mass-ban & kick protection: **ENABLED**\n🛡️ Anti-bot join filtering: **ACTIVE**\n🛡️ Suspicious link blocker: **ENFORCED**\n\nAll actions are audited live.');
-                      setAuthorName('DexterCorp Sentinel Core');
-                      setFooterText('Automated Threat Response');
-                      setMainImageUrl('');
-                      setThumbnailUrl('');
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
+                    onClick={handleClearMessageSender}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-semibold text-rose-300 transition-all cursor-pointer"
                   >
-                    🚨 Security Notice
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear All</span>
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmbedTitle('');
-                    setDescription('');
-                    setMainImageUrl('');
-                    setThumbnailUrl('');
-                    setAuthorName('');
-                    setFooterText('');
-                  }}
-                  className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 transition-all cursor-pointer"
-                >
-                  ✕ Clear All
-                </button>
-              </div>
 
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    TARGET CHANNEL TO SEND EMBED
-                  </label>
-                  <select
-                    value={builderChannel}
-                    onChange={(e) => setBuilderChannel(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                {/* Target Channel & Send Button */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="flex-1 sm:w-48">
+                    <select
+                      value={senderChannel}
+                      onChange={(e) => setSenderChannel(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    >
+                      {availableChannels && availableChannels.length > 0 ? (
+                        availableChannels.map((ch) => (
+                          <option key={ch.id} value={ch.id}>
+                            # {ch.name}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="announcements"># announcements</option>
+                          <option value="general"># general</option>
+                          <option value="rules"># rules</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleSendMessageSender}
+                    disabled={senderSending}
+                    className="py-2 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 disabled:opacity-50"
                   >
-                    {availableChannels && availableChannels.length > 0 ? (
-                      availableChannels.map((ch) => (
-                        <option key={ch.id} value={ch.id}>
-                          # {ch.name}
-                        </option>
-                      ))
+                    {senderSending ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Sending...</span>
+                      </>
+                    ) : senderSent ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-300" />
+                        <span>✓ Sent!</span>
+                      </>
                     ) : (
                       <>
-                        <option value="announcements"># announcements</option>
-                        <option value="general"># general</option>
-                        <option value="rules"># rules</option>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Send</span>
                       </>
                     )}
-                  </select>
+                  </button>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      EMBED TITLE
-                    </label>
-                    <input
-                      type="text"
-                      value={embedTitle}
-                      onChange={(e) => setEmbedTitle(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    />
+              {/* Section 1: Pre-Message Content */}
+              <div className="bg-[#0e0f15] border border-white/10 rounded-2xl p-5 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-white/10 text-white text-[10px] font-bold flex items-center justify-center">
+                      1
+                    </span>
+                    <h4 className="font-orbitron font-bold text-xs uppercase tracking-wider text-slate-200">
+                      Pre-Message Content
+                    </h4>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      EMBED COLOR
-                    </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmojiTargetField('preMessage');
+                        setShowEmojiModal(true);
+                      }}
+                      className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-amber-300 font-medium flex items-center gap-1 border border-white/5 cursor-pointer"
+                    >
+                      <Smile className="w-3.5 h-3.5" />
+                      <span>Emoji</span>
+                    </button>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {senderPreMessage.length}/2000
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    TEXT MESSAGE (OUTSIDE EMBED)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={senderPreMessage}
+                    onChange={(e) => setSenderPreMessage(e.target.value)}
+                    placeholder="Enter message text that appears above the embed..."
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"
+                  />
+                </div>
+
+                {/* Collapsible: Profile Override (Webhook) */}
+                <div className="border border-white/5 rounded-xl overflow-hidden bg-[#13141d]/50">
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileOverride(!showProfileOverride)}
+                    className="w-full p-3 flex items-center justify-between text-left text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  >
                     <div className="flex items-center gap-2">
+                      <Bot className="w-4 h-4 text-purple-400" />
+                      <span>PROFILE OVERRIDE (WEBHOOK)</span>
+                      {senderWebhookName && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300">
+                          Active: {senderWebhookName}
+                        </span>
+                      )}
+                    </div>
+                    {showProfileOverride ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+
+                  {showProfileOverride && (
+                    <div className="p-4 pt-0 border-t border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          CUSTOM DISPLAY NAME
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Dexter Sentinel"
+                          value={senderWebhookName}
+                          onChange={(e) => setSenderWebhookName(e.target.value)}
+                          className="w-full bg-[#0e0f15] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          CUSTOM AVATAR URL
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="https://... (PNG/JPG)"
+                          value={senderWebhookAvatar}
+                          onChange={(e) => setSenderWebhookAvatar(e.target.value)}
+                          className="w-full bg-[#0e0f15] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Collapsible: Thread Targeting */}
+                <div className="border border-white/5 rounded-xl overflow-hidden bg-[#13141d]/50">
+                  <button
+                    type="button"
+                    onClick={() => setShowThreadTargeting(!showThreadTargeting)}
+                    className="w-full p-3 flex items-center justify-between text-left text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-cyan-400" />
+                      <span>THREAD & FORUM TARGETING (OPTIONAL)</span>
+                    </div>
+                    {showThreadTargeting ? (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+
+                  {showThreadTargeting && (
+                    <div className="p-4 pt-0 border-t border-white/5 space-y-1.5 mt-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        TARGET THREAD ID OR FORUM POST NAME
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 1549027457531904072"
+                        value={senderThreadName}
+                        onChange={(e) => setSenderThreadName(e.target.value)}
+                        className="w-full bg-[#0e0f15] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Section 2: Components Container (Embed Card) */}
+              <div className="bg-[#0e0f15] border border-white/10 rounded-2xl p-5 space-y-4 shadow-xl">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-white/10 text-white text-[10px] font-bold flex items-center justify-center">
+                      2
+                    </span>
+                    <h4 className="font-orbitron font-bold text-xs uppercase tracking-wider text-slate-200">
+                      Components Container (Rich Embed)
+                    </h4>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {/* Spoiler Overlay Toggle */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-400">Spoiler Overlay</span>
+                      <button
+                        type="button"
+                        onClick={() => setSenderSpoiler(!senderSpoiler)}
+                        className={`w-9 h-5 rounded-full transition-colors p-0.5 cursor-pointer ${
+                          senderSpoiler ? 'bg-amber-500' : 'bg-white/10'
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                            senderSpoiler ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Accent Color */}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">BORDER:</span>
                       <input
                         type="color"
-                        value={embedColor}
-                        onChange={(e) => setEmbedColor(e.target.value)}
-                        className="w-8 h-8 rounded-lg bg-transparent border-0 cursor-pointer"
+                        value={senderEmbedColor}
+                        onChange={(e) => setSenderEmbedColor(e.target.value)}
+                        className="w-6 h-6 rounded-md bg-transparent border-0 cursor-pointer"
                       />
                       <input
                         type="text"
-                        value={embedColor}
-                        onChange={(e) => setEmbedColor(e.target.value)}
-                        className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-emerald-500"
+                        value={senderEmbedColor}
+                        onChange={(e) => setSenderEmbedColor(e.target.value)}
+                        className="w-20 bg-[#13141d] border border-white/10 rounded-lg px-2 py-1 text-[11px] text-white font-mono uppercase focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
                 </div>
 
+                {/* Sub-component quick action bar */}
+                <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmojiTargetField('title');
+                      setShowEmojiModal(true);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-[11px] text-slate-300 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3 text-emerald-400" />
+                    <span>Title Emoji</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSenderShowDivider(!senderShowDivider)}
+                    className={`px-2.5 py-1 rounded-lg border text-[11px] flex items-center gap-1.5 cursor-pointer transition-colors ${
+                      senderShowDivider
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                        : 'bg-white/5 border-white/5 text-slate-400'
+                    }`}
+                  >
+                    <span>{senderShowDivider ? '✓ Divider Line Active' : '+ Add Separator Line'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmojiTargetField('description');
+                      setShowEmojiModal(true);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-[11px] text-slate-300 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Smile className="w-3 h-3 text-amber-400" />
+                    <span>Insert Emoji in Body</span>
+                  </button>
+                </div>
+
+                {/* Embed Title */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    DESCRIPTION
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      EMBED TITLE
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmojiTargetField('title');
+                        setShowEmojiModal(true);
+                      }}
+                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Smile className="w-3 h-3" />
+                      <span>Add Emoji</span>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={senderEmbedTitle}
+                    onChange={(e) => setSenderEmbedTitle(e.target.value)}
+                    placeholder="e.g. 📢 Official Community Announcement"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
+                {/* Embed Description */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      DESCRIPTION (MARKDOWN & EMOJIS SUPPORTED)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmojiTargetField('description');
+                        setShowEmojiModal(true);
+                      }}
+                      className="text-[10px] text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Smile className="w-3 h-3" />
+                      <span>Add Emoji</span>
+                    </button>
+                  </div>
+                  <textarea
+                    rows={5}
+                    value={senderEmbedDesc}
+                    onChange={(e) => setSenderEmbedDesc(e.target.value)}
+                    placeholder="Write your embed description here..."
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none font-mono text-[11px] leading-relaxed"
+                  />
+                </div>
+
+                {/* Author Section */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -2977,67 +3587,499 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Server Announcements"
-                      value={authorName}
-                      onChange={(e) => setAuthorName(e.target.value)}
+                      placeholder="e.g. Dexter Corporation"
+                      value={senderAuthorName}
+                      onChange={(e) => setSenderAuthorName(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      AUTHOR ICON URL
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://... or {server_icon}"
+                      value={senderAuthorIcon}
+                      onChange={(e) => setSenderAuthorIcon(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Media Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      THUMBNAIL URL (TOP RIGHT)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://... (Square thumbnail)"
+                      value={senderThumbnailUrl}
+                      onChange={(e) => setSenderThumbnailUrl(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      IMAGE BANNER URL (LARGE FOOTER IMAGE)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://... (Full-width banner)"
+                      value={senderImageUrl}
+                      onChange={(e) => setSenderImageUrl(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Footer Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                       FOOTER TEXT
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Official Community Update"
-                      value={footerText}
-                      onChange={(e) => setFooterText(e.target.value)}
+                      placeholder="e.g. DexterCorp Security Dispatch"
+                      value={senderFooterText}
+                      onChange={(e) => setSenderFooterText(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      THUMBNAIL URL
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="https://... or {user_avatar}"
-                      value={thumbnailUrl}
-                      onChange={(e) => setThumbnailUrl(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      IMAGE BANNER URL
+                      FOOTER ICON URL
                     </label>
                     <input
                       type="text"
-                      placeholder="https://... (Optional banner image)"
-                      value={mainImageUrl}
-                      onChange={(e) => setMainImageUrl(e.target.value)}
+                      placeholder="https://... or {server_icon}"
+                      value={senderFooterIcon}
+                      onChange={(e) => setSenderFooterIcon(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
-
-                <button
-                  onClick={handleSendBuilderEmbed}
-                  className="w-full py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>
-                    {builderSent
-                      ? '✓ Embed Dispatched to Discord!'
-                      : `Send Embed to #${availableChannels.find((c) => c.id === builderChannel)?.name || builderChannel}`}
-                  </span>
-                </button>
               </div>
+
+              {/* Section 3: Interactive Action Buttons */}
+              <div className="bg-[#0e0f15] border border-white/10 rounded-2xl p-5 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-white/10 text-white text-[10px] font-bold flex items-center justify-center">
+                      3
+                    </span>
+                    <div>
+                      <h4 className="font-orbitron font-bold text-xs uppercase tracking-wider text-slate-200">
+                        Interactive Action Buttons
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        Attach clickable Discord link buttons (Max 5 buttons in row)
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddSenderButton}
+                    disabled={senderButtons.length >= 5}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Button</span>
+                  </button>
+                </div>
+
+                {senderButtons.length === 0 ? (
+                  <div className="p-4 rounded-xl border border-dashed border-white/10 text-center text-xs text-slate-400">
+                    No buttons added yet. Click &quot;Add Button&quot; to attach direct links to your message!
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {senderButtons.map((btn, idx) => (
+                      <div
+                        key={btn.id}
+                        className="bg-[#13141d] border border-white/5 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-3"
+                      >
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">EMOJI</label>
+                          <input
+                            type="text"
+                            placeholder="📢 or <:name:id>"
+                            value={btn.emoji || ''}
+                            onChange={(e) => handleUpdateSenderButton(btn.id, 'emoji', e.target.value)}
+                            className="w-full bg-[#0e0f15] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+
+                        <div className="w-full sm:w-44 space-y-1">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">BUTTON LABEL</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Announcements"
+                            value={btn.label}
+                            onChange={(e) => handleUpdateSenderButton(btn.id, 'label', e.target.value)}
+                            className="w-full bg-[#0e0f15] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+
+                        <div className="flex-1 w-full space-y-1">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase">DESTINATION URL</label>
+                          <input
+                            type="text"
+                            placeholder="https://discord.gg/..."
+                            value={btn.url}
+                            onChange={(e) => handleUpdateSenderButton(btn.id, 'url', e.target.value)}
+                            className="w-full bg-[#0e0f15] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSenderButton(btn.id)}
+                          className="self-end sm:self-center p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 transition-colors cursor-pointer"
+                          title="Delete Button"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Big Bottom Dispatch Button */}
+              <button
+                onClick={handleSendMessageSender}
+                disabled={senderSending}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {senderSending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Dispatching Message to Discord Channel...</span>
+                  </>
+                ) : senderSent ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-300" />
+                    <span>✓ Message Dispatched Successfully!</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>
+                      Send Message to #
+                      {availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {/* MODAL 1: TEMPLATES & BACKUPS */}
+              {showTemplatesModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-[#12131a] border border-white/10 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                      <div className="flex items-center gap-2">
+                        <Bookmark className="w-5 h-5 text-amber-400" />
+                        <h3 className="font-orbitron font-bold text-base text-white">
+                          Templates & Backups
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowTemplatesModal(false)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Save Current Design */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        SAVE CURRENT DESIGN AS TEMPLATE
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Template Name (e.g. Verification Rules)..."
+                          value={newTemplateName}
+                          onChange={(e) => setNewTemplateName(e.target.value)}
+                          className="flex-1 bg-[#1a1b26] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSaveCurrentTemplate}
+                          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          Save Template
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Instant Presets */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        DEXTER INSTANT PRESETS
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="bg-[#1a1b26] border border-white/5 rounded-xl p-3 space-y-2">
+                          <h5 className="font-bold text-xs text-white">Server Rules & Guidelines</h5>
+                          <p className="text-[10px] text-slate-400">
+                            Standard community rules ended with an &apos;Accept Rules&apos; button.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset('rules')}
+                            className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+                          >
+                            Apply Preset
+                          </button>
+                        </div>
+
+                        <div className="bg-[#1a1b26] border border-white/5 rounded-xl p-3 space-y-2">
+                          <h5 className="font-bold text-xs text-white">Important Announcement</h5>
+                          <p className="text-[10px] text-slate-400">
+                            Eye-catching announcement embed with server notification ping.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset('announcement')}
+                            className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+                          >
+                            Apply Preset
+                          </button>
+                        </div>
+
+                        <div className="bg-[#1a1b26] border border-white/5 rounded-xl p-3 space-y-2">
+                          <h5 className="font-bold text-xs text-white">Verification Gate</h5>
+                          <p className="text-[10px] text-slate-400">
+                            Rich verification message asking members to click a button for access.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset('verification')}
+                            className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+                          >
+                            Apply Preset
+                          </button>
+                        </div>
+
+                        <div className="bg-[#1a1b26] border border-white/5 rounded-xl p-3 space-y-2">
+                          <h5 className="font-bold text-xs text-white">Booster Perks</h5>
+                          <p className="text-[10px] text-slate-400">
+                            VIP perks and exclusive rewards for server boosters.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset('booster')}
+                            className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+                          >
+                            Apply Preset
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Saved Templates List */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        YOUR SAVED TEMPLATES ({savedTemplates.length})
+                      </label>
+                      {savedTemplates.length === 0 ? (
+                        <div className="p-4 rounded-xl bg-[#1a1b26]/50 border border-white/5 text-center text-xs text-slate-400">
+                          No saved templates yet. Save your current layout above!
+                        </div>
+                      ) : (
+                        <div className="max-h-40 overflow-y-auto space-y-2">
+                          {savedTemplates.map((tpl) => (
+                            <div
+                              key={tpl.id}
+                              className="bg-[#1a1b26] border border-white/5 rounded-xl p-2.5 flex items-center justify-between"
+                            >
+                              <span className="text-xs font-medium text-slate-200">{tpl.name}</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleApplyTemplate(tpl.data)}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-semibold cursor-pointer"
+                                >
+                                  Apply
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTemplate(tpl.id)}
+                                  className="p-1 rounded-lg text-rose-400 hover:bg-rose-500/20 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Import / Export JSON buttons */}
+                    <div className="border-t border-white/5 pt-4 flex items-center justify-between gap-3">
+                      <label className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer">
+                        <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Import .JSON</span>
+                        <input
+                          type="file"
+                          accept=".json"
+                          onChange={handleImportTemplate}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={handleExportTemplate}
+                        className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Export .JSON</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* MODAL 2: SERVER CUSTOM EMOJIS */}
+              {showEmojiModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-[#12131a] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                      <div>
+                        <h3 className="font-orbitron font-bold text-base text-white">
+                          Server Custom Emojis
+                        </h3>
+                        <p className="text-[11px] text-slate-400">
+                          Click any emoji to insert into {emojiTargetField === 'preMessage' ? 'Pre-Message' : emojiTargetField === 'title' ? 'Embed Title' : 'Embed Description'} & copy to clipboard
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowEmojiModal(false)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Target Selector */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">INSERT INTO:</span>
+                      <button
+                        type="button"
+                        onClick={() => setEmojiTargetField('preMessage')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                          emojiTargetField === 'preMessage'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white/5 text-slate-400'
+                        }`}
+                      >
+                        Pre-Message
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEmojiTargetField('title')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                          emojiTargetField === 'title'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white/5 text-slate-400'
+                        }`}
+                      >
+                        Title
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEmojiTargetField('description')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                          emojiTargetField === 'description'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white/5 text-slate-400'
+                        }`}
+                      >
+                        Description
+                      </button>
+                    </div>
+
+                    {/* Storage Quota */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
+                        <span>EMOJI STORAGE QUOTA</span>
+                        <span>{serverCustomEmojis.length} / 15 USED</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-300"
+                          style={{ width: `${(serverCustomEmojis.length / 15) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Add New Custom Emoji */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        ADD NEW CUSTOM EMOJI
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. <:pepe_cool:123456789> or 🚀"
+                          value={customEmojiInput}
+                          onChange={(e) => setCustomEmojiInput(e.target.value)}
+                          className="flex-1 bg-[#1a1b26] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCustomEmoji}
+                          disabled={serverCustomEmojis.length >= 15}
+                          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer disabled:opacity-40"
+                        >
+                          + Add Emoji
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-400">
+                        Paste any Discord emoji format (e.g. &lt;:name:id&gt; or &lt;a:name:id&gt;)
+                      </p>
+                    </div>
+
+                    {/* Active Server Emojis Grid */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        ACTIVE SERVER EMOJIS ({serverCustomEmojis.length})
+                      </label>
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-56 overflow-y-auto p-1">
+                        {serverCustomEmojis.map((em, eIdx) => (
+                          <button
+                            key={eIdx}
+                            type="button"
+                            onClick={() => handleInsertEmoji(em)}
+                            className="p-3 rounded-xl bg-[#1a1b26] hover:bg-white/10 border border-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95 group"
+                            title={em}
+                          >
+                            <span className="text-xl flex items-center justify-center">
+                              {renderDiscordEmojiInline(em)}
+                            </span>
+                            <span className="text-[8px] text-slate-400 font-mono truncate max-w-[50px] group-hover:text-white">
+                              {em.startsWith('<') ? em.split(':')[1] : em}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -4094,6 +5136,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ? 'Ticket Panel Preview'
                 : activeModule === 'verification'
                 ? 'Verification Gate Preview'
+                : (activeModule === 'embed_builder' || activeModule === 'message_sender')
+                ? 'Message Sender Preview'
                 : 'Live Preview'}
             </span>
             <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
@@ -4377,6 +5421,162 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   </>
                 )}
               </button>
+            </div>
+          ) : (activeModule === 'embed_builder' || activeModule === 'message_sender') ? (
+            /* Message Sender Live Discord Preview (Completely Independent from Welcomer!) */
+            <div className="space-y-3">
+              <div className="bg-[#313338] rounded-2xl p-4 shadow-2xl font-sans text-slate-200 text-xs">
+                {/* Discord Message Header */}
+                <div className="flex items-start gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-[#5865F2] flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">
+                    <img
+                      src={
+                        senderWebhookAvatar
+                          ? senderWebhookAvatar
+                          : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                      }
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="flex-1 leading-tight">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-white text-xs">
+                        {senderWebhookName || 'DexterCorp'}
+                      </span>
+                      <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white uppercase tracking-wider">
+                        {senderWebhookName ? 'WEBHOOK' : 'BOT'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 ml-1">Today at 02:30 AM</span>
+                    </div>
+
+                    {/* Pre-Message Content Outside Embed */}
+                    {senderPreMessage && (
+                      <div className="mt-1 text-slate-200 text-xs">
+                        <DiscordFormattedText text={renderPreview(senderPreMessage)} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Discord Embed Card with custom accent color */}
+                <div
+                  className={`ml-12 rounded-lg bg-[#2b2d31] p-3 text-xs space-y-2 border-l-4 shadow-md overflow-hidden ${
+                    senderSpoiler ? 'blur-sm hover:blur-none transition-all cursor-pointer' : ''
+                  }`}
+                  style={{ borderLeftColor: senderEmbedColor || '#ff0033' }}
+                >
+                  {/* Author Header */}
+                  {senderAuthorName && (
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
+                      {senderAuthorIcon && (
+                        <img
+                          src={
+                            senderAuthorIcon.includes('server') || senderAuthorIcon.includes('guild')
+                              ? guild?.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : senderAuthorIcon
+                          }
+                          alt="Author Icon"
+                          className="w-4 h-4 rounded-full object-cover"
+                        />
+                      )}
+                      <span>{renderPreview(senderAuthorName)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 space-y-1">
+                      {senderEmbedTitle && (
+                        <h4 className="font-bold text-white text-xs">
+                          <DiscordFormattedText text={renderPreview(senderEmbedTitle)} />
+                        </h4>
+                      )}
+                      {senderEmbedDesc && (
+                        <div className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                          <DiscordFormattedText text={renderPreview(senderEmbedDesc)} />
+                        </div>
+                      )}
+                    </div>
+
+                    {senderThumbnailUrl && (
+                      <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
+                        <img
+                          src={
+                            senderThumbnailUrl.includes('server') || senderThumbnailUrl.includes('guild')
+                              ? guild?.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : senderThumbnailUrl
+                          }
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Divider Line */}
+                  {senderShowDivider && <hr className="border-white/10 my-1.5" />}
+
+                  {/* Main Banner Image */}
+                  {senderImageUrl && (
+                    <div className="rounded-md overflow-hidden max-h-40 border border-black/30 mt-2">
+                      <img src={senderImageUrl} alt="Banner" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  {senderFooterText && (
+                    <div className="flex items-center gap-1.5 pt-1 text-[10px] text-slate-400">
+                      {senderFooterIcon && (
+                        <img
+                          src={
+                            senderFooterIcon.includes('server') || senderFooterIcon.includes('guild')
+                              ? guild?.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                              : senderFooterIcon
+                          }
+                          alt="Footer Icon"
+                          className="w-3.5 h-3.5 rounded-full object-cover"
+                        />
+                      )}
+                      <span>{renderPreview(senderFooterText)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Discord Link Action Buttons in Preview */}
+                {(senderButtons || []).length > 0 && (
+                  <div className="ml-12 flex flex-wrap gap-2 mt-2 pt-1">
+                    {(senderButtons || []).map((btn) => (
+                      <div
+                        key={btn.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#2b2d31] hover:bg-[#35373c] text-slate-200 text-[11px] font-medium border border-white/5 shadow-sm transition-colors cursor-pointer select-none"
+                      >
+                        {renderDiscordEmojiInline(btn.emoji)}
+                        <span>{btn.label || 'Link'}</span>
+                        <span className="text-[10px] text-slate-400">↗</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Message Sender Send Button */}
+              <div className="pt-2">
+                <button
+                  onClick={handleSendMessageSender}
+                  disabled={senderSending}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>
+                    {senderSending
+                      ? 'Dispatching...'
+                      : senderSent
+                      ? '✓ Dispatched to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)
+                      : 'Send to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)}
+                  </span>
+                </button>
+              </div>
             </div>
           ) : (
             /* Default Preview: Welcomer Embed */
