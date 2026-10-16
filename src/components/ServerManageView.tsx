@@ -147,8 +147,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [authorIconUrl, setAuthorIconUrl] = useState('');
   const [footerText, setFooterText] = useState('Enjoy your stay in {server_name}');
   const [footerIconUrl, setFooterIconUrl] = useState('');
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [mainImageUrl, setMainImageUrl] = useState('');
+  const [mainImageUrl, setMainImageUrl] = useState('/dexter_welcome_banner.jpg');
+  const [welcomerButtons, setWelcomerButtons] = useState<Array<{ label: string; url: string; emoji?: string }>>([
+    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
+    { label: 'ToS & Rules', url: 'https://discord.gg/dextercorp', emoji: '📕' },
+    { label: 'Support Ticket', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+  ]);
 
   // 2. Anti-Nuke Settings
   const [antinukeEnabled, setAntinukeEnabled] = useState(true);
@@ -361,6 +365,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 setFooterIconUrl('');
               }
             }
+            if (Array.isArray(res.data.welcome.buttons) && res.data.welcome.buttons.length > 0) {
+              setWelcomerButtons(res.data.welcome.buttons);
+            }
           }
           if (res.data.autorole) {
             setAutoroleEnabled(Boolean(res.data.autorole.enabled));
@@ -447,6 +454,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           content: contentMessage,
           channelId: targetChannel,
           autorole: autoroleEnabled ? autoroleHumans : '',
+          buttons: welcomerButtons,
           embeds: {
             title: embedTitle,
             description: description,
@@ -633,6 +641,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         channelId: targetChannel,
         welcome: {
           content: contentMessage,
+          buttons: welcomerButtons,
           embeds: {
             title: embedTitle,
             description: description,
@@ -988,6 +997,30 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
+                      setEmbedTitle('🏠 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐭𝐨 𝐃𝐞𝐱𝐭𝐞𝐫 𝐂𝐨𝐫𝐩𝐨𝐫𝐚𝐭𝐢𝐨𝐧 🛡️');
+                      setEmbedColor('#ff0033');
+                      setDescription(
+                        "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 **You are our #{server_membercount} Member**\n**Joined** {user_joined} · {user.joined_date}\n\n» **Read our Security & Guidelines:** <#rules>\n» **Check out latest Announcements:** <#announcements>\n» **Need help? Open a Support Ticket:** <#tickets>\n\n-# Dexter Corporation • Security, Protocol, Excellence"
+                      );
+                      setMainImageUrl('/dexter_welcome_banner.jpg');
+                      setThumbnailUrl('');
+                      setAuthorName('DEXTER CORPORATION™');
+                      setFooterText('Dexter Corporation System • Member #{server_membercount}');
+                      setFooterIconUrl('{server_icon}');
+                      setContentMessage('Hey {user}, welcome to **Dexter Corporation**!');
+                      setWelcomerButtons([
+                        { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
+                        { label: 'ToS & Rules', url: 'https://discord.gg/dextercorp', emoji: '📕' },
+                        { label: 'Support Ticket', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+                      ]);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-red-600/25 hover:bg-red-600/35 border border-red-500/50 text-xs font-bold text-red-300 transition-all cursor-pointer shadow-sm shadow-red-950/40 flex items-center gap-1.5"
+                  >
+                    🔥 Dexter Corporation (Tactical)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
                       setEmbedTitle('Welcome to {server_name}!');
                       setEmbedColor('#ff2b43');
                       setDescription("We're glad to have you here. You are member #{server_membercount}!\n• Make sure to check out the rules.\n• Choose your roles and enjoy your stay.");
@@ -1303,6 +1336,81 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       onChange={(e) => setMainImageUrl(e.target.value)}
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ff2b43] transition-colors font-mono"
                     />
+                  </div>
+
+                  {/* Interactive Action Buttons (Link Buttons) */}
+                  <div className="bg-[#13141d]/80 border border-white/5 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                          <span>INTERACTIVE ACTION BUTTONS (LINK BUTTONS)</span>
+                          <span className="text-[10px] text-cyan-400 font-mono">({welcomerButtons.length}/5)</span>
+                        </label>
+                        <p className="text-[10px] text-slate-500">
+                          Direct clickable buttons beneath the welcome message (e.g. Announcements, ToS, Support)
+                        </p>
+                      </div>
+                      {welcomerButtons.length < 5 && (
+                        <button
+                          type="button"
+                          onClick={() => setWelcomerButtons([...welcomerButtons, { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: '🔗' }])}
+                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-400 border border-cyan-500/20 text-xs font-semibold cursor-pointer"
+                        >
+                          + Add Button
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      {welcomerButtons.map((btn, bIdx) => (
+                        <div key={bIdx} className="flex flex-col sm:flex-row items-center gap-2 bg-[#0a0b10] p-2.5 rounded-lg border border-white/5">
+                          <input
+                            type="text"
+                            placeholder="Emoji (e.g. 📢)"
+                            value={btn.emoji || ''}
+                            onChange={(e) => {
+                              const updated = [...welcomerButtons];
+                              updated[bIdx].emoji = e.target.value;
+                              setWelcomerButtons(updated);
+                            }}
+                            className="w-full sm:w-20 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-[#ff2b43]"
+                            title="Button Emoji"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Button Label (e.g. Announcements)"
+                            value={btn.label}
+                            onChange={(e) => {
+                              const updated = [...welcomerButtons];
+                              updated[bIdx].label = e.target.value;
+                              setWelcomerButtons(updated);
+                            }}
+                            className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Target URL (e.g. https://discord.gg/... or web link)"
+                            value={btn.url}
+                            onChange={(e) => {
+                              const updated = [...welcomerButtons];
+                              updated[bIdx].url = e.target.value;
+                              setWelcomerButtons(updated);
+                            }}
+                            className="w-full flex-1 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setWelcomerButtons(welcomerButtons.filter((_, idx) => idx !== bIdx));
+                            }}
+                            className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 cursor-pointer"
+                            title="Remove Button"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -4343,6 +4451,22 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     </div>
                   )}
                 </div>
+
+                {/* Discord Link Action Buttons in Preview */}
+                {welcomerButtons.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {welcomerButtons.map((btn, bIdx) => (
+                      <div
+                        key={bIdx}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#2b2d31] hover:bg-[#35373c] text-slate-200 text-[11px] font-medium border border-white/5 shadow-sm transition-colors cursor-pointer select-none"
+                      >
+                        {btn.emoji && <span>{btn.emoji}</span>}
+                        <span>{btn.label || 'Link'}</span>
+                        <span className="text-[10px] text-slate-400">↗</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Test Send Button */}

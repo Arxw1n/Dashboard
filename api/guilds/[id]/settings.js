@@ -85,6 +85,7 @@ export default async function handler(req, res) {
             }
             return emb;
           })(),
+          buttons: Array.isArray(gData?.welcome?.buttons) ? gData.welcome.buttons : [],
         },
         autorole: {
           enabled: Boolean(gData?.autorole?.enabled),
@@ -177,6 +178,7 @@ export default async function handler(req, res) {
           channel: settings.welcome.enabled ? (settings.welcome.channelId || null) : null,
           content: settings.welcome.content || 'Welcome $user_mention to $guild_name!',
           embeds: cleanedEmbeds,
+          buttons: Array.isArray(settings.welcome.buttons) ? settings.welcome.buttons : (gData?.welcome?.buttons || []),
         };
       }
 

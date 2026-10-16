@@ -146,6 +146,33 @@ export default async function handler(req, res) {
       payload.embeds = [embedObj];
     }
 
+    if (welcome?.buttons && Array.isArray(welcome.buttons) && welcome.buttons.length > 0) {
+      const validButtons = welcome.buttons
+        .filter((b) => b && b.label && b.url && typeof b.url === 'string' && (b.url.startsWith('http://') || b.url.startsWith('https://')))
+        .slice(0, 5)
+        .map((b) => {
+          const btnObj = {
+            type: 2, // BUTTON
+            style: 5, // LINK
+            label: String(b.label).slice(0, 80),
+            url: b.url,
+          };
+          if (b.emoji) {
+            btnObj.emoji = { name: b.emoji };
+          }
+          return btnObj;
+        });
+
+      if (validButtons.length > 0) {
+        payload.components = [
+          {
+            type: 1, // ACTION_ROW
+            components: validButtons,
+          },
+        ];
+      }
+    }
+
     const sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
       method: 'POST',
       headers: {
