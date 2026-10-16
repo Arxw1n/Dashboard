@@ -1224,30 +1224,39 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-[#070709] text-white flex flex-col font-['Outfit'] selection:bg-[#ff2b43] selection:text-white">
-      {/* Top Header Bar (Screenshot 4) */}
-      <header className="h-16 border-b border-white/5 bg-[#090a0f]/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
+    <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-['Inter'] selection:bg-white/20 selection:text-white relative">
+      {/* Background ambient lighting & mesh */}
+      <div className="absolute inset-0 bg-mesh pointer-events-none opacity-40"></div>
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+      {/* Top Header Bar */}
+      <header className="h-16 border-b border-white/5 bg-[#06070a]/80 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ff2b43] to-[#d61a31] hover:from-[#ff4055] hover:to-[#ff2b43] flex items-center justify-center text-white shadow-md shadow-[#ff2b43]/30 transition-transform active:scale-95 cursor-pointer"
+            className="w-9 h-9 rounded-xl liquid-glass hover:bg-white/10 flex items-center justify-center text-white transition-all active:scale-95 cursor-pointer"
             title="Back to Dashboard"
           >
-            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+            <ChevronLeft className="w-5 h-5 stroke-[2]" />
           </button>
-          <h1 className="font-orbitron font-bold text-lg sm:text-xl tracking-wider text-white">
-            SERVER SETTINGS
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-display font-bold text-lg sm:text-xl tracking-tight text-white">
+              Server Console
+            </h1>
+            <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-widest text-slate-400 px-2.5 py-0.5 liquid-glass rounded-full">
+              {guild.name}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl liquid-glass hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
             title="Toggle Theme"
           >
             <Sun className="w-4 h-4" />
           </button>
-          <div className="w-8 h-8 rounded-full border border-[#ff2b43]/40 overflow-hidden shadow-sm shadow-[#ff2b43]/20">
+          <div className="w-9 h-9 rounded-xl border border-white/20 overflow-hidden shadow-sm bg-[#12141c]">
             <img
               src={
                 user.avatar ||
@@ -1260,55 +1269,55 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         </div>
       </header>
 
-      {/* Main 3-Column Layout (Screenshot 4) */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      {/* Main 3-Column Layout */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
         {/* Left Column: Server Card + Action Buttons + Modules Sidebar */}
-        <aside className="w-full lg:w-64 bg-[#09090d] border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto">
+        <aside className="w-full lg:w-72 bg-[#06070a]/70 backdrop-blur-xl border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto">
           {/* Active Server Card */}
-          <div className="bg-[#111219] border border-white/5 rounded-xl p-3 flex items-center gap-3 shadow-md">
-            <div className="w-10 h-10 rounded-lg bg-[#1a1b24] p-0.5 overflow-hidden shrink-0 border border-white/10">
+          <div className="liquid-glass rounded-2xl p-3.5 flex items-center gap-3 shadow-lg hover:scale-[1.01] transition-all">
+            <div className="w-11 h-11 rounded-xl bg-white/5 p-0.5 overflow-hidden shrink-0 border border-white/10">
               {guild.icon ? (
                 <img
                   src={guild.icon}
                   alt={guild.name}
-                  className="w-full h-full object-cover rounded-md"
+                  className="w-full h-full object-cover rounded-lg"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-orbitron font-bold text-xs text-[#ff2b43]">
+                <div className="w-full h-full flex items-center justify-center font-display font-bold text-xs text-white">
                   {guild.name.slice(0, 2).toUpperCase()}
                 </div>
               )}
             </div>
-            <div className="overflow-hidden">
-              <h3 className="font-orbitron font-bold text-xs text-white truncate">{guild.name}</h3>
+            <div className="overflow-hidden flex-1">
+              <h3 className="font-display font-bold text-sm text-white truncate">{guild.name}</h3>
               <p className="text-[10px] text-slate-400 font-mono truncate">ID: {guild.id}</p>
             </div>
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => window.location.reload()}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#10b981] hover:bg-[#059669] text-white font-bold text-xs shadow-md shadow-[#10b981]/25 transition-all cursor-pointer"
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl liquid-glass hover:bg-white/10 text-white font-semibold text-xs transition-all cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Refresh Server</span>
+              <span>Refresh</span>
             </button>
 
             <button
               onClick={() => setShowAuditLogs(true)}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs transition-all cursor-pointer"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5 text-cyan-400" />
               <span>Audit Logs</span>
             </button>
           </div>
 
           {/* MODULES Header */}
           <div className="pt-2">
-            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>MODULES</span>
+              <span>Modules</span>
             </div>
 
             {/* Modules List Items */}
@@ -1320,13 +1329,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     key={m.id}
                     onClick={() => handleSelectModule(m.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
+                    className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
                       isActive
-                        ? 'bg-[#141520] text-cyan-400 border border-cyan-500/40 shadow-md shadow-cyan-950/40'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+                        ? 'bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                    {isActive && (
+                      <span className="absolute left-0 w-[4px] h-6 bg-white rounded-r-full shadow-[0_0_12px_rgba(255,255,255,0.6)]" />
+                    )}
+                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-white' : 'text-slate-400'}`} />
                     <span>{m.label}</span>
                   </button>
                 );
@@ -1336,7 +1348,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         </aside>
 
         {/* Center Column: Configuration Form (Changes based on activeModule!) */}
-        <main className="flex-1 bg-[#070709] p-6 lg:p-8 overflow-y-auto space-y-6 relative min-h-[500px]">
+        <main className="flex-1 bg-[#06070a] p-6 lg:p-8 overflow-y-auto space-y-6 relative min-h-[500px]">
           {isModuleSyncing ? (
             <SyncingLoader
               fullScreen={false}
