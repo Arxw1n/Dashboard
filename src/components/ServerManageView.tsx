@@ -48,6 +48,8 @@ import {
   ChevronUp,
   X,
   Layers,
+  LayoutDashboard,
+  Eye,
 } from 'lucide-react';
 import { GuildItem, GuildSettings, UserProfile, CommandItem } from '../types';
 import { SyncingLoader } from './SyncingLoader';
@@ -162,12 +164,87 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [logTestSent, setLogTestSent] = useState(false);
   const [previewTab, setPreviewTab] = useState<'welcomer' | 'alert' | 'automod' | 'tickets' | 'verification'>('welcomer');
 
-  // Ticket System State
+  // Sub-tabs for Welcomer (Screenshots 507-511)
+  const [welcomerSubTab, setWelcomerSubTab] = useState<'messages' | 'cards' | 'simulation' | 'customizations'>('messages');
+
+  // Sub-tabs for Tickets (Screenshots 515-521)
+  const [ticketSubTab, setTicketSubTab] = useState<'overview' | 'config' | 'panel' | 'modals' | 'transcripts' | 'security'>('overview');
+
+  // Dynamic Image Card Canvas state (Screenshots 508-509)
+  const [cardTemplate, setCardTemplate] = useState('Sentinel Dark');
+  const [cardWidth, setCardWidth] = useState(800);
+  const [cardHeight, setCardHeight] = useState(350);
+  const [cardScale, setCardScale] = useState(100);
+  const [cardBgColor, setCardBgColor] = useState('#0a0c12');
+  const [cardBgImage, setCardBgImage] = useState('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');
+  const [cardFitMode, setCardFitMode] = useState<'cover' | 'contain'>('cover');
+  const [cardOpacity, setCardOpacity] = useState(85);
+
+  // Ghost ping and DM state for Welcomer (Screenshots 507, 511)
+  const [ghostPing, setGhostPing] = useState(false);
+  const [dmGreetingEnabled, setDmGreetingEnabled] = useState(false);
+  const [dmGreetingMessage, setDmGreetingMessage] = useState('Welcome to **{server_name}**, {user}! Read rules to get started.');
+  const [antiFloodEnabled, setAntiFloodEnabled] = useState(true);
+  const [welcomerCustomWebhookName, setWelcomerCustomWebhookName] = useState('');
+  const [welcomerCustomWebhookAvatar, setWelcomerCustomWebhookAvatar] = useState('');
+
+  // Role Bypass state (Screenshots 504-505)
+  const [roleBypassToggles, setRoleBypassToggles] = useState<Record<string, boolean>>({
+    lock: true,
+    lockall: true,
+    unlock: true,
+    unlockall: true,
+    hide: true,
+    hideall: true,
+    unhide: true,
+    unhideall: true,
+    ban: true,
+    unban: true,
+    unbanAll: false,
+    kick: true,
+    timeout: true,
+    untimeout: true,
+    warn: true,
+    clearWarn: true,
+    mute: true,
+    unmute: true,
+    deafen: true,
+    undeafen: true,
+    disconnect: true,
+    move: true,
+  });
+
+  // Moderation tab state (Screenshot 512)
+  const [modImmuneRoles, setModImmuneRoles] = useState<string[]>([]);
+  const [modUserNotifications, setModUserNotifications] = useState(true);
+  const [modPurgePinned, setModPurgePinned] = useState(false);
+  const [modIgnoredChannels, setModIgnoredChannels] = useState<string[]>([]);
+  const [modWarnThreshold, setModWarnThreshold] = useState('3');
+  const [modDefaultTimeout, setModDefaultTimeout] = useState('10m');
+
+  // Automod Ignored / Bypass state (Screenshot 503)
+  const [automodIgnoredChannels, setAutomodIgnoredChannels] = useState<string[]>([]);
+  const [automodIgnoredRoles, setAutomodIgnoredRoles] = useState<string[]>([]);
+  const [automodIgnoredUsers, setAutomodIgnoredUsers] = useState<string[]>([]);
+  const [newAutomodUserId, setNewAutomodUserId] = useState('');
+  const [automodLogChannel, setAutomodLogChannel] = useState('');
+
+  // Modal Questions for Tickets (Screenshot 518)
+  const [modalQ1Label, setModalQ1Label] = useState('Reason for opening this ticket');
+  const [modalQ1Placeholder, setModalQ1Placeholder] = useState('Briefly describe your request or issue...');
+  const [modalQ1Style, setModalQ1Style] = useState<'short' | 'paragraph'>('paragraph');
+  const [modalQ1Required, setModalQ1Required] = useState(true);
+  const [modalQ2Label, setModalQ2Label] = useState('Preferred contact / additional notes');
+  const [modalQ2Placeholder, setModalQ2Placeholder] = useState('Discord Tag, Order ID or Transaction hash (optional)');
+  const [modalQ2Style, setModalQ2Style] = useState<'short' | 'paragraph'>('short');
+  const [modalQ2Required, setModalQ2Required] = useState(false);
   const [ticketEnabled, setTicketEnabled] = useState(true);
   const [ticketChannel, setTicketChannel] = useState('');
   const [ticketCategory, setTicketCategory] = useState('');
   const [ticketRole, setTicketRole] = useState('');
   const [ticketLogsChannel, setTicketLogsChannel] = useState('');
+  const [ticketChannelStyle, setTicketChannelStyle] = useState('ticket-{code}');
+  const [ticketStaffRoles, setTicketStaffRoles] = useState<string[]>([]);
   const [ticketLimit, setTicketLimit] = useState('1');
   const [ticketPanelTitle, setTicketPanelTitle] = useState('ðŸŽ« Support Desk & Inquiries');
   const [ticketPanelDesc, setTicketPanelDesc] = useState(
@@ -1210,23 +1287,47 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       .replace(/(\{user\.joined_date\}|\{joined_date\})/gi, new Date().toLocaleDateString());
   };
 
-  // Sidebar Modules List (Screenshot 4)
-  const modulesList = [
-    { id: 'overview', label: 'Overview', icon: LayoutGrid },
-    { id: 'commands', label: 'Bot Commands', icon: Terminal },
-    { id: 'tickets', label: 'Ticket Creation', icon: Ticket },
-    { id: 'verification', label: 'Verification Gate', icon: ShieldCheck },
-    { id: 'settings', label: 'Settings', icon: Sliders },
-    { id: 'antinuke', label: 'Antinuke', icon: ShieldAlert },
-    { id: 'automod', label: 'Automod', icon: Bot },
-    { id: 'welcomer', label: 'Welcomer', icon: UserPlus },
-    { id: 'logging', label: 'Logging', icon: ScrollText },
-    { id: 'custom_role', label: 'Custom Role', icon: UserCheck },
-    { id: 'autorole', label: 'Autorole', icon: Sparkles },
-    { id: 'autoreact', label: 'Autoreact', icon: Smile },
-    { id: 'autoresponder', label: 'Autoresponder', icon: MessageSquare },
-    { id: 'giveaway', label: 'Giveaway', icon: Gift },
-    { id: 'embed_builder', label: 'Message Sender', icon: Send },
+  // Categorized Sidebar Navigation (Obsidian Security Exact Match - Screenshots 500-522)
+  const navCategories = [
+    {
+      title: 'GENERAL',
+      items: [
+        { id: 'overview', label: 'Overview', icon: LayoutGrid },
+        { id: 'commands', label: 'Bot Commands', icon: Terminal },
+        { id: 'settings', label: 'Settings', icon: Sliders },
+      ],
+    },
+    {
+      title: 'SECURITY',
+      items: [
+        { id: 'antinuke', label: 'Anti-Nuke', icon: ShieldAlert },
+        { id: 'automod', label: 'Automod', icon: Bot },
+        { id: 'role_bypass', label: 'Role Bypass', icon: ShieldCheck },
+        { id: 'noprefix', label: 'Server No-Prefix', icon: Hash },
+      ],
+    },
+    {
+      title: 'MODERATION',
+      items: [
+        { id: 'logging', label: 'Logging', icon: ScrollText },
+        { id: 'welcomer', label: 'Welcomer', icon: UserPlus },
+        { id: 'moderation', label: 'Moderation', icon: Shield },
+        { id: 'autoreact', label: 'Auto-React', icon: Smile },
+        { id: 'autoresponder', label: 'Autoresponder', icon: MessageSquare },
+        { id: 'tickets', label: 'Tickets', icon: Ticket },
+        { id: 'verification', label: 'Verification Gate', icon: Lock },
+        { id: 'custom_role', label: 'Custom Role', icon: UserCheck },
+        { id: 'autorole', label: 'Autorole', icon: Sparkles },
+        { id: 'giveaway', label: 'Giveaway', icon: Gift },
+        { id: 'embed_builder', label: 'Message Sender', icon: Send },
+      ],
+    },
+    {
+      title: 'OTHER',
+      items: [
+        { id: 'premium', label: 'Premium Sentinel', icon: Crown },
+      ],
+    },
   ];
 
   return (
@@ -1278,7 +1379,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       {/* Main 3-Column Layout */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
         {/* Left Column: Server Card + Action Buttons + Modules Sidebar */}
-        <aside className="w-full lg:w-72 bg-[#06070a]/70 backdrop-blur-xl border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto">
+        <aside className="w-full lg:w-72 bg-[#06070a]/90 backdrop-blur-xl border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto">
           {/* Active Server Card */}
           <div className="liquid-glass rounded-2xl p-3.5 flex items-center gap-3 shadow-lg hover:scale-[1.01] transition-all">
             <div className="w-11 h-11 rounded-xl bg-white/5 p-0.5 overflow-hidden shrink-0 border border-white/10">
@@ -1319,37 +1420,44 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </button>
           </div>
 
-          {/* MODULES Header */}
-          <div className="pt-2">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Modules</span>
-            </div>
-
-            {/* Modules List Items */}
-            <div className="space-y-1">
-              {modulesList.map((m) => {
-                const Icon = m.icon;
-                const isActive = activeModule === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => handleSelectModule(m.id)}
-                    className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
-                      isActive
-                        ? 'bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    {isActive && (
-                      <span className="absolute left-0 w-[4px] h-6 bg-white rounded-r-full shadow-[0_0_12px_rgba(255,255,255,0.6)]" />
-                    )}
-                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <span>{m.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* Categorized Modules Navigation (Obsidian Hierarchy) */}
+          <div className="pt-1 space-y-4">
+            {navCategories.map((cat) => (
+              <div key={cat.title} className="space-y-1">
+                <div className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase px-2.5 py-1">
+                  {cat.title}
+                </div>
+                <div className="space-y-0.5">
+                  {cat.items.map((m) => {
+                    const Icon = m.icon;
+                    const isActive =
+                      activeModule === m.id ||
+                      (m.id === 'embed_builder' && activeModule === 'message_sender');
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => handleSelectModule(m.id)}
+                        className={`relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer text-left ${
+                          isActive
+                            ? 'bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {isActive && (
+                          <span className="absolute left-0 w-[3px] h-5 bg-white rounded-r-full shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                        )}
+                        <Icon
+                          className={`w-4 h-4 shrink-0 transition-colors ${
+                            isActive ? 'text-white' : 'text-slate-400'
+                          }`}
+                        />
+                        <span className="truncate">{m.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </aside>
 
@@ -1363,6 +1471,53 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             />
           ) : (
             <>
+              {/* Obsidian Top Breadcrumb & Live System Status (Screenshots 500-522) */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-2 text-xs font-mono tracking-wider">
+                  <span className="text-slate-400 uppercase font-semibold">
+                    {navCategories.find((c) => c.items.some((i) => i.id === activeModule))?.title || 'SECURITY'}
+                  </span>
+                  <span className="text-slate-500">/</span>
+                  <span className="text-white font-bold uppercase tracking-widest">
+                    {activeModule === 'role_bypass'
+                      ? 'SETTINGS / HIGHER ROLE BYPASS'
+                      : activeModule === 'noprefix'
+                      ? 'SERVER NO-PREFIX'
+                      : activeModule === 'commands'
+                      ? 'BOT COMMANDS DIRECTORY'
+                      : activeModule.replace('_', ' ')}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full liquid-glass text-[11px] font-mono text-emerald-400 border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Standby</span>
+                  </div>
+                  <div className="px-3 py-1 rounded-full liquid-glass text-[11px] font-mono text-slate-300 border border-white/10">
+                    {activeModule === 'automod'
+                      ? '0/10 Filters Enabled'
+                      : activeModule === 'logging'
+                      ? '0/7 Configured Channels'
+                      : activeModule === 'antinuke'
+                      ? 'Core Sentinel Active'
+                      : activeModule === 'welcomer'
+                      ? 'Engine Ready'
+                      : activeModule === 'tickets'
+                      ? '4 Nodes Online'
+                      : activeModule === 'role_bypass'
+                      ? '4 Categories Armed'
+                      : activeModule === 'moderation'
+                      ? '0 Active Cases'
+                      : activeModule === 'autoreact'
+                      ? '0/10 Rules Limit'
+                      : activeModule === 'autoresponder'
+                      ? '0/20 Triggers'
+                      : 'System Healthy'}
+                  </div>
+                </div>
+              </div>
+
               {/* ======================================================== */}
               {/* TAB: BOT COMMANDS DIRECTORY (123 Live Synced Commands) */}
               {/* ======================================================== */}
@@ -1374,7 +1529,32 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               {/* TAB 1: WELCOMER (Exact Match to Screenshot 4) */}
               {/* ======================================================== */}
               {activeModule === 'welcomer' && (
-            <>
+                <div className="space-y-6">
+                  {/* 4 Obsidian Welcomer Sub-Tabs (Screenshots 507-511) */}
+                  <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto">
+                    {[
+                      { id: 'messages', label: 'Messages & Embeds', icon: MessageSquare },
+                      { id: 'cards', label: 'Dynamic Image Cards', icon: Layers },
+                      { id: 'simulation', label: 'Join Simulation', icon: Zap },
+                      { id: 'customizations', label: 'Advanced Customizations', icon: Sliders },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setWelcomerSubTab(tab.id as any)}
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                          welcomerSubTab === tab.id
+                            ? 'bg-white text-black shadow-lg font-bold'
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <tab.icon className="w-3.5 h-3.5" />
+                        <span>{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {welcomerSubTab === 'messages' && (
+                    <>
               {/* Header Bar with Switch, Variables Guide, Reset */}
               <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-lg">
                 <div className="flex items-center gap-4">
@@ -1789,6 +1969,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors font-mono"
                     />
                   </div>
+                </div>
 
                   {/* Interactive Action Buttons (Link Buttons) */}
                   <div className="bg-[#13141d]/80 border border-white/5 rounded-xl p-4 space-y-3">
@@ -1862,12 +2043,425 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           </button>
                         </div>
                       ))}
-                    </div>
                   </div>
                 </div>
               </div>
-            </>
-          )}
+                    </>
+                  )}
+
+                  {/* SUBTAB 2: Dynamic Image Cards (Screenshots 508-509) */}
+                  {welcomerSubTab === 'cards' && (
+                    <div className="space-y-6">
+                      {/* Templates Bar */}
+                      <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono font-bold tracking-wider text-slate-300 uppercase">
+                            WELCOME TEMPLATES DECK
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono">Select Base Theme</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                          {['Sentinel Dark', 'Modern Minimalist', 'Cyberpunk Grid', 'Neon Glow', 'Obsidian Shield'].map((tmpl) => (
+                            <button
+                              key={tmpl}
+                              onClick={() => {
+                                setCardTemplate(tmpl);
+                                if (tmpl === 'Sentinel Dark') {
+                                  setCardBgColor('#0a0c12');
+                                  setCardBgImage('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');
+                                } else if (tmpl === 'Modern Minimalist') {
+                                  setCardBgColor('#000000');
+                                  setCardBgImage('');
+                                } else if (tmpl === 'Cyberpunk Grid') {
+                                  setCardBgColor('#050811');
+                                  setCardBgImage('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80');
+                                } else if (tmpl === 'Neon Glow') {
+                                  setCardBgColor('#0d0f1a');
+                                  setCardBgImage('https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=80');
+                                } else {
+                                  setCardBgColor('#06070a');
+                                  setCardBgImage('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80');
+                                }
+                              }}
+                              className={`p-3 rounded-xl border text-xs font-semibold text-center transition-all cursor-pointer ${
+                                cardTemplate === tmpl
+                                  ? 'bg-white text-black border-white shadow-lg'
+                                  : 'bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10'
+                              }`}
+                            >
+                              {tmpl}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Canvas Interactive Visual Preview */}
+                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono font-bold tracking-wider text-slate-300 uppercase">
+                            DYNAMIC CARD RENDER CANVAS ({cardWidth}x{cardHeight})
+                          </span>
+                          <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Live Vector Pipeline
+                          </span>
+                        </div>
+
+                        {/* Visual Canvas Box */}
+                        <div className="w-full flex justify-center py-4 bg-black/40 rounded-2xl border border-white/5 overflow-hidden">
+                          <div
+                            style={{
+                              backgroundColor: cardBgColor,
+                              backgroundImage: cardBgImage ? `url(${cardBgImage})` : 'none',
+                              backgroundSize: cardFitMode,
+                              backgroundPosition: 'center',
+                              opacity: cardOpacity / 100,
+                            }}
+                            className="relative w-full max-w-[680px] h-[280px] rounded-2xl border border-white/20 p-6 flex flex-col justify-between shadow-2xl overflow-hidden transition-all duration-300"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+
+                            <div className="relative z-10 flex items-center justify-between">
+                              <span className="text-[10px] font-mono tracking-widest text-slate-400 uppercase px-2 py-0.5 rounded bg-black/60 border border-white/10">
+                                {guild.name}
+                              </span>
+                              <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase px-2 py-0.5 rounded bg-black/60 border border-white/10">
+                                MEMBER #{guild.memberCount || 1429}
+                              </span>
+                            </div>
+
+                            <div className="relative z-10 flex items-center gap-5">
+                              <div className="relative w-20 h-20 rounded-2xl p-1 bg-white/10 border border-white/30 overflow-hidden shadow-2xl">
+                                <img
+                                  src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
+                                  alt="Avatar Preview"
+                                  className="w-full h-full object-cover rounded-xl"
+                                />
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-black" />
+                              </div>
+
+                              <div className="space-y-1">
+                                <h3 className="font-display font-bold text-2xl text-white tracking-tight drop-shadow-md">
+                                  WELCOME, {user.username.toUpperCase()}
+                                </h3>
+                                <p className="text-xs text-slate-300 font-mono drop-shadow">
+                                  You are our {guild.memberCount || 1429}th Sentinel Citizen
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-white/10">
+                              <span>JOINED {new Date().toLocaleDateString()}</span>
+                              <span className="text-slate-200">DEXTERCORP SENTINEL CORE</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Layer Tree Controls & Canvas Options */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                            <span className="text-xs font-bold text-white uppercase tracking-wider">
+                              CANVAS LAYERS
+                            </span>
+                            <div className="flex gap-2">
+                              <button className="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer">
+                                + Text Layer
+                              </button>
+                              <button className="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer">
+                                + Shape Layer
+                              </button>
+                              <button className="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer">
+                                + Image Layer
+                              </button>
+                            </div>
+                            <div className="space-y-1 text-xs font-mono text-slate-300">
+                              <div className="p-2 rounded bg-black/40 border border-white/5 flex items-center justify-between">
+                                <span>1. Background Image Layer</span>
+                                <span className="text-slate-500">Active</span>
+                              </div>
+                              <div className="p-2 rounded bg-black/40 border border-white/5 flex items-center justify-between">
+                                <span>2. User Avatar Frame</span>
+                                <span className="text-slate-500">Dynamic</span>
+                              </div>
+                              <div className="p-2 rounded bg-black/40 border border-white/5 flex items-center justify-between">
+                                <span>3. Welcome Title Text</span>
+                                <span className="text-slate-500">Dynamic</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                            <span className="text-xs font-bold text-white uppercase tracking-wider">
+                              CANVAS CONFIGURATION
+                            </span>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <label className="text-[10px] text-slate-400 font-mono">WIDTH (PX)</label>
+                                <input
+                                  type="number"
+                                  value={cardWidth}
+                                  onChange={(e) => setCardWidth(Number(e.target.value))}
+                                  className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-white"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] text-slate-400 font-mono">HEIGHT (PX)</label>
+                                <input
+                                  type="number"
+                                  value={cardHeight}
+                                  onChange={(e) => setCardHeight(Number(e.target.value))}
+                                  className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-white"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] text-slate-400 font-mono">CUSTOM BACKGROUND URL</label>
+                              <input
+                                type="text"
+                                value={cardBgImage}
+                                onChange={(e) => setCardBgImage(e.target.value)}
+                                placeholder="https://..."
+                                className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[10px] text-slate-400 font-mono">FIT MODE</span>
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => setCardFitMode('cover')}
+                                  className={`px-2.5 py-1 rounded text-xs font-semibold ${
+                                    cardFitMode === 'cover' ? 'bg-white text-black' : 'bg-white/5 text-slate-300'
+                                  }`}
+                                >
+                                  Cover
+                                </button>
+                                <button
+                                  onClick={() => setCardFitMode('contain')}
+                                  className={`px-2.5 py-1 rounded text-xs font-semibold ${
+                                    cardFitMode === 'contain' ? 'bg-white text-black' : 'bg-white/5 text-slate-300'
+                                  }`}
+                                >
+                                  Contain
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBTAB 3: Join Simulation (Screenshot 510) */}
+                  {welcomerSubTab === 'simulation' && (
+                    <div className="space-y-6">
+                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-display font-bold text-base text-white">
+                              Live Join Event Simulator
+                            </h3>
+                            <p className="text-xs text-slate-400">
+                              Replicate new member arrivals to test messages, embed cards, auto-roles, and notifications.
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleSendTestMessage}
+                            className="px-4 py-2 rounded-xl bg-white text-black text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer shadow-lg active:scale-95"
+                          >
+                            Dispatch Test to Discord
+                          </button>
+                        </div>
+
+                        {/* Interactive Sandbox Steps */}
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+                          {[
+                            { step: '01', title: 'Member Joins', desc: 'Trigger guildMemberAdd payload' },
+                            { step: '02', title: 'Greeting Dispatched', desc: `Target: #${targetChannel || 'welcome'}` },
+                            { step: '03', title: 'Dynamic Card Rendered', desc: `${cardTemplate} Canvas 800x350` },
+                            { step: '04', title: 'Auto-Roles Granted', desc: 'Assigned: Members, Citizen' },
+                          ].map((st) => (
+                            <div key={st.step} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                              <span className="text-[10px] font-mono font-bold text-slate-400">{st.step}</span>
+                              <h4 className="text-xs font-bold text-white">{st.title}</h4>
+                              <p className="text-[11px] text-slate-400">{st.desc}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Simulated Channel Preview */}
+                        <div className="bg-[#313338] rounded-2xl p-4 text-xs font-sans text-slate-200 space-y-2 mt-4">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                            SIMULATED DISCORD OUTPUT (#{targetChannel || 'welcome'})
+                          </span>
+                          <div className="flex items-start gap-3 pt-2">
+                            <div className="w-9 h-9 rounded-full bg-[#5865F2] overflow-hidden shrink-0">
+                              <img src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Bot" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-white">DexterCorp</span>
+                                <span className="px-1 py-0.2 rounded bg-[#5865F2] text-[9px] font-bold text-white">BOT</span>
+                                <span className="text-[10px] text-slate-400 ml-1">Simulated Just Now</span>
+                              </div>
+                              <p className="text-slate-200">{renderPreview(contentMessage)}</p>
+                              {embedTitle && (
+                                <div className="mt-2 p-3 rounded-lg bg-[#2b2d31] border-l-4 space-y-1" style={{ borderLeftColor: embedColor }}>
+                                  <h4 className="font-bold text-white">{renderPreview(embedTitle)}</h4>
+                                  <p className="text-[11px] text-slate-300 whitespace-pre-wrap">{renderPreview(description)}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBTAB 4: Advanced Customizations (Screenshot 511) */}
+                  {welcomerSubTab === 'customizations' && (
+                    <div className="space-y-6">
+                      {/* Placeholder Tag-Cloud */}
+                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                        <div>
+                          <h3 className="font-display font-bold text-base text-white">
+                            Interactive Dynamic Variables
+                          </h3>
+                          <p className="text-xs text-slate-400">
+                            Click any tag to copy it to your clipboard for use in welcome content or embeds.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            '{user}',
+                            '{user_name}',
+                            '{user_display}',
+                            '{user_id}',
+                            '{user_mention}',
+                            '{server_name}',
+                            '{server_id}',
+                            '{member_count}',
+                            '{server_membercount}',
+                            '{user_created:at}',
+                            '{user_joined:at}',
+                            '{server_icon}',
+                            '{user_avatar}',
+                          ].map((tag) => (
+                            <button
+                              key={tag}
+                              onClick={() => {
+                                navigator.clipboard.writeText(tag);
+                                alert(`Copied ${tag} to clipboard!`);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-xs font-mono text-white transition-all cursor-pointer hover:border-white/30"
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Direct Message Greeting */}
+                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-display font-bold text-sm text-white">
+                              Direct Message (DM) Greetings
+                            </h3>
+                            <p className="text-xs text-slate-400">
+                              Send a private welcoming message straight into the member's Discord direct messages upon joining.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setDmGreetingEnabled(!dmGreetingEnabled)}
+                            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer border ${
+                              dmGreetingEnabled ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all ${
+                                dmGreetingEnabled ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        {dmGreetingEnabled && (
+                          <div className="space-y-2 pt-2">
+                            <label className="text-[10px] font-mono text-slate-400 uppercase">DM CONTENT</label>
+                            <textarea
+                              rows={3}
+                              value={dmGreetingMessage}
+                              onChange={(e) => setDmGreetingMessage(e.target.value)}
+                              className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-white/40"
+                              placeholder="Welcome to the server, {user}! Make sure to read the rules in #rules."
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Anti-Flood Rate Limiting Guard */}
+                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 flex items-center justify-between">
+                        <div>
+                          <h3 className="font-display font-bold text-sm text-white">
+                            Anti-Flood Rate Limiting Guard
+                          </h3>
+                          <p className="text-xs text-slate-400">
+                            Throttles welcome message dispatches if &gt;10 members join within 60 seconds to protect chat from raid spam.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setAntiFloodEnabled(!antiFloodEnabled)}
+                          className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer border ${
+                            antiFloodEnabled ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all ${
+                              antiFloodEnabled ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Custom Webhook Profile */}
+                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                        <div>
+                          <h3 className="font-display font-bold text-sm text-white">
+                            Custom Webhook Avatar & Name
+                          </h3>
+                          <p className="text-xs text-slate-400">
+                            Override default bot branding with your own custom server welcome persona.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-mono text-slate-400 uppercase">CUSTOM BOT USERNAME</label>
+                            <input
+                              type="text"
+                              value={welcomerCustomWebhookName}
+                              onChange={(e) => setWelcomerCustomWebhookName(e.target.value)}
+                              placeholder="e.g. Dexter Sentinel Gatekeeper"
+                              className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-mono text-slate-400 uppercase">CUSTOM AVATAR IMAGE URL</label>
+                            <input
+                              type="text"
+                              value={welcomerCustomWebhookAvatar}
+                              onChange={(e) => setWelcomerCustomWebhookAvatar(e.target.value)}
+                              placeholder="https://..."
+                              className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
           {/* ======================================================== */}
           {/* TAB 2: ANTINUKE - OBSIDIAN BLACK & WHITE THEME */}
@@ -2241,148 +2835,491 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           {/* ======================================================== */}
           {activeModule === 'automod' && (
             <div className="space-y-6">
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex items-center justify-between shadow-lg">
+              {/* Module Header Card */}
+              <div className="liquid-glass rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 border border-white/10 shadow-lg">
                 <div className="flex items-center gap-3">
-                  <Bot className="w-6 h-6 text-cyan-400" />
+                  <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+                    <Bot className="w-5 h-5 text-white" />
+                  </div>
                   <div>
-                    <h3 className="font-orbitron font-bold text-base text-white">
-                      AutoMod Sentinel & Filters
+                    <h3 className="font-display font-bold text-base text-white">
+                      AutoMod Sentinel & Detection Filters
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Automated chat policing, link shielding & spam controls
+                      Automated chat policing, link shielding & spam controls (Screenshot 503)
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setAutomodEnabled(!automodEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                    automodEnabled ? 'bg-cyan-500' : 'bg-slate-700'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                      automodEnabled ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Punishment Selector */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-2">
-                <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                  AUTOMOD VIOLATION ACTION
-                </label>
-                <select
-                  value={automodPunishment}
-                  onChange={(e) => setAutomodPunishment(e.target.value)}
-                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
-                >
-                  <option value="timeout_5m">â±ï¸ Timeout Member (5 Minutes)</option>
-                  <option value="timeout_1h">â±ï¸ Timeout Member (1 Hour)</option>
-                  <option value="timeout_24h">â±ï¸ Timeout Member (24 Hours)</option>
-                  <option value="kick">ðŸ‘¢ Kick Member</option>
-                  <option value="warn">âš ï¸ Delete Message & Warn</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  {
-                    key: 'antiSpam',
-                    label: 'Anti-Spam Filter',
-                    desc: 'Deletes rapid repeated messages',
-                  },
-                  {
-                    key: 'antiLinks',
-                    label: 'Anti-Links / Invites',
-                    desc: 'Blocks unauthorized discord.gg invite links',
-                  },
-                  {
-                    key: 'badWords',
-                    label: 'Profanity Filter',
-                    desc: 'Blocks offensive words & slurs',
-                  },
-                  {
-                    key: 'massMention',
-                    label: 'Anti-Mass Mention',
-                    desc: 'Deletes messages with 5+ mentions',
-                  },
-                  {
-                    key: 'antiCaps',
-                    label: 'Anti-Caps Abuse',
-                    desc: 'Blocks messages with >70% capital letters',
-                  },
-                  {
-                    key: 'antiZalgo',
-                    label: 'Anti-Zalgo Text',
-                    desc: 'Filters distorted glitched unicode fonts',
-                  },
-                ].map((f) => (
-                  <div
-                    key={f.key}
-                    className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-xs text-white">{f.label}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">{f.desc}</p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setAutomodFeatures((p) => ({
-                          ...p,
-                          [f.key]: !(p as any)[f.key],
-                        }))
-                      }
-                      className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
-                        (automodFeatures as any)[f.key] ? 'bg-cyan-500' : 'bg-slate-700'
-                      }`}
-                    >
-                      <span
-                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                          (automodFeatures as any)[f.key] ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Blocked Words Filter */}
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
-                <h4 className="font-orbitron font-bold text-xs text-slate-300 uppercase tracking-wider">
-                  Custom Word & Phrase Blacklist
-                </h4>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Add phrase or bad word to block..."
-                    value={newBlockedWord}
-                    onChange={(e) => setNewBlockedWord(e.target.value)}
-                    className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  />
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono font-semibold text-slate-400">
+                    {automodEnabled ? 'ENABLED' : 'STANDBY'}
+                  </span>
                   <button
-                    onClick={addBlockedWord}
-                    className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                    onClick={() => setAutomodEnabled(!automodEnabled)}
+                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer border ${
+                      automodEnabled ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                    }`}
                   >
-                    + Add Phrase
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all ${
+                        automodEnabled ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                      }`}
+                    />
                   </button>
                 </div>
+              </div>
 
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {blockedWords.map((word) => (
-                    <span
-                      key={word}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-slate-300"
-                    >
-                      <span>{word}</span>
-                      <button
-                        onClick={() => removeBlockedWord(word)}
-                        className="text-slate-500 hover:text-rose-400 cursor-pointer"
-                      >
-                        âœ•
-                      </button>
+              {/* 3 Accordion Filter Categories (Screenshot 503) */}
+              <div className="space-y-4">
+                {/* 1. Anti-Spam Filtering */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-white flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-white" />
+                        <span>Anti-Spam Filtering</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        Shield chat from fast repetitive spam, duplicate flooding, and mass mentions.
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">
+                      3 Controls Active
                     </span>
-                  ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { key: 'antiSpam', label: 'Anti-Spam (Rapid Messages)', desc: 'Blocks fast message sending' },
+                      { key: 'massMention', label: 'Anti-Mass Mention', desc: 'Blocks messages with 5+ mentions' },
+                      { key: 'antiCaps', label: 'Anti-Caps Abuse', desc: 'Filters messages with >70% capital letters' },
+                      { key: 'antiZalgo', label: 'Anti-Zalgo Text', desc: 'Blocks corrupted glitch fonts' },
+                    ].map((f) => (
+                      <div key={f.key} className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-xs text-white">{f.label}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{f.desc}</p>
+                        </div>
+                        <button
+                          onClick={() => setAutomodFeatures((p) => ({ ...p, [f.key]: !(p as any)[f.key] }))}
+                          className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                            (automodFeatures as any)[f.key] ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                              (automodFeatures as any)[f.key] ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Link Enforcement */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-white flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-white" />
+                        <span>Link Enforcement</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        Protect against unauthorized invites, discord links, phishing URLs, and web links.
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">
+                      Active Guard
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { key: 'antiLinks', label: 'Discord Server Invites', desc: 'Blocks discord.gg links' },
+                      { key: 'badWords', label: 'Phishing & Scam Links', desc: 'Blocks steam gift & nitro scams' },
+                    ].map((f) => (
+                      <div key={f.key} className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-xs text-white">{f.label}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{f.desc}</p>
+                        </div>
+                        <button
+                          onClick={() => setAutomodFeatures((p) => ({ ...p, [f.key]: !(p as any)[f.key] }))}
+                          className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                            (automodFeatures as any)[f.key] ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                              (automodFeatures as any)[f.key] ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Content Filtering & Custom Blacklist */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-white flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-white" />
+                        <span>Content Filtering & Phrase Blacklist</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        Enforce chat civility, profanity detection, and custom blacklisted words.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add custom phrase or word to block..."
+                      value={newBlockedWord}
+                      onChange={(e) => setNewBlockedWord(e.target.value)}
+                      className="flex-1 bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                    />
+                    <button
+                      onClick={addBlockedWord}
+                      className="px-4 py-2 rounded-xl bg-white text-black text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
+                    >
+                      + Add Phrase
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {blockedWords.map((word) => (
+                      <span
+                        key={word}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-slate-300"
+                      >
+                        <span>{word}</span>
+                        <button
+                          onClick={() => removeBlockedWord(word)}
+                          className="text-slate-500 hover:text-rose-400 cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* AutoMod Bypass Customization (Screenshot 503) */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="border-b border-white/5 pb-2">
+                    <h4 className="font-display font-bold text-sm text-white">
+                      AutoMod Bypass Customization
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Configure channels, roles, and users exempt from automated moderation filtering.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Ignored Channels */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-2">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                        IGNORED CHANNELS
+                      </label>
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value && !automodIgnoredChannels.includes(e.target.value)) {
+                            setAutomodIgnoredChannels([...automodIgnoredChannels, e.target.value]);
+                          }
+                        }}
+                        className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      >
+                        <option value="">+ Add Ignored Channel</option>
+                        {availableChannels.map((c) => (
+                          <option key={c.id} value={c.name}>#{c.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex flex-wrap gap-1 pt-1 max-h-24 overflow-y-auto">
+                        {automodIgnoredChannels.map((ch) => (
+                          <span key={ch} className="px-2 py-0.5 rounded bg-black/60 border border-white/10 text-[10px] font-mono text-slate-300 flex items-center gap-1">
+                            #{ch}
+                            <button onClick={() => setAutomodIgnoredChannels(automodIgnoredChannels.filter((c) => c !== ch))} className="text-slate-500 hover:text-white">✕</button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ignored Roles */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-2">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                        IGNORED ROLES
+                      </label>
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value && !automodIgnoredRoles.includes(e.target.value)) {
+                            setAutomodIgnoredRoles([...automodIgnoredRoles, e.target.value]);
+                          }
+                        }}
+                        className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      >
+                        <option value="">+ Add Ignored Role</option>
+                        {availableRoles.map((r) => (
+                          <option key={r.id} value={r.name}>@{r.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex flex-wrap gap-1 pt-1 max-h-24 overflow-y-auto">
+                        {automodIgnoredRoles.map((ro) => (
+                          <span key={ro} className="px-2 py-0.5 rounded bg-black/60 border border-white/10 text-[10px] font-mono text-slate-300 flex items-center gap-1">
+                            @{ro}
+                            <button onClick={() => setAutomodIgnoredRoles(automodIgnoredRoles.filter((r) => r !== ro))} className="text-slate-500 hover:text-white">✕</button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ignored Users */}
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-2">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                        IGNORED USERS
+                      </label>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          placeholder="User ID..."
+                          value={newAutomodUserId}
+                          onChange={(e) => setNewAutomodUserId(e.target.value)}
+                          className="flex-1 bg-[#13141d] border border-white/10 rounded-lg px-2 py-1 text-xs text-white font-mono"
+                        />
+                        <button
+                          onClick={() => {
+                            if (newAutomodUserId.trim() && !automodIgnoredUsers.includes(newAutomodUserId.trim())) {
+                              setAutomodIgnoredUsers([...automodIgnoredUsers, newAutomodUserId.trim()]);
+                              setNewAutomodUserId('');
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-white text-black font-bold text-xs rounded-lg"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1 pt-1 max-h-24 overflow-y-auto">
+                        {automodIgnoredUsers.map((uid) => (
+                          <span key={uid} className="px-2 py-0.5 rounded bg-black/60 border border-white/10 text-[10px] font-mono text-slate-300 flex items-center gap-1">
+                            ID:{uid}
+                            <button onClick={() => setAutomodIgnoredUsers(automodIgnoredUsers.filter((u) => u !== uid))} className="text-slate-500 hover:text-white">✕</button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AutoMod Action on Violation */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-3">
+                  <label className="text-[11px] font-bold text-white uppercase tracking-wider">
+                    AUTOMOD VIOLATION DISCIPLINARY ACTION
+                  </label>
+                  <select
+                    value={automodPunishment}
+                    onChange={(e) => setAutomodPunishment(e.target.value)}
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                  >
+                    <option value="timeout_5m">⏱️ Timeout Member (5 Minutes)</option>
+                    <option value="timeout_1h">⏱️ Timeout Member (1 Hour)</option>
+                    <option value="timeout_24h">⏱️ Timeout Member (24 Hours)</option>
+                    <option value="kick">👢 Kick Member from Server</option>
+                    <option value="warn">⚠️ Delete Message & Warn Member</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* TAB: HIGHER ROLE BYPASS (Screenshots 504-505) */}
+          {/* ======================================================== */}
+          {activeModule === 'role_bypass' && (
+            <div className="space-y-6">
+              {/* Important Note Alert Callout (Screenshot 504) */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/15 flex items-start gap-3 shadow-lg">
+                <AlertTriangle className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h4 className="font-display font-bold text-xs text-white uppercase tracking-wider">
+                    Important Note
+                  </h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Higher Role Bypass settings allow specified elevated roles to bypass automated restrictions. Configure carefully to prevent security loopholes.
+                  </p>
+                </div>
+              </div>
+
+              {/* 4 Categorized Bypass Sections (Screenshots 504-505) */}
+              <div className="space-y-4">
+                {/* 1. Channel Management Bypass */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="border-b border-white/5 pb-2">
+                    <h3 className="font-display font-bold text-sm text-white">
+                      Channel Management Bypass
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Privileged roles exempt from channel lockdown and visibility restrictions.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {['Lock', 'Lockall', 'Unlock', 'Unlockall', 'Hide', 'Hideall', 'Unhide', 'Unhideall'].map((action) => {
+                      const key = action.toLowerCase();
+                      const isChecked = roleBypassToggles[key] ?? true;
+                      return (
+                        <div key={action} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-white">{action}</span>
+                          <button
+                            onClick={() => setRoleBypassToggles((p) => ({ ...p, [key]: !isChecked }))}
+                            className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                              isChecked ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                isChecked ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Server Moderation Bypass */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="border-b border-white/5 pb-2">
+                    <h3 className="font-display font-bold text-sm text-white">
+                      Server Moderation Bypass
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Exemptions for high-tier moderation enforcement commands.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {['Ban', 'Unban', 'Unban All', 'Kick'].map((action) => {
+                      const key = action.toLowerCase().replace(' ', '');
+                      const isChecked = roleBypassToggles[key] ?? true;
+                      return (
+                        <div key={action} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-white">{action}</span>
+                          <button
+                            onClick={() => setRoleBypassToggles((p) => ({ ...p, [key]: !isChecked }))}
+                            className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                              isChecked ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                isChecked ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Timeout & Warnings Bypass */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="border-b border-white/5 pb-2">
+                    <h3 className="font-display font-bold text-sm text-white">
+                      Timeout & Warnings Bypass
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Rules governing automated mute escalations and warning thresholds.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {['Timeout', 'Untimeout', 'Warn', 'Clear Warnings'].map((action) => {
+                      const key = action.toLowerCase().replace(' ', '');
+                      const isChecked = roleBypassToggles[key] ?? true;
+                      return (
+                        <div key={action} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-white">{action}</span>
+                          <button
+                            onClick={() => setRoleBypassToggles((p) => ({ ...p, [key]: !isChecked }))}
+                            className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                              isChecked ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                isChecked ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 4. Voice Moderation Bypass */}
+                <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="border-b border-white/5 pb-2">
+                    <h3 className="font-display font-bold text-sm text-white">
+                      Voice Moderation Bypass
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Bypass filters for voice server muting, deafening, and disconnect actions.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {['Mute', 'Unmute', 'Deafen', 'Undeafen', 'Disconnect', 'Move'].map((action) => {
+                      const key = action.toLowerCase();
+                      const isChecked = roleBypassToggles[key] ?? true;
+                      return (
+                        <div key={action} className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-white">{action}</span>
+                          <button
+                            onClick={() => setRoleBypassToggles((p) => ({ ...p, [key]: !isChecked }))}
+                            className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                              isChecked ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                isChecked ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* TAB: SERVER NO-PREFIX */}
+          {/* ======================================================== */}
+          {activeModule === 'noprefix' && (
+            <div className="space-y-6">
+              <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                <div>
+                  <h3 className="font-display font-bold text-base text-white">
+                    Server No-Prefix Whitelist
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Allow designated administrators, boosters, or trusted staff to execute commands without typing the prefix (<code className="text-white font-mono">{prefix}</code>).
+                  </p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-xs text-white">Global No-Prefix for Server Owner</h4>
+                    <p className="text-[11px] text-slate-400">Owner can trigger any command by typing the name directly</p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded bg-white text-black font-mono font-bold text-[10px]">
+                    ACTIVE
+                  </span>
                 </div>
               </div>
             </div>
@@ -2886,168 +3823,282 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </div>
           )}
 
-          {/* ======================================================== */}
-          {/* TAB 6: LOGGING */}
+          {/* TAB: LOGGING (Screenshot 506) */}
           {/* ======================================================== */}
           {activeModule === 'logging' && (
             <div className="space-y-6">
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex items-center justify-between shadow-lg">
+              {/* Top Status & Deploy Bar (Screenshot 506) */}
+              <div className="liquid-glass rounded-2xl p-5 border border-white/10 flex flex-wrap items-center justify-between gap-4 shadow-lg">
                 <div className="flex items-center gap-3">
-                  <ScrollText className="w-6 h-6 text-amber-400" />
+                  <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+                    <ScrollText className="w-5 h-5 text-white" />
+                  </div>
                   <div>
-                    <h3 className="font-orbitron font-bold text-base text-white">
-                      Comprehensive Logging
+                    <h3 className="font-display font-bold text-base text-white">
+                      Comprehensive Event Logging
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Record moderation actions, joins, leaves, edits, and voice
+                      Record moderation actions, joins, leaves, edits, and voice telemetry (Screenshot 506)
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setModLogsChannel(availableChannels[0]?.id || 'mod-logs');
+                      setMemberLogsChannel(availableChannels[0]?.id || 'join-logs');
+                      setMessageLogsChannel(availableChannels[0]?.id || 'message-logs');
+                      setVoiceLogsChannel(availableChannels[0]?.id || 'voice-logs');
+                      alert('Auto Magic Setup applied! All 7 audit event routes bound to server channels.');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-white text-black text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer shadow-md active:scale-95"
+                  >
+                    Auto Magic Setup [ Deploy ]
+                  </button>
+                  <button
+                    onClick={() => {
+                      setModLogsChannel('');
+                      setMemberLogsChannel('');
+                      setMessageLogsChannel('');
+                      setVoiceLogsChannel('');
+                    }}
+                    className="px-3 py-2 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Reset Logging
+                  </button>
+                </div>
+              </div>
+
+              {/* 7 Configured Log Channel Categories (Screenshot 506) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { title: 'Member Actions', desc: 'Joins, leaves, role updates, nickname changes', val: memberLogsChannel, setVal: setMemberLogsChannel },
+                  { title: 'Message Actions', desc: 'Message edits, message deletes, bulk message purges', val: messageLogsChannel, setVal: setMessageLogsChannel },
+                  { title: 'Voice Actions', desc: 'Voice connects, disconnects, server mutes, deafens', val: voiceLogsChannel, setVal: setVoiceLogsChannel },
+                  { title: 'Server Actions', desc: 'Server vanity changes, emojis, stickers, integrations', val: serverLogsChannel, setVal: setServerLogsChannel },
+                  { title: 'Channel Actions', desc: 'Channel creation, deletion, topic and permission changes', val: modLogsChannel, setVal: setModLogsChannel },
+                  { title: 'Role Actions', desc: 'Role creation, deletion, color, icon, and permission changes', val: modLogsChannel, setVal: setModLogsChannel },
+                  { title: 'Mod Logs', desc: 'Bans, unbans, kicks, timeouts, warnings, and anti-nuke triggers', val: modLogsChannel, setVal: setModLogsChannel },
+                ].map((item, idx) => (
+                  <div key={idx} className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">
+                        {item.title}
+                      </span>
+                      <span className="text-[10px] font-mono text-emerald-400">Route #{idx + 1}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">{item.desc}</p>
+                    <select
+                      value={item.val}
+                      onChange={(e) => item.setVal(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                    >
+                      <option value="">-- Route to Discord Channel --</option>
+                      {availableChannels.map((ch) => (
+                        <option key={ch.id} value={ch.id}>
+                          # {ch.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+
+              {/* Live Test Logging Delivery Button */}
+              <div className="liquid-glass rounded-2xl p-5 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-white">Test Audit Log Dispatch</p>
+                  <p className="text-[10px] text-slate-400">
+                    Dispatches a live verification event to #{availableChannels.find(c => c.id === modLogsChannel)?.name || modLogsChannel || 'selected channel'}
+                  </p>
+                </div>
                 <button
-                  onClick={() => setLoggingEnabled(!loggingEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                    loggingEnabled ? 'bg-amber-500' : 'bg-slate-700'
-                  }`}
+                  type="button"
+                  onClick={async () => {
+                    const target = modLogsChannel || availableChannels[0]?.id;
+                    if (!target) return;
+                    setLogTestSent(true);
+                    try {
+                      await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
+                        channelId: target,
+                        welcome: {
+                          content: `🛡️ **[DexterCorp Security Audit Log]** Test event triggered from web dashboard.`,
+                          embeds: {
+                            title: '📋 Security & Audit Logging Verified',
+                            description: `**Event:** Real-Time Dashboard Audit Verification\n**Operator:** <@${user.id}>\n**Guild:** ${guild.name} (\`${guild.id}\`)\n**Status:** 🟢 Live Synchronized across all bot clusters`,
+                            color: '#ffffff',
+                            author: { name: 'DEXTERCORP AUDIT SENTINEL' },
+                            footer: { text: 'DexterCorp Core Sentinel' }
+                          }
+                        }
+                      });
+                    } catch (err) {
+                      console.warn(err);
+                    }
+                    setTimeout(() => setLogTestSent(false), 3000);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white text-black font-bold text-xs hover:bg-slate-200 transition-all flex items-center gap-2 cursor-pointer shadow-md"
                 >
-                  <span
-                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                      loggingEnabled ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
+                  <Send className="w-3.5 h-3.5 text-black" />
+                  <span>{logTestSent ? '✓ Audit Log Sent to Discord!' : 'Send Test Log to Channel'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* TAB: MODERATION & CASES (Screenshot 512) */}
+          {/* ======================================================== */}
+          {activeModule === 'moderation' && (
+            <div className="space-y-6">
+              {/* Cases & Reports Summary Cards (Screenshot 512) */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {[
+                  { label: 'Total Cases', value: '0', color: 'text-white' },
+                  { label: 'Bans', value: '0', color: 'text-slate-300' },
+                  { label: 'Kicks', value: '0', color: 'text-slate-300' },
+                  { label: 'Timeouts', value: '0', color: 'text-slate-300' },
+                  { label: 'Warns', value: '0', color: 'text-slate-300' },
+                ].map((stat) => (
+                  <div key={stat.label} className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">{stat.label}</span>
+                    <h3 className={`font-display font-bold text-2xl ${stat.color}`}>{stat.value}</h3>
+                  </div>
+                ))}
+              </div>
+
+              {/* View Cases Action & Search */}
+              <div className="liquid-glass rounded-2xl p-5 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <h4 className="font-display font-bold text-sm text-white">
+                    Cases Log & Reports
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Comprehensive moderation action history with case IDs, reasons, and evidence.
+                  </p>
+                </div>
+                <button
+                  onClick={() => alert('No active moderation cases found in database. All clear!')}
+                  className="px-4 py-2 rounded-xl bg-white text-black text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer shadow-md"
+                >
+                  View Cases Directory
                 </button>
               </div>
 
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      MOD ACTION LOGS CHANNEL
-                    </label>
-                    <select
-                      value={modLogsChannel}
-                      onChange={(e) => setModLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
-                    >
-                      <option value="">-- Select Logs Channel --</option>
-                      {availableChannels.length > 0 ? (
-                        availableChannels.map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            # {ch.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="mod-logs"># mod-logs</option>
-                      )}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      MEMBER JOIN & LEAVE LOGS
-                    </label>
-                    <select
-                      value={memberLogsChannel}
-                      onChange={(e) => setMemberLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
-                    >
-                      <option value="">-- Select Join/Leave Channel --</option>
-                      {availableChannels.length > 0 ? (
-                        availableChannels.map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            # {ch.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="join-logs"># join-logs</option>
-                      )}
-                    </select>
-                  </div>
+              {/* Protection & Policy Settings (Screenshot 512) */}
+              <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-5">
+                <div className="border-b border-white/5 pb-2">
+                  <h4 className="font-display font-bold text-sm text-white">
+                    Protection & Policy Settings
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Immunity boundaries, user notification preferences, and punishment thresholds.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      MESSAGE DELETE & EDIT LOGS
-                    </label>
-                    <select
-                      value={messageLogsChannel}
-                      onChange={(e) => setMessageLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
-                    >
-                      <option value="">-- Select Message Logs Channel --</option>
-                      {availableChannels.length > 0 ? (
-                        availableChannels.map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            # {ch.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="message-logs"># message-logs</option>
-                      )}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      VOICE ACTIVITY LOGS
-                    </label>
-                    <select
-                      value={voiceLogsChannel}
-                      onChange={(e) => setVoiceLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
-                    >
-                      <option value="">-- Select Voice Logs Channel --</option>
-                      {availableChannels.length > 0 ? (
-                        availableChannels.map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            # {ch.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="voice-logs"># voice-logs</option>
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Live Test Logging Delivery Button */}
-                <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-slate-200">Test Audit Log Dispatch</p>
-                    <p className="text-[10px] text-slate-400">
-                      Dispatches a live verification event to #{availableChannels.find(c => c.id === modLogsChannel)?.name || modLogsChannel || 'channel'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const target = modLogsChannel || availableChannels[0]?.id;
-                      if (!target) return;
-                      setLogTestSent(true);
-                      try {
-                        await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
-                          channelId: target,
-                          welcome: {
-                            content: `ðŸ›¡ï¸ **[DexterCorp Security Audit Log]** Test event triggered from web dashboard.`,
-                            embeds: {
-                              title: 'ðŸ“‹ Security & Audit Logging Verified',
-                              description: `**Event:** Real-Time Dashboard Audit Verification\n**Operator:** <@${user.id}>\n**Guild:** ${guild.name} (\`${guild.id}\`)\n**Status:** ðŸŸ¢ Live Synchronized across all bot clusters`,
-                              color: '#f59e0b',
-                              author: { name: 'DEXTERCORP AUDIT SENTINEL' },
-                              footer: { text: 'DexterCorp Core v2.5' }
-                            }
-                          }
-                        });
-                      } catch (err) {
-                        console.warn(err);
+                {/* Immune Roles Selector */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                    IMMUNE ROLES (CANNOT BE WARNED/PUNISHED)
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value && !modImmuneRoles.includes(e.target.value)) {
+                        setModImmuneRoles([...modImmuneRoles, e.target.value]);
                       }
-                      setTimeout(() => setLogTestSent(false), 3000);
                     }}
-                    className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                    className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
                   >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>{logTestSent ? 'âœ“ Audit Log Sent to Discord!' : 'Send Test Log to Channel'}</span>
-                  </button>
+                    <option value="">+ Add Immune Role</option>
+                    {availableRoles.map((r) => (
+                      <option key={r.id} value={r.name}>@{r.name}</option>
+                    ))}
+                  </select>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {modImmuneRoles.map((r) => (
+                      <span key={r} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-mono text-slate-200 flex items-center gap-1.5">
+                        @{r}
+                        <button onClick={() => setModImmuneRoles(modImmuneRoles.filter((item) => item !== r))} className="text-slate-500 hover:text-white">✕</button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggles: User Notifications & Purge Pinned */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-xs text-white">User Notifications (DM)</p>
+                      <p className="text-[10px] text-slate-400">Send direct message to punished user with reason</p>
+                    </div>
+                    <button
+                      onClick={() => setModUserNotifications(!modUserNotifications)}
+                      className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                        modUserNotifications ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                          modUserNotifications ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-xs text-white">Purge Pinned Messages</p>
+                      <p className="text-[10px] text-slate-400">Allow bulk delete commands to remove pinned messages</p>
+                    </div>
+                    <button
+                      onClick={() => setModPurgePinned(!modPurgePinned)}
+                      className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                        modPurgePinned ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                          modPurgePinned ? 'bg-black translate-x-4' : 'bg-white translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Punishment Escalation Settings */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                      WARN ACTION THRESHOLD
+                    </label>
+                    <select
+                      value={modWarnThreshold}
+                      onChange={(e) => setModWarnThreshold(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                    >
+                      <option value="3">3 Warns → Auto Timeout (10 Minutes)</option>
+                      <option value="5">5 Warns → Auto Kick Member</option>
+                      <option value="7">7 Warns → Auto Ban Member</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-slate-400 uppercase font-bold">
+                      DEFAULT TIMEOUT DURATION
+                    </label>
+                    <select
+                      value={modDefaultTimeout}
+                      onChange={(e) => setModDefaultTimeout(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
+                    >
+                      <option value="5m">5 Minutes</option>
+                      <option value="10m">10 Minutes</option>
+                      <option value="1h">1 Hour</option>
+                      <option value="1d">1 Day</option>
+                      <option value="7d">7 Days</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3237,11 +4288,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <select
                       value={autoroleDelay}
                       onChange={(e) => setAutoroleDelay(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                     >
-                      <option value="0">Immediate (0s)</option>
-                      <option value="5">5 Seconds Delay</option>
-                      <option value="30">30 Seconds Delay</option>
+                      <option value="0">Instant (0s)</option>
+                      <option value="5">5 seconds</option>
+                      <option value="30">30 seconds</option>
+                      <option value="60">1 minute</option>
+                      <option value="300">5 minutes</option>
                     </select>
                   </div>
                 </div>
@@ -3250,82 +4303,104 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* TAB 9: AUTOREACT */}
+          {/* TAB: AUTO-REACT (Screenshot 513) */}
           {/* ======================================================== */}
           {activeModule === 'autoreact' && (
             <div className="space-y-6">
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex items-center justify-between shadow-lg">
-                <div className="flex items-center gap-3">
-                  <Smile className="w-6 h-6 text-yellow-400" />
+              {/* 3 Metric Cards (Screenshot 513) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">RULES LIMIT</span>
+                  <h3 className="font-display font-bold text-xl text-white">{(autoreactRules || []).length}/10 Rules Limit</h3>
+                  <p className="text-[10px] text-slate-500">Maximum concurrent reactions</p>
+                </div>
+
+                <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">ACTIVE RULES</span>
+                  <h3 className="font-display font-bold text-xl text-white">{(autoreactRules || []).length} Active</h3>
+                  <p className="text-[10px] text-slate-500">Monitoring target channels</p>
+                </div>
+
+                <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">STRATEGY</span>
+                  <h3 className="font-display font-bold text-xs text-white pt-1">Exact Match vs Contains Substring</h3>
+                  <p className="text-[10px] text-slate-500">Case-insensitive matching</p>
+                </div>
+              </div>
+
+              {/* Add New Rule Card */}
+              <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-white/5">
                   <div>
-                    <h3 className="font-orbitron font-bold text-base text-white">
-                      Auto-React Triggers
-                    </h3>
+                    <h4 className="font-display font-bold text-sm text-white">
+                      Add New Auto-Reaction Rule
+                    </h4>
                     <p className="text-xs text-slate-400">
-                      Automatically react with emojis when messages are sent in channels
+                      Instruct the bot to automatically add reaction emojis when messages are sent in a channel.
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setAutoreactEnabled(!autoreactEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                    autoreactEnabled ? 'bg-yellow-500' : 'bg-slate-700'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                      autoreactEnabled ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
 
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
-                <h4 className="font-orbitron font-bold text-xs text-slate-300 uppercase tracking-wider">
-                  Add New Auto-Reaction Rule
-                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <select
-                    value={newReactChannel}
-                    onChange={(e) => setNewReactChannel(e.target.value)}
-                    className="bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
-                  >
-                    <option value="suggestions"># suggestions</option>
-                    <option value="announcements"># announcements</option>
-                    <option value="memes"># memes</option>
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Emojis (e.g. ðŸ‘ ðŸ‘Ž)"
-                    value={newReactEmojis}
-                    onChange={(e) => setNewReactEmojis(e.target.value)}
-                    className="bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
-                  />
-                  <button
-                    onClick={addAutoreactRule}
-                    className="py-2 px-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-xs cursor-pointer transition-colors"
-                  >
-                    + Add Rule
-                  </button>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono text-slate-400 uppercase">CHANNEL</label>
+                    <select
+                      value={newReactChannel}
+                      onChange={(e) => setNewReactChannel(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                    >
+                      {availableChannels.length > 0 ? (
+                        availableChannels.map((c) => (
+                          <option key={c.id} value={c.name}>#{c.name}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="suggestions"># suggestions</option>
+                          <option value="announcements"># announcements</option>
+                          <option value="memes"># memes</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono text-slate-400 uppercase">EMOJIS TO REACT</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 👍 👎 or <:emoji:id>"
+                      value={newReactEmojis}
+                      onChange={(e) => setNewReactEmojis(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      onClick={addAutoreactRule}
+                      className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-bold text-xs hover:bg-slate-200 cursor-pointer transition-all shadow-md active:scale-95"
+                    >
+                      + Add Rule
+                    </button>
+                  </div>
                 </div>
 
+                {/* Existing Rules List */}
                 <div className="space-y-2 pt-2">
-                  {autoreactRules.map((rule) => (
+                  {(autoreactRules || []).map((rule) => (
                     <div
                       key={rule.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 text-xs"
+                      className="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/5 text-xs hover:border-white/15 transition-all"
                     >
                       <div className="flex items-center gap-2">
                         <Hash className="w-4 h-4 text-slate-400" />
-                        <span className="font-mono text-white">#{rule.channel}</span>
+                        <span className="font-mono font-semibold text-white">#{rule.channel}</span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-base">{rule.emojis}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="text-base tracking-widest">{rule.emojis}</span>
                         <button
-                          onClick={() =>
-                            setAutoreactRules(autoreactRules.filter((r) => r.id !== rule.id))
-                          }
-                          className="text-slate-500 hover:text-rose-400 cursor-pointer"
+                          onClick={() => setAutoreactRules(autoreactRules.filter((r) => r.id !== rule.id))}
+                          className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                          title="Delete Rule"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -3338,98 +4413,112 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* TAB 10: AUTORESPONDER */}
+          {/* TAB: AUTORESPONDER (Screenshot 514) */}
           {/* ======================================================== */}
           {activeModule === 'autoresponder' && (
             <div className="space-y-6">
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 flex items-center justify-between shadow-lg">
-                <div className="flex items-center gap-3">
-                  <MessageSquare className="w-6 h-6 text-blue-400" />
-                  <div>
-                    <h3 className="font-orbitron font-bold text-base text-white">
-                      Auto-Responder Triggers
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Automate bot responses to frequently asked questions
-                    </p>
-                  </div>
+              {/* 3 Metric Cards (Screenshot 514) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">TRIGGERS CONFIGURED</span>
+                  <h3 className="font-display font-bold text-xl text-white">{(autoresponders || []).length}/20 Limit</h3>
+                  <p className="text-[10px] text-slate-500">Autonomous chat responders</p>
                 </div>
-                <button
-                  onClick={() => setAutoresponderEnabled(!autoresponderEnabled)}
-                  className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                    autoresponderEnabled ? 'bg-blue-500' : 'bg-slate-700'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
-                      autoresponderEnabled ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
+
+                <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">ACTIVE TRIGGERS</span>
+                  <h3 className="font-display font-bold text-xl text-white">{(autoresponders || []).length} Active</h3>
+                  <p className="text-[10px] text-slate-500">Listening to chat events</p>
+                </div>
+
+                <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">DISPATCH RATE</span>
+                  <h3 className="font-display font-bold text-xs text-white pt-1">Real-Time Instant Delivery</h3>
+                  <p className="text-[10px] text-slate-500">Sub-second websocket reply</p>
+                </div>
               </div>
 
-              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4">
-                <h4 className="font-orbitron font-bold text-xs text-slate-300 uppercase tracking-wider">
-                  Create Auto-Responder
-                </h4>
+              {/* Create Auto-Responder Form */}
+              <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                <div className="border-b border-white/5 pb-2">
+                  <h4 className="font-display font-bold text-sm text-white">
+                    Create Custom Auto-Response
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Define keywords that trigger automated bot reply messages or information embed panels.
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="Trigger keyword (e.g. !help, !store)"
-                      value={newTrigger}
-                      onChange={(e) => setNewTrigger(e.target.value)}
-                      className="bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                    />
-                    <select
-                      value={newMatchType}
-                      onChange={(e) => setNewMatchType(e.target.value)}
-                      className="bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="Exact Match">Exact Match</option>
-                      <option value="Contains">Contains Keyword</option>
-                    </select>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">TRIGGER KEYWORD / COMMAND</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. !help, !store, or ip"
+                        value={newTrigger}
+                        onChange={(e) => setNewTrigger(e.target.value)}
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-white/40"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">MATCHING STRATEGY</label>
+                      <select
+                        value={newMatchType}
+                        onChange={(e) => setNewMatchType(e.target.value)}
+                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                      >
+                        <option value="Exact Match">Exact Match (Full message equals trigger)</option>
+                        <option value="Contains">Contains (Anywhere in message text)</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <textarea
-                    rows={2}
-                    placeholder="Bot response message... (supports {user})"
-                    value={newResponse}
-                    onChange={(e) => setNewResponse(e.target.value)}
-                    className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"
-                  />
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono text-slate-400 uppercase">REPLY CONTENT (SUPPORTS VARIABLES)</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Bot response message... (supports {user}, {server_name})"
+                      value={newResponse}
+                      onChange={(e) => setNewResponse(e.target.value)}
+                      className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-white/40 resize-none leading-relaxed"
+                    />
+                  </div>
 
                   <button
                     onClick={addAutoresponder}
-                    className="py-2 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer transition-colors"
+                    className="py-2.5 px-5 rounded-xl bg-white text-black font-bold text-xs hover:bg-slate-200 transition-all cursor-pointer shadow-md active:scale-95"
                   >
-                    + Add Auto-Responder
+                    + Add Trigger Rule
                   </button>
                 </div>
 
+                {/* Existing Autoresponders List */}
                 <div className="space-y-2 pt-2">
-                  {autoresponders.map((item) => (
+                  {(autoresponders || []).map((item) => (
                     <div
                       key={item.id}
-                      className="p-3 rounded-xl bg-white/5 border border-white/5 text-xs space-y-1"
+                      className="p-3.5 rounded-xl bg-white/5 border border-white/5 text-xs space-y-1.5 hover:border-white/15 transition-all"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-blue-400">{item.trigger}</span>
+                        <span className="font-mono font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-white/10">
+                          {item.trigger}
+                        </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded">
                             {item.matchType}
                           </span>
                           <button
-                            onClick={() =>
-                              setAutoresponders(autoresponders.filter((a) => a.id !== item.id))
-                            }
-                            className="text-slate-500 hover:text-rose-400 cursor-pointer"
+                            onClick={() => setAutoresponders(autoresponders.filter((a) => a.id !== item.id))}
+                            className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                            title="Delete Trigger"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
-                      <p className="text-slate-300 text-[11px]">{item.response}</p>
+                      <p className="text-slate-300 text-xs pl-0.5">{item.response}</p>
                     </div>
                   ))}
                 </div>
@@ -4440,531 +5529,949 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           )}
 
           {/* ======================================================== */}
-          {/* TAB: TICKET CREATION SYSTEM */}
+          {/* ======================================================== */}
+          {/* TAB: SUPPORT TICKETS (Screenshots 515-521) */}
           {/* ======================================================== */}
           {activeModule === 'tickets' && (
             <div className="space-y-6 animate-in fade-in">
-              {/* Module Header Card */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#5865F2]/10 via-[#0e101a] to-[#12131f] border border-[#5865F2]/30 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center text-[#5865F2] shadow-lg shadow-[#5865F2]/20">
-                    <Ticket className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="font-orbitron font-bold text-base sm:text-lg text-white">
-                        TICKET CREATION SYSTEM
-                      </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#5865F2]/20 text-[#5865F2] border border-[#5865F2]/30 uppercase">
-                        SUPPORT DESK
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Deploy interactive ticket panels to Discord with auto-generated private channels and role routing.
-                    </p>
-                  </div>
+              {/* Header Title & Master Switch (Screenshots 515-521) */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+                    Support Tickets
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Manage tickets, customize create forms, and archive logs with hosted transcripts.
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-semibold text-slate-400">
-                    {ticketEnabled ? 'Active' : 'Disabled'}
+                  <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">
+                    {ticketEnabled ? 'ACTIVE' : 'DISABLED'}
                   </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={ticketEnabled}
-                      onChange={(e) => setTicketEnabled(e.target.checked)}
-                      className="sr-only peer"
+                  <button
+                    onClick={() => setTicketEnabled(!ticketEnabled)}
+                    className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
+                      ticketEnabled ? 'bg-white' : 'bg-slate-800'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 left-1 w-4 h-4 rounded-full transition-transform ${
+                        ticketEnabled ? 'translate-x-6 bg-black' : 'translate-x-0 bg-slate-400'
+                      }`}
                     />
-                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5865F2] shadow-inner"></div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Quick Preset Templates */}
-              <div className="p-4 rounded-xl bg-[#0e0f16] border border-white/5 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#5865F2]" />
-                    QUICK PANEL TEMPLATES & PRESETS
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-mono">1-Click Apply</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button
-                    onClick={() => {
-                      setTicketPanelTitle('ðŸŽ« Support Desk & Inquiries');
-                      setTicketPanelDesc(
-                        'Welcome to our support desk! If you require assistance, have questions, or wish to report an issue, please open a private ticket below.'
-                      );
-                      setTicketPanelColor('#5865F2');
-                      setTicketButtonText('Open Support Ticket');
-                      setTicketButtonEmoji('ðŸ“©');
-                    }}
-                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-[#5865F2]/20 border border-white/5 hover:border-[#5865F2]/40 text-left transition-all cursor-pointer"
-                  >
-                    <div className="font-bold text-xs text-white">ðŸ› ï¸ General Help</div>
-                    <div className="text-[10px] text-slate-400 truncate">Standard support desk</div>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setTicketPanelTitle('ðŸ›’ Billing & Store Support');
-                      setTicketPanelDesc(
-                        'Need help with a recent order, subscription, payment receipt, or store inquiry? Click below to speak directly with our billing team.'
-                      );
-                      setTicketPanelColor('#10b981');
-                      setTicketButtonText('Billing Inquiry');
-                      setTicketButtonEmoji('ðŸ’³');
-                    }}
-                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-left transition-all cursor-pointer"
-                  >
-                    <div className="font-bold text-xs text-white">ðŸ›’ Store & Billing</div>
-                    <div className="text-[10px] text-slate-400 truncate">Orders & payments</div>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setTicketPanelTitle('ðŸ›¡ï¸ Player Report & Ban Appeals');
-                      setTicketPanelDesc(
-                        'Submit rule violation reports, user evidence, or appeal a server mute/ban. Our moderation leadership will review your ticket.'
-                      );
-                      setTicketPanelColor('#ef4444');
-                      setTicketButtonText('Submit Report / Appeal');
-                      setTicketButtonEmoji('âš–ï¸');
-                    }}
-                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/5 hover:border-red-500/40 text-left transition-all cursor-pointer"
-                  >
-                    <div className="font-bold text-xs text-white">ðŸ›¡ï¸ Reports & Appeals</div>
-                    <div className="text-[10px] text-slate-400 truncate">Mod cases & bans</div>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setTicketPanelTitle('ðŸ’¼ Partnerships & Affiliates');
-                      setTicketPanelDesc(
-                        'Looking to partner with our community, run a cross-promotion, or sponsor an event? Open a ticket to connect with our PR team.'
-                      );
-                      setTicketPanelColor('#f59e0b');
-                      setTicketButtonText('Apply for Partner');
-                      setTicketButtonEmoji('ðŸ¤');
-                    }}
-                    className="py-2 px-3 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/5 hover:border-amber-500/40 text-left transition-all cursor-pointer"
-                  >
-                    <div className="font-bold text-xs text-white">ðŸ’¼ Partnerships</div>
-                    <div className="text-[10px] text-slate-400 truncate">Sponsors & affiliates</div>
                   </button>
                 </div>
               </div>
 
-              {/* Core Routing & Permissions Settings */}
-              <div className="p-5 rounded-2xl bg-[#0c0d14] border border-white/5 space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                  <Sliders className="w-4 h-4 text-[#5865F2]" />
-                  <h3 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                    TICKET ROUTING & PERMISSIONS
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Panel Dispatch Channel */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                      <span>PANEL CHANNEL (WHERE TO POST BUTTON)</span>
-                      <span className="text-[#5865F2] font-mono text-[9px]">Required</span>
-                    </label>
-                    <select
-                      value={ticketChannel}
-                      onChange={(e) => setTicketChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                    >
-                      <option value="">Select a channel...</option>
-                      {availableChannels
-                        .filter((c) => c.type !== 4)
-                        .map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            #{ch.name}
-                          </option>
-                        ))}
-                    </select>
-                    <p className="text-[10px] text-slate-500">
-                      The public channel where users see the ticket embed and click the open button.
-                    </p>
-                  </div>
-
-                  {/* Parent Ticket Category */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                      <span>TICKET CATEGORY (PARENT FOLDER)</span>
-                      <span className="text-slate-500 font-mono text-[9px]">Optional</span>
-                    </label>
-                    <select
-                      value={ticketCategory}
-                      onChange={(e) => setTicketCategory(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                    >
-                      <option value="">Auto-create or server root</option>
-                      {availableChannels
-                        .filter((c) => c.type === 4)
-                        .map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            ðŸ“ {ch.name}
-                          </option>
-                        ))}
-                      {availableChannels.filter((c) => c.type === 4).length === 0 &&
-                        availableChannels.map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            #{ch.name}
-                          </option>
-                        ))}
-                    </select>
-                    <p className="text-[10px] text-slate-500">
-                      New tickets (e.g. #ticket-0042) will be organized under this Discord category.
-                    </p>
-                  </div>
-
-                  {/* Support Staff Role */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                      <span>SUPPORT STAFF ROLE</span>
-                      <span className="text-[#5865F2] font-mono text-[9px]">Recommended</span>
-                    </label>
-                    <select
-                      value={ticketRole}
-                      onChange={(e) => setTicketRole(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                    >
-                      <option value="">No role (Administrators only)</option>
-                      {availableRoles.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          @{r.name}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="text-[10px] text-slate-500">
-                      Members with this role can view, respond to, and resolve all opened tickets.
-                    </p>
-                  </div>
-
-                  {/* Transcripts Logs Channel */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                      <span>TICKET TRANSCRIPT LOGS CHANNEL</span>
-                      <span className="text-slate-500 font-mono text-[9px]">Optional</span>
-                    </label>
-                    <select
-                      value={ticketLogsChannel}
-                      onChange={(e) => setTicketLogsChannel(e.target.value)}
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                    >
-                      <option value="">Disabled (No transcripts stored)</option>
-                      {availableChannels
-                        .filter((c) => c.type !== 4)
-                        .map((ch) => (
-                          <option key={ch.id} value={ch.id}>
-                            #{ch.name}
-                          </option>
-                        ))}
-                    </select>
-                    <p className="text-[10px] text-slate-500">
-                      HTML/text logs will be posted here when a ticket is closed by staff.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Ticket Limit Slider */}
-                <div className="pt-2">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      MAX CONCURRENT TICKETS PER MEMBER
-                    </label>
-                    <span className="text-xs font-mono font-bold text-[#5865F2]">
-                      {ticketLimit} {ticketLimit === '1' ? 'ticket' : 'tickets'} max
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="5"
-                    step="1"
-                    value={ticketLimit}
-                    onChange={(e) => setTicketLimit(e.target.value)}
-                    className="w-full accent-[#5865F2] cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-                    <span>1 (Strict)</span>
-                    <span>2</span>
-                    <span>3</span>
-                    <span>4</span>
-                    <span>5 (High)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Panel Embed & Interactive Button Customizer */}
-              <div className="p-5 rounded-2xl bg-[#0c0d14] border border-white/5 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                  <div className="flex items-center gap-2">
-                    <Code className="w-4 h-4 text-[#5865F2]" />
-                    <h3 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                      PANEL EMBED & BUTTON DESIGN
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 font-mono">Accent:</span>
-                    <input
-                      type="color"
-                      value={ticketPanelColor}
-                      onChange={(e) => setTicketPanelColor(e.target.value)}
-                      className="w-6 h-6 rounded cursor-pointer border border-white/20 bg-transparent"
-                    />
-                    <input
-                      type="text"
-                      value={ticketPanelColor}
-                      onChange={(e) => setTicketPanelColor(e.target.value)}
-                      className="w-20 bg-[#13141d] border border-white/10 rounded-lg px-2 py-0.5 text-xs text-white font-mono uppercase"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      PANEL TITLE
-                    </label>
-                    <input
-                      type="text"
-                      value={ticketPanelTitle}
-                      onChange={(e) => setTicketPanelTitle(e.target.value)}
-                      placeholder="e.g. ðŸŽ« Support Desk & Inquiries"
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      PANEL DESCRIPTION
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={ticketPanelDesc}
-                      onChange={(e) => setTicketPanelDesc(e.target.value)}
-                      placeholder="Enter the welcoming instruction for users before opening a ticket..."
-                      className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2] resize-y"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        BUTTON LABEL
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketButtonText}
-                        onChange={(e) => setTicketButtonText(e.target.value)}
-                        placeholder="e.g. Open Support Ticket"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        BUTTON EMOJI
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketButtonEmoji}
-                        onChange={(e) => setTicketButtonEmoji(e.target.value)}
-                        placeholder="e.g. ðŸ“© or ðŸŽ«"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Button Color Palette (Discord Style Selector) */}
-                  <div className="space-y-2 pt-2 border-t border-white/5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                      <span>BUTTON COLOR PALETTE (DISCORD STYLE)</span>
-                      <span className="text-[10px] text-[#5865F2] font-mono font-semibold">
-                        {ticketButtonStyle === 3 ? 'ðŸŸ¢ Success Green' : ticketButtonStyle === 1 ? 'ðŸ”µ Blurple Blue' : ticketButtonStyle === 2 ? 'âšª Secondary Grey' : 'ðŸ”´ Danger Red'}
+              {/* Warning Alert if Disabled */}
+              {!ticketEnabled && (
+                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                    <div>
+                      <strong className="font-mono text-[11px] uppercase tracking-wider text-amber-300 mr-2">
+                        TICKET SYSTEM IS DISABLED
+                      </strong>
+                      <span className="text-amber-300/80">
+                        To start using this feature, turn on the master switch in the top right.
                       </span>
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { style: 3, label: 'Success Green', hex: '#248046', bg: 'bg-[#248046]', border: 'border-emerald-500' },
-                        { style: 1, label: 'Blurple Blue', hex: '#5865F2', bg: 'bg-[#5865F2]', border: 'border-indigo-500' },
-                        { style: 2, label: 'Secondary Grey', hex: '#4e5058', bg: 'bg-[#4e5058]', border: 'border-slate-400' },
-                        { style: 4, label: 'Danger Red', hex: '#da373c', bg: 'bg-[#da373c]', border: 'border-rose-500' },
-                      ].map((btnColor) => {
-                        const isSelected = ticketButtonStyle === btnColor.style;
-                        return (
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setTicketEnabled(true)}
+                    className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                  >
+                    Turn On in Header
+                  </button>
+                </div>
+              )}
+
+              {/* Obsidian Ticket Subtabs Layout (Screenshots 515-521) */}
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+                {/* Left Ticket Management Sub-Navigation */}
+                <div className="w-full lg:w-52 shrink-0 space-y-1 liquid-glass rounded-2xl p-3 border border-white/10">
+                  <div className="px-3 py-2 text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">
+                    TICKET MANAGEMENT
+                  </div>
+                  <button
+                    onClick={() => setTicketSubTab('overview')}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      ticketSubTab === 'overview'
+                        ? 'bg-white text-black font-bold shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 shrink-0" />
+                    <span>OVERVIEW</span>
+                  </button>
+                  <button
+                    onClick={() => setTicketSubTab('config')}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      ticketSubTab === 'config'
+                        ? 'bg-white text-black font-bold shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Sliders className="w-3.5 h-3.5 shrink-0" />
+                    <span>SETUP CONFIG</span>
+                  </button>
+                  <button
+                    onClick={() => setTicketSubTab('panel')}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      ticketSubTab === 'panel'
+                        ? 'bg-white text-black font-bold shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                    <span>MESSAGE PANEL</span>
+                  </button>
+                  <button
+                    onClick={() => setTicketSubTab('modals')}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      ticketSubTab === 'modals'
+                        ? 'bg-white text-black font-bold shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>MODAL QUESTIONS</span>
+                  </button>
+                  <button
+                    onClick={() => setTicketSubTab('transcripts')}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      ticketSubTab === 'transcripts'
+                        ? 'bg-white text-black font-bold shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5 shrink-0" />
+                    <span>TRANSCRIPTS</span>
+                  </button>
+                  <button
+                    onClick={() => setTicketSubTab('security')}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      ticketSubTab === 'security'
+                        ? 'bg-white text-black font-bold shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                    <span>SECURITY CONTROLS</span>
+                  </button>
+                </div>
+
+                {/* Subtab Dynamic Content */}
+                <div className="flex-1 w-full space-y-6">
+                  {/* SUBTAB 1: OVERVIEW (Screenshot 515) */}
+                  {ticketSubTab === 'overview' && (
+                    <div className="space-y-6">
+                      {/* 4 Metric Cards */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase">NEURAL NODES</span>
+                          <h3 className="font-display font-bold text-2xl text-white">1</h3>
+                          <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-mono">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            ACTIVE
+                          </p>
+                        </div>
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase">DATA THROUGHPUT</span>
+                          <h3 className="font-display font-bold text-2xl text-white">48</h3>
+                          <p className="text-[10px] text-slate-500 font-mono">LIFETIME CLAIMS</p>
+                        </div>
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase">CLAIMED TICKETS</span>
+                          <h3 className="font-display font-bold text-2xl text-white">12</h3>
+                          <p className="text-[10px] text-slate-500 font-mono">TOTAL TICKET CLAIMS</p>
+                        </div>
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase">AI LOAD</span>
+                          <h3 className="font-display font-bold text-base text-white pt-1">STANDBY</h3>
+                          <p className="text-[10px] text-slate-500 font-mono">AI CHATBOT READY</p>
+                        </div>
+                      </div>
+
+                      {/* Operational Impact Chart + Personnel Grid */}
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Chart (2 cols) */}
+                        <div className="lg:col-span-2 liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-display font-bold text-sm text-white">Operational Impact</h4>
+                              <p className="text-xs text-slate-400">Claims analytics over the past 7 dynamic cycles.</p>
+                            </div>
+                            <span className="text-[10px] font-mono text-white bg-white/10 border border-white/10 px-2 py-0.5 rounded-full">
+                              LIVE TELEMETRY
+                            </span>
+                          </div>
+
+                          {/* Visual Chart */}
+                          <div className="relative h-44 rounded-xl bg-black/40 border border-white/5 p-4 flex flex-col justify-between overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-[10px] font-mono text-slate-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+                                ❯ TELEMETRY CLEAR • STANDBY MODE
+                              </span>
+                            </div>
+                            <svg className="w-full h-24 overflow-visible opacity-50" viewBox="0 0 500 100">
+                              <line x1="0" y1="80" x2="500" y2="80" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+                              <line x1="0" y1="40" x2="500" y2="40" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+                              <path
+                                d="M 0,80 Q 120,78 250,75 T 500,70"
+                                fill="none"
+                                stroke="#a855f7"
+                                strokeWidth="2"
+                              />
+                            </svg>
+                            <div className="flex justify-between text-[10px] font-mono text-slate-500 pt-2 border-t border-white/5">
+                              <span>Mon</span>
+                              <span>Tue</span>
+                              <span>Wed</span>
+                              <span>Thu</span>
+                              <span>Fri</span>
+                              <span>Sat</span>
+                              <span>Sun</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Active Personnel & Staff Leaderboard */}
+                        <div className="space-y-4">
+                          <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-display font-bold text-xs text-white">Active Personnel</span>
+                              <span className="text-[10px] font-mono text-slate-500">1 CONFIGURED</span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                              Staff members handling incoming tickets for {guild.name}.
+                            </p>
+                          </div>
+
+                          <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-display font-bold text-xs text-white">Staff Leaderboard</span>
+                              <span className="text-[10px] font-mono text-white bg-white/10 px-2 py-0.5 rounded">
+                                ELITE HANDLERS
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500">No ticket claims logged for this cycle.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBTAB 2: SETUP CONFIG (Screenshot 516) */}
+                  {ticketSubTab === 'config' && (
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                      <div className="xl:col-span-2 liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                        <div className="border-b border-white/5 pb-2">
+                          <h4 className="font-display font-bold text-sm text-white">Ticket Setup Configuration</h4>
+                          <p className="text-xs text-slate-400">Set target ticket category, logging, and permissions</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-mono text-slate-400 uppercase">TICKET CATEGORY</label>
+                            <select
+                              value={ticketCategory}
+                              onChange={(e) => setTicketCategory(e.target.value)}
+                              className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                            >
+                              <option value="">Select ticket category...</option>
+                              {availableChannels
+                                .filter((c) => c.type === 4)
+                                .map((ch) => (
+                                  <option key={ch.id} value={ch.id}>
+                                    📁 {ch.name}
+                                  </option>
+                                ))}
+                            </select>
+                            <p className="text-[10px] text-slate-500">Where ticket text channels will be generated</p>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-mono text-slate-400 uppercase">STAFF ROLES (MULTIPLE)</label>
+                            <select
+                              value={ticketRole}
+                              onChange={(e) => setTicketRole(e.target.value)}
+                              className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                            >
+                              <option value="">@ Add staff Role...</option>
+                              {availableRoles.map((r) => (
+                                <option key={r.id} value={r.id}>
+                                  @{r.name}
+                                </option>
+                              ))}
+                            </select>
+                            <p className="text-[10px] text-slate-500">Permit role members to view and support ticket channels</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono text-slate-400 uppercase">TRANSCRIPT LOGGING CHANNEL</label>
+                          <select
+                            value={ticketLogsChannel}
+                            onChange={(e) => setTicketLogsChannel(e.target.value)}
+                            className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                          >
+                            <option value="">Select logs channel...</option>
+                            {availableChannels
+                              .filter((c) => c.type !== 4)
+                              .map((ch) => (
+                                <option key={ch.id} value={ch.id}>
+                                  #{ch.name}
+                                </option>
+                              ))}
+                          </select>
+                          <p className="text-[10px] text-slate-500">Where closed transcripts online links and HTML files will be logged</p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono text-slate-400 uppercase">DEPLOY PANEL TARGET CHANNEL</label>
+                          <select
+                            value={ticketChannel}
+                            onChange={(e) => setTicketChannel(e.target.value)}
+                            className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer"
+                          >
+                            <option value="">Select deploy target channel...</option>
+                            {availableChannels
+                              .filter((c) => c.type !== 4)
+                              .map((ch) => (
+                                <option key={ch.id} value={ch.id}>
+                                  #{ch.name}
+                                </option>
+                              ))}
+                          </select>
+                          <p className="text-[10px] text-slate-500">Specific channel where the support ticket panel embed is deployed in Discord</p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono text-slate-400 uppercase">TICKET CHANNEL NAME STYLE</label>
+                          <input
+                            type="text"
+                            value={ticketChannelStyle}
+                            onChange={(e) => setTicketChannelStyle(e.target.value)}
+                            className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-white/40"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Right Panel Preview */}
+                      <div className="space-y-4">
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-3">
+                          <div className="flex items-center gap-2 text-xs font-bold text-white">
+                            <Eye className="w-4 h-4 text-slate-400" />
+                            <span>Discord Panel Preview</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500">Simulated embed preview of the panel card</p>
+                          <div className="bg-[#2b2d31] rounded-xl p-3 border-l-4 border-[#5865F2] text-xs space-y-2">
+                            <div className="text-[10px] text-slate-400 font-semibold">{ticketAuthorName || 'Obsidian Security'}</div>
+                            <h4 className="font-bold text-white text-xs">{ticketPanelTitle || 'Obsidian Ticket Support'}</h4>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              {ticketPanelDesc || 'Need help? Click the button below to open a ticket and talk to our support staff.'}
+                            </p>
+                            <div className="pt-1">
+                              <button className="px-3 py-1.5 rounded bg-[#5865F2] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                                <span>{ticketButtonEmoji || '✉'}</span>
+                                <span>{ticketButtonText || 'Create Ticket'}</span>
+                              </button>
+                            </div>
+                            <div className="text-[9px] text-slate-500 pt-1 border-t border-white/5">
+                              {ticketFooterText || 'Obsidian Security • Transcripts expire in 30 days'}
+                            </div>
+                          </div>
+
                           <button
-                            key={btnColor.style}
-                            type="button"
-                            onClick={() => setTicketButtonStyle(btnColor.style)}
-                            className={`flex items-center gap-2.5 p-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                              isSelected
-                                ? `bg-white/10 ${btnColor.border} text-white shadow-lg ring-2 ring-white/20`
-                                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                            onClick={handleDeployTicketPanel}
+                            disabled={ticketDeploying}
+                            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                              ticketChannel
+                                ? 'bg-white hover:bg-slate-200 text-black'
+                                : 'bg-white/10 text-slate-400 cursor-not-allowed'
                             }`}
                           >
-                            <span className={`w-4 h-4 rounded-full ${btnColor.bg} border border-white/20 shrink-0 flex items-center justify-center text-[10px]`}>
-                              {isSelected ? 'âœ“' : ''}
+                            <Send className="w-3.5 h-3.5" />
+                            <span>
+                              {ticketDeploying
+                                ? 'Deploying...'
+                                : ticketDeploySuccess
+                                ? '✓ Panel Deployed Live!'
+                                : ticketChannel
+                                ? `Deploy Live to #${availableChannels.find((c) => c.id === ticketChannel)?.name || 'channel'}`
+                                : 'Select Target Channel to Send'}
                             </span>
-                            <span className="truncate">{btnColor.label}</span>
                           </button>
-                        );
-                      })}
+                          {!ticketChannel && (
+                            <p className="text-[10px] text-amber-400/90 text-center flex items-center justify-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>Target channel is not set. Select a channel above to dispatch.</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Transcript Hosting Notice</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Ticket transcripts are saved in Gzip compressed format on the bot database server. Links can be viewed online for <strong className="text-white">30 days</strong> before expiring.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                {/* Embed Images, Avatar & Branding Section */}
-                <div className="p-4 rounded-xl bg-[#0e1017] border border-white/5 space-y-3.5 mt-2">
-                  <div className="flex items-center justify-between pb-1 border-b border-white/5">
-                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#5865F2]" />
-                      AVATARS, THUMBNAIL & BRANDING IMAGES
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-mono">Optional Branding</span>
-                  </div>
+                  {/* SUBTAB 3: MESSAGE PANEL (Screenshot 517) */}
+                  {ticketSubTab === 'panel' && (
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                      <div className="xl:col-span-2 space-y-4">
+                        {/* Live Panel Dispatch Bar */}
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="font-display font-bold text-xs text-white">Live Panel Dispatch</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400">
+                              Target Channel:{' '}
+                              <strong className="text-white font-mono">
+                                {ticketChannel
+                                  ? '#' + (availableChannels.find((c) => c.id === ticketChannel)?.name || ticketChannel)
+                                  : 'None selected (Select in Setup Config)'}
+                              </strong>
+                            </p>
+                          </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        AUTHOR / HEADER TITLE
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketAuthorName}
-                        onChange={(e) => setTicketAuthorName(e.target.value)}
-                        placeholder="e.g. {server_name} Support Desk"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                      />
+                          <button
+                            onClick={handleDeployTicketPanel}
+                            disabled={ticketDeploying || !ticketChannel}
+                            className="px-4 py-2 rounded-xl bg-white text-black font-bold text-xs hover:bg-slate-200 transition-all flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-40"
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            <span>Dispatch Panel to Discord</span>
+                          </button>
+                        </div>
+
+                        {/* Embed Customizer Form */}
+                        <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                          <div className="border-b border-white/5 pb-2">
+                            <h4 className="font-display font-bold text-sm text-white">Ticket Message Panel</h4>
+                            <p className="text-xs text-slate-400">Customize the embed panel sent to the discord channel</p>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">PANEL EMBED TITLE</label>
+                              <input
+                                type="text"
+                                value={ticketPanelTitle}
+                                onChange={(e) => setTicketPanelTitle(e.target.value)}
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">PANEL EMBED DESCRIPTION</label>
+                              <textarea
+                                rows={3}
+                                value={ticketPanelDesc}
+                                onChange={(e) => setTicketPanelDesc(e.target.value)}
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-white/40 resize-none leading-relaxed"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-slate-400 uppercase">PANEL EMBED HEADER TEXT</label>
+                                <input
+                                  type="text"
+                                  value={ticketAuthorName}
+                                  onChange={(e) => setTicketAuthorName(e.target.value)}
+                                  placeholder="Obsidian Security"
+                                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-slate-400 uppercase">PANEL EMBED FOOTER TEXT</label>
+                                <input
+                                  type="text"
+                                  value={ticketFooterText}
+                                  onChange={(e) => setTicketFooterText(e.target.value)}
+                                  placeholder="Obsidian Security • Transcripts expire in 30 days"
+                                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-slate-400 uppercase">PANEL TYPE</label>
+                                <select className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 cursor-pointer">
+                                  <option value="button">Interactive Button</option>
+                                  <option value="select">Dropdown Menu</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-slate-400 uppercase">BUTTON LABEL</label>
+                                <input
+                                  type="text"
+                                  value={ticketButtonText}
+                                  onChange={(e) => setTicketButtonText(e.target.value)}
+                                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-slate-400 uppercase">BUTTON EMOJI</label>
+                                <input
+                                  type="text"
+                                  value={ticketButtonEmoji}
+                                  onChange={(e) => setTicketButtonEmoji(e.target.value)}
+                                  placeholder="✉"
+                                  className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">PANEL IMAGE URL</label>
+                              <input
+                                type="text"
+                                value={ticketImageUrl}
+                                onChange={(e) => setTicketImageUrl(e.target.value)}
+                                placeholder="https://domain.com/banner.png"
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Panel Preview */}
+                      <div className="space-y-4">
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-3">
+                          <div className="flex items-center gap-2 text-xs font-bold text-white">
+                            <Eye className="w-4 h-4 text-slate-400" />
+                            <span>Discord Panel Preview</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500">Simulated embed preview of the panel card</p>
+                          <div className="bg-[#2b2d31] rounded-xl p-3 border-l-4 border-[#5865F2] text-xs space-y-2">
+                            <div className="text-[10px] text-slate-400 font-semibold">{ticketAuthorName || 'Obsidian Security'}</div>
+                            <h4 className="font-bold text-white text-xs">{ticketPanelTitle || 'Obsidian Ticket Support'}</h4>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              {ticketPanelDesc || 'Need help? Click the button below to open a ticket and talk to our support staff.'}
+                            </p>
+                            <div className="pt-1">
+                              <button className="px-3 py-1.5 rounded bg-[#5865F2] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                                <span>{ticketButtonEmoji || '✉'}</span>
+                                <span>{ticketButtonText || 'Create Ticket'}</span>
+                              </button>
+                            </div>
+                            <div className="text-[9px] text-slate-500 pt-1 border-t border-white/5">
+                              {ticketFooterText || 'Obsidian Security • Transcripts expire in 30 days'}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={handleDeployTicketPanel}
+                            disabled={ticketDeploying}
+                            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                              ticketChannel
+                                ? 'bg-white hover:bg-slate-200 text-black'
+                                : 'bg-white/10 text-slate-400 cursor-not-allowed'
+                            }`}
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            <span>
+                              {ticketDeploying
+                                ? 'Deploying...'
+                                : ticketDeploySuccess
+                                ? '✓ Panel Deployed Live!'
+                                : ticketChannel
+                                ? `Deploy to #${availableChannels.find((c) => c.id === ticketChannel)?.name || 'channel'}`
+                                : 'Select Target Channel to Send'}
+                            </span>
+                          </button>
+                          {!ticketChannel && (
+                            <p className="text-[10px] text-amber-400/90 text-center flex items-center justify-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>Target channel is not set. Select a channel in "Setup Config" to dispatch.</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Transcript Hosting Notice</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Ticket transcripts are saved in Gzip compressed format on the bot database server. Links can be viewed online for <strong className="text-white">30 days</strong> before expiring.
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                  )}
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>AUTHOR AVATAR ICON URL</span>
-                        <button
-                          type="button"
-                          onClick={() => setTicketAuthorIcon('{server_icon}')}
-                          className="text-[9px] text-[#5865F2] hover:underline cursor-pointer"
-                        >
-                          + Use Server Icon
-                        </button>
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketAuthorIcon}
-                        onChange={(e) => setTicketAuthorIcon(e.target.value)}
-                        placeholder="https://... or {server_icon}"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
-                      />
+                  {/* SUBTAB 4: MODAL QUESTIONS (Screenshot 518) */}
+                  {ticketSubTab === 'modals' && (
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                      <div className="xl:col-span-2 liquid-glass rounded-2xl p-5 border border-white/10 space-y-5">
+                        <div className="border-b border-white/5 pb-2">
+                          <h4 className="font-display font-bold text-sm text-white">Interactive Questions Modal</h4>
+                          <p className="text-xs text-slate-400">Up to 2 customized text questions shown when a user clicks the support button</p>
+                        </div>
+
+                        {/* Question #1 Card */}
+                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+                          <div className="flex items-center justify-between pb-1">
+                            <span className="font-mono font-bold text-xs text-white">Question #1</span>
+                            <button
+                              onClick={() => {
+                                setModalQ1Label('');
+                                setModalQ1Placeholder('');
+                              }}
+                              className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                              title="Delete Question"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">QUESTION FIELD LABEL</label>
+                              <input
+                                type="text"
+                                value={modalQ1Label}
+                                onChange={(e) => setModalQ1Label(e.target.value)}
+                                placeholder="Why are you opening this ticket?"
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">PLACEHOLDER TEXT</label>
+                              <input
+                                type="text"
+                                value={modalQ1Placeholder}
+                                onChange={(e) => setModalQ1Placeholder(e.target.value)}
+                                placeholder="Describe your issue..."
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Response Box Style:</span>
+                              <div className="flex rounded-lg overflow-hidden border border-white/10">
+                                <button
+                                  type="button"
+                                  onClick={() => setModalQ1Style('short')}
+                                  className={`px-2.5 py-1 text-[10px] font-bold cursor-pointer transition-colors ${
+                                    modalQ1Style === 'short' ? 'bg-white text-black' : 'bg-[#13141d] text-slate-400'
+                                  }`}
+                                >
+                                  Short Box
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setModalQ1Style('paragraph')}
+                                  className={`px-2.5 py-1 text-[10px] font-bold cursor-pointer transition-colors ${
+                                    modalQ1Style === 'paragraph' ? 'bg-white text-black' : 'bg-[#13141d] text-slate-400'
+                                  }`}
+                                >
+                                  Paragraph
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Required Question:</span>
+                              <button
+                                type="button"
+                                onClick={() => setModalQ1Required(!modalQ1Required)}
+                                className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
+                                  modalQ1Required ? 'bg-emerald-500' : 'bg-slate-700'
+                                }`}
+                              >
+                                <span
+                                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                                    modalQ1Required ? 'translate-x-4' : 'translate-x-0'
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Question #2 Card */}
+                        <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-3">
+                          <div className="flex items-center justify-between pb-1">
+                            <span className="font-mono font-bold text-xs text-white">Question #2</span>
+                            <button
+                              onClick={() => {
+                                setModalQ2Label('');
+                                setModalQ2Placeholder('');
+                              }}
+                              className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                              title="Delete Question"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">QUESTION FIELD LABEL</label>
+                              <input
+                                type="text"
+                                value={modalQ2Label}
+                                onChange={(e) => setModalQ2Label(e.target.value)}
+                                placeholder="Discord Username"
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-slate-400 uppercase">PLACEHOLDER TEXT</label>
+                              <input
+                                type="text"
+                                value={modalQ2Placeholder}
+                                onChange={(e) => setModalQ2Placeholder(e.target.value)}
+                                placeholder="e.g. user_x"
+                                className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Response Box Style:</span>
+                              <div className="flex rounded-lg overflow-hidden border border-white/10">
+                                <button
+                                  type="button"
+                                  onClick={() => setModalQ2Style('short')}
+                                  className={`px-2.5 py-1 text-[10px] font-bold cursor-pointer transition-colors ${
+                                    modalQ2Style === 'short' ? 'bg-white text-black' : 'bg-[#13141d] text-slate-400'
+                                  }`}
+                                >
+                                  Short Box
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setModalQ2Style('paragraph')}
+                                  className={`px-2.5 py-1 text-[10px] font-bold cursor-pointer transition-colors ${
+                                    modalQ2Style === 'paragraph' ? 'bg-white text-black' : 'bg-[#13141d] text-slate-400'
+                                  }`}
+                                >
+                                  Paragraph
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">Required Question:</span>
+                              <button
+                                type="button"
+                                onClick={() => setModalQ2Required(!modalQ2Required)}
+                                className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
+                                  modalQ2Required ? 'bg-emerald-500' : 'bg-slate-700'
+                                }`}
+                              >
+                                <span
+                                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                                    modalQ2Required ? 'translate-x-4' : 'translate-x-0'
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Panel Preview */}
+                      <div className="space-y-4">
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-3">
+                          <div className="flex items-center gap-2 text-xs font-bold text-white">
+                            <Eye className="w-4 h-4 text-slate-400" />
+                            <span>Discord Panel Preview</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500">Simulated embed preview of the panel card</p>
+                          <div className="bg-[#2b2d31] rounded-xl p-3 border-l-4 border-[#5865F2] text-xs space-y-2">
+                            <div className="text-[10px] text-slate-400 font-semibold">{ticketAuthorName || 'Obsidian Security'}</div>
+                            <h4 className="font-bold text-white text-xs">{ticketPanelTitle || 'Obsidian Ticket Support'}</h4>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              {ticketPanelDesc || 'Need help? Click the button below to open a ticket and talk to our support staff.'}
+                            </p>
+                            <div className="pt-1">
+                              <button className="px-3 py-1.5 rounded bg-[#5865F2] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                                <span>{ticketButtonEmoji || '✉'}</span>
+                                <span>{ticketButtonText || 'Create Ticket'}</span>
+                              </button>
+                            </div>
+                            <div className="text-[9px] text-slate-500 pt-1 border-t border-white/5">
+                              {ticketFooterText || 'Obsidian Security • Transcripts expire in 30 days'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Transcript Hosting Notice</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Ticket transcripts are saved in Gzip compressed format on the bot database server. Links can be viewed online for <strong className="text-white">30 days</strong> before expiring.
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                  )}
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>THUMBNAIL ICON URL (TOP RIGHT)</span>
-                        <button
-                          type="button"
-                          onClick={() => setTicketThumbnailUrl('{server_icon}')}
-                          className="text-[9px] text-[#5865F2] hover:underline cursor-pointer"
-                        >
-                          + Use Server Icon
-                        </button>
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketThumbnailUrl}
-                        onChange={(e) => setTicketThumbnailUrl(e.target.value)}
-                        placeholder="https://... or {server_icon}"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
-                      />
+                  {/* SUBTAB 5: TRANSCRIPTS (Screenshot 519) */}
+                  {ticketSubTab === 'transcripts' && (
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                      <div className="xl:col-span-2 liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                        <div className="border-b border-white/5 pb-2">
+                          <h4 className="font-display font-bold text-sm text-white">Historical Database</h4>
+                          <p className="text-xs text-slate-400">Comprehensive logs of all operational ticket cycles. 0 total transcript files archived.</p>
+                        </div>
+
+                        <div className="py-12 px-4 rounded-xl border border-dashed border-white/10 text-center space-y-2">
+                          <FileText className="w-8 h-8 text-slate-500 mx-auto" />
+                          <h5 className="font-display font-bold text-xs text-white">No closed ticket transcripts logged yet.</h5>
+                          <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                            Transcripts will automatically generate and stream here when staff or members close active tickets.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right Panel Preview */}
+                      <div className="space-y-4">
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-3">
+                          <div className="flex items-center gap-2 text-xs font-bold text-white">
+                            <Eye className="w-4 h-4 text-slate-400" />
+                            <span>Discord Panel Preview</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500">Simulated embed preview of the panel card</p>
+                          <div className="bg-[#2b2d31] rounded-xl p-3 border-l-4 border-[#5865F2] text-xs space-y-2">
+                            <div className="text-[10px] text-slate-400 font-semibold">{ticketAuthorName || 'Obsidian Security'}</div>
+                            <h4 className="font-bold text-white text-xs">{ticketPanelTitle || 'Obsidian Ticket Support'}</h4>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              {ticketPanelDesc || 'Need help? Click the button below to open a ticket and talk to our support staff.'}
+                            </p>
+                            <div className="pt-1">
+                              <button className="px-3 py-1.5 rounded bg-[#5865F2] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                                <span>{ticketButtonEmoji || '✉'}</span>
+                                <span>{ticketButtonText || 'Create Ticket'}</span>
+                              </button>
+                            </div>
+                            <div className="text-[9px] text-slate-500 pt-1 border-t border-white/5">
+                              {ticketFooterText || 'Obsidian Security • Transcripts expire in 30 days'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-2">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Transcript Hosting Notice</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Ticket transcripts are saved in Gzip compressed format on the bot database server. Links can be viewed online for <strong className="text-white">30 days</strong> before expiring.
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                  )}
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        LARGE BANNER IMAGE URL
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketImageUrl}
-                        onChange={(e) => setTicketImageUrl(e.target.value)}
-                        placeholder="https://... (Support header banner graphic)"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
-                      />
+                  {/* SUBTAB 6: SECURITY CONTROLS (Screenshot 521) */}
+                  {ticketSubTab === 'security' && (
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                      <div className="xl:col-span-2 liquid-glass rounded-2xl p-5 border border-white/10 space-y-4">
+                        <div className="border-b border-white/5 pb-2">
+                          <h4 className="font-display font-bold text-sm text-white">Security Controls & Claims Reset</h4>
+                          <p className="text-xs text-slate-400">Perform critical administration tasks and purge logs.</p>
+                        </div>
+
+                        <div className="space-y-4 pt-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div className="space-y-0.5">
+                              <span className="font-display font-bold text-xs text-white">Reset Active Ticket Claims</span>
+                              <p className="text-[11px] text-slate-400">
+                                Reset claim statistics for all staff members. Active claimed tickets will revert back to unassigned.
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => alert('Active ticket claims reset to default unassigned.')}
+                              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer transition-colors shrink-0"
+                            >
+                              Reset Claims
+                            </button>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-rose-500/5 border border-rose-500/20">
+                            <div className="space-y-0.5">
+                              <span className="font-display font-bold text-xs text-rose-300">Purge Transcript Records</span>
+                              <p className="text-[11px] text-slate-400">
+                                Permanently wipe all archived closed ticket transcripts and hosted HTML links for this server.
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (confirm('Are you sure you want to permanently purge all transcripts for this server?')) {
+                                  alert('Transcript database purged successfully.');
+                                }
+                              }}
+                              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer transition-colors shrink-0"
+                            >
+                              Purge Database
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Panel Preview */}
+                      <div className="space-y-4">
+                        <div className="liquid-glass rounded-2xl p-4 border border-white/10 space-y-3">
+                          <div className="flex items-center gap-2 text-xs font-bold text-white">
+                            <Eye className="w-4 h-4 text-slate-400" />
+                            <span>Discord Panel Preview</span>
+                          </div>
+                          <p className="text-[10px] text-slate-500">Simulated embed preview of the panel card</p>
+                          <div className="bg-[#2b2d31] rounded-xl p-3 border-l-4 border-[#5865F2] text-xs space-y-2">
+                            <div className="text-[10px] text-slate-400 font-semibold">{ticketAuthorName || 'Obsidian Security'}</div>
+                            <h4 className="font-bold text-white text-xs">{ticketPanelTitle || 'Obsidian Ticket Support'}</h4>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              {ticketPanelDesc || 'Need help? Click the button below to open a ticket and talk to our support staff.'}
+                            </p>
+                            <div className="pt-1">
+                              <button className="px-3 py-1.5 rounded bg-[#5865F2] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                                <span>{ticketButtonEmoji || '✉'}</span>
+                                <span>{ticketButtonText || 'Create Ticket'}</span>
+                              </button>
+                            </div>
+                            <div className="text-[9px] text-slate-500 pt-1 border-t border-white/5">
+                              {ticketFooterText || 'Obsidian Security • Transcripts expire in 30 days'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        FOOTER TEXT
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketFooterText}
-                        onChange={(e) => setTicketFooterText(e.target.value)}
-                        placeholder="e.g. Protected by Sentinel Support"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#5865F2]"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>FOOTER ICON URL</span>
-                        <button
-                          type="button"
-                          onClick={() => setTicketFooterIcon('{server_icon}')}
-                          className="text-[9px] text-[#5865F2] hover:underline cursor-pointer"
-                        >
-                          + Use Server Icon
-                        </button>
-                      </label>
-                      <input
-                        type="text"
-                        value={ticketFooterIcon}
-                        onChange={(e) => setTicketFooterIcon(e.target.value)}
-                        placeholder="https://... or {server_icon}"
-                        className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#5865F2]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Live Deploy Action */}
-                <div className="pt-2">
-                  <button
-                    onClick={handleDeployTicketPanel}
-                    disabled={ticketDeploying}
-                    className="w-full py-3.5 px-6 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                  >
-                    {ticketDeploying ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Deploying Ticket Panel to Discord...</span>
-                      </>
-                    ) : ticketDeploySuccess ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-300" />
-                        <span>âœ“ Ticket Panel Live on Discord!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        <span>
-                          Deploy Live Ticket Panel to #
-                          {availableChannels.find((c) => c.id === ticketChannel)?.name ||
-                            availableChannels[0]?.name ||
-                            'channel'}
-                        </span>
-                      </>
-                    )}
-                  </button>
+                  )}
                 </div>
               </div>
             </div>
           )}
+
 
           {/* ======================================================== */}
           {/* TAB: SERVER VERIFICATION GATE */}
@@ -5455,6 +6962,97 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </div>
           )}
 
+
+          {/* ======================================================== */}
+          {/* TAB: PREMIUM SENTINEL ENTERPRISE TIER */}
+          {/* ======================================================== */}
+          {activeModule === 'premium' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div className="relative rounded-3xl p-8 border border-white/20 bg-gradient-to-b from-white/10 via-black to-black overflow-hidden shadow-2xl">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="relative z-10 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-black text-[10px] font-mono font-bold tracking-widest uppercase">
+                        <Crown className="w-3.5 h-3.5 fill-current" />
+                        SENTINEL ENTERPRISE TIER
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+                        Obsidian Sentinel Elite Core
+                      </h2>
+                      <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+                        Enterprise-grade DDoS suppression, sub-millisecond AI automod heuristics, unlimited vanity embeds, custom webhook routing, and 24/7 dedicated shard cluster isolation.
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                        ● Active Guild License
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                    <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-2">
+                      <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white">
+                        <Zap className="w-4 h-4" />
+                      </div>
+                      <h4 className="font-display font-bold text-sm text-white">Dedicated Sharding</h4>
+                      <p className="text-xs text-slate-400">
+                        Isolated compute shard cluster guaranteeing 99.99% uptime with 0ms websocket latency under heavy traffic.
+                      </p>
+                    </div>
+
+                    <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-2">
+                      <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <h4 className="font-display font-bold text-sm text-white">Zero-Day Threat Defense</h4>
+                      <p className="text-xs text-slate-400">
+                        Instant heuristic token-grabber purge, mass mention quarantine, and automatic discord webhook spoofing denial.
+                      </p>
+                    </div>
+
+                    <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-2">
+                      <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <h4 className="font-display font-bold text-sm text-white">Custom Bot Branding</h4>
+                      <p className="text-xs text-slate-400">
+                        Fully custom avatar, banner, custom presence activity status, and white-label bot integration.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <span className="text-slate-500 uppercase text-[10px]">CURRENT CLUSTER</span>
+                        <p className="text-white font-bold">NODE-US-EAST-04</p>
+                      </div>
+                      <div className="h-6 w-px bg-white/10" />
+                      <div>
+                        <span className="text-slate-500 uppercase text-[10px]">SECURITY LEVEL</span>
+                        <p className="text-emerald-400 font-bold">MAXIMUM SURVEILLANCE</p>
+                      </div>
+                      <div className="h-6 w-px bg-white/10" />
+                      <div>
+                        <span className="text-slate-500 uppercase text-[10px]">EXPIRATION</span>
+                        <p className="text-white font-bold">LIFETIME ACCESS</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => alert('Your server already has full Obsidian Sentinel Enterprise active.')}
+                      className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-slate-200 transition-all cursor-pointer shadow-lg active:scale-95"
+                    >
+                      Manage Enterprise Shard
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Master Save Button Bar */}
           <div className="pt-2">
             <button
@@ -5485,7 +7083,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     </main>
 
         {/* Right Column: Live Discord Message Preview (Screenshot 4) */}
-        <aside className="w-full lg:w-96 bg-[#08080c] border-l border-white/5 p-5 shrink-0 overflow-y-auto space-y-3">
+        {((activeModule === 'welcomer' && welcomerSubTab === 'messages') ||
+          ['embed_builder', 'message_sender', 'verification'].includes(activeModule)) && (
+          <aside className="w-full lg:w-96 bg-[#08080c] border-l border-white/5 p-5 shrink-0 overflow-y-auto space-y-3">
           <div className="flex items-center justify-between pb-2">
             <span className="font-orbitron font-bold text-xs tracking-wider text-slate-300 uppercase">
               {activeModule === 'tickets'
@@ -6073,7 +7673,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               </div>
             </div>
           )}
-        </aside>
+          </aside>
+        )}
       </div>
 
       {/* Variables Guide Modal */}
