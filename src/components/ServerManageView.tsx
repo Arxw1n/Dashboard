@@ -138,20 +138,21 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
   // Embed Editor State
   const [contentMessage, setContentMessage] = useState('Welcome {user}!');
-  const [embedTitle, setEmbedTitle] = useState('Welcome to {server_name}!');
-  const [embedColor, setEmbedColor] = useState('#ff2b43');
+  const [embedTitle, setEmbedTitle] = useState('🏠 Welcome to Dexter Corporation 👿');
+  const [embedColor, setEmbedColor] = useState('#ff0033');
   const [description, setDescription] = useState(
-    "We're glad to have you here. You are member #{server_membercount}!"
+    "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n**Joined** {user_joined} · {user.joined_date}\n\n<a:259419darkbluearrow:1554068841015943189> **Read our ToS** <#rules>\n<a:259419darkbluearrow:1554068841015943189> **Check out our latest Announcements** <#announcements>\n<a:259419darkbluearrow:1554068841015943189> **Need help? Open a Support Ticket** <#tickets>"
   );
   const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
   const [authorIconUrl, setAuthorIconUrl] = useState('');
   const [footerText, setFooterText] = useState('Enjoy your stay in {server_name}');
   const [footerIconUrl, setFooterIconUrl] = useState('');
-  const [mainImageUrl, setMainImageUrl] = useState('/dexter_welcome_banner.jpg');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [mainImageUrl, setMainImageUrl] = useState('');
   const [welcomerButtons, setWelcomerButtons] = useState<Array<{ label: string; url: string; emoji?: string }>>([
     { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
-    { label: 'ToS & Rules', url: 'https://discord.gg/dextercorp', emoji: '📕' },
-    { label: 'Support Ticket', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+    { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📕' },
+    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
   ]);
 
   // 2. Anti-Nuke Settings
@@ -1005,26 +1006,26 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('🏠 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐭𝐨 𝐃𝐞𝐱𝐭𝐞𝐫 𝐂𝐨𝐫𝐩𝐨𝐫𝐚𝐭𝐢𝐨𝐧 🛡️');
+                      setEmbedTitle('🏠 Welcome to Dexter Corporation 👿');
                       setEmbedColor('#ff0033');
                       setDescription(
-                        "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 **You are our #{server_membercount} Member**\n**Joined** {user_joined} · {user.joined_date}\n\n» **Read our Security & Guidelines:** <#rules>\n» **Check out latest Announcements:** <#announcements>\n» **Need help? Open a Support Ticket:** <#tickets>\n\n-# Dexter Corporation • Security, Protocol, Excellence"
+                        "Hey 🥷 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n**Joined** {user_joined} · {user.joined_date}\n\n<a:259419darkbluearrow:1554068841015943189> **Read our ToS** <#rules>\n<a:259419darkbluearrow:1554068841015943189> **Check out our latest Announcements** <#announcements>\n<a:259419darkbluearrow:1554068841015943189> **Need help? Open a Support Ticket** <#tickets>"
                       );
-                      setMainImageUrl('/dexter_welcome_banner.jpg');
+                      setMainImageUrl('');
                       setThumbnailUrl('');
                       setAuthorName('DEXTER CORPORATION™');
-                      setFooterText('Dexter Corporation System • Member #{server_membercount}');
+                      setFooterText('Dexter Corporation • Member #{server_membercount}');
                       setFooterIconUrl('{server_icon}');
                       setContentMessage('Hey {user}, welcome to **Dexter Corporation**!');
                       setWelcomerButtons([
                         { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
-                        { label: 'ToS & Rules', url: 'https://discord.gg/dextercorp', emoji: '📕' },
-                        { label: 'Support Ticket', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+                        { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📕' },
+                        { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
                       ]);
                     }}
                     className="px-2.5 py-1 rounded-lg bg-red-600/25 hover:bg-red-600/35 border border-red-500/50 text-xs font-bold text-red-300 transition-all cursor-pointer shadow-sm shadow-red-950/40 flex items-center gap-1.5"
                   >
-                    🔥 Dexter Corporation (Tactical)
+                    🔥 Dexter Corporation Style
                   </button>
                   <button
                     type="button"
