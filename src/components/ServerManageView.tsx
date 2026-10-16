@@ -784,13 +784,21 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   };
 
   // Variables replacer for preview
-  const renderPreview = (text: string) => {
+  const renderPreview = (text?: string | null) => {
+    if (!text || typeof text !== 'string') return '';
+    const uAvatar = user?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const gName = guild?.name || 'Server';
+    const gCount = (guild?.memberCount || 420).toString();
+    const gIcon = guild?.icon || '';
+
     return text
-      .replace(/{user}/g, '@Axio')
-      .replace(/{server_name}/g, guild.name)
-      .replace(/{server_membercount}/g, (guild.memberCount || 420).toString())
-      .replace(/{user_avatar}/g, user.avatar)
-      .replace(/{server_icon}/g, guild.icon || '');
+      .replace(/(\{user\}|\$user_mention)/gi, '@Axio')
+      .replace(/(\{server_name\}|\$guild_name)/gi, gName)
+      .replace(/(\{server_membercount\}|\$guild_membercount)/gi, gCount)
+      .replace(/(\{user_avatar\}|\$user_iconurl)/gi, uAvatar)
+      .replace(/(\{server_icon\}|\$guild_iconurl)/gi, gIcon)
+      .replace(/(\{user_joined\}|\$user_joined)/gi, 'just now')
+      .replace(/(\{user\.joined_date\}|\{joined_date\})/gi, new Date().toLocaleDateString());
   };
 
   // Sidebar Modules List (Screenshot 4)
@@ -1344,16 +1352,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <div>
                         <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                           <span>INTERACTIVE ACTION BUTTONS (LINK BUTTONS)</span>
-                          <span className="text-[10px] text-cyan-400 font-mono">({welcomerButtons.length}/5)</span>
+                          <span className="text-[10px] text-cyan-400 font-mono">({(welcomerButtons || []).length}/5)</span>
                         </label>
                         <p className="text-[10px] text-slate-500">
                           Direct clickable buttons beneath the welcome message (e.g. Announcements, ToS, Support)
                         </p>
                       </div>
-                      {welcomerButtons.length < 5 && (
+                      {(welcomerButtons || []).length < 5 && (
                         <button
                           type="button"
-                          onClick={() => setWelcomerButtons([...welcomerButtons, { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: '🔗' }])}
+                          onClick={() => setWelcomerButtons([...(welcomerButtons || []), { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: '🔗' }])}
                           className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-400 border border-cyan-500/20 text-xs font-semibold cursor-pointer"
                         >
                           + Add Button
@@ -1362,15 +1370,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      {welcomerButtons.map((btn, bIdx) => (
+                      {(welcomerButtons || []).map((btn, bIdx) => (
                         <div key={bIdx} className="flex flex-col sm:flex-row items-center gap-2 bg-[#0a0b10] p-2.5 rounded-lg border border-white/5">
                           <input
                             type="text"
                             placeholder="Emoji (e.g. 📢)"
-                            value={btn.emoji || ''}
+                            value={btn?.emoji || ''}
                             onChange={(e) => {
-                              const updated = [...welcomerButtons];
-                              updated[bIdx].emoji = e.target.value;
+                              const updated = [...(welcomerButtons || [])];
+                              if (updated[bIdx]) updated[bIdx].emoji = e.target.value;
                               setWelcomerButtons(updated);
                             }}
                             className="w-full sm:w-20 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-[#ff2b43]"
@@ -1379,10 +1387,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           <input
                             type="text"
                             placeholder="Button Label (e.g. Announcements)"
-                            value={btn.label}
+                            value={btn?.label || ''}
                             onChange={(e) => {
-                              const updated = [...welcomerButtons];
-                              updated[bIdx].label = e.target.value;
+                              const updated = [...(welcomerButtons || [])];
+                              if (updated[bIdx]) updated[bIdx].label = e.target.value;
                               setWelcomerButtons(updated);
                             }}
                             className="w-full sm:w-44 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#ff2b43]"
@@ -1390,10 +1398,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           <input
                             type="text"
                             placeholder="Target URL (e.g. https://discord.gg/... or web link)"
-                            value={btn.url}
+                            value={btn?.url || ''}
                             onChange={(e) => {
-                              const updated = [...welcomerButtons];
-                              updated[bIdx].url = e.target.value;
+                              const updated = [...(welcomerButtons || [])];
+                              if (updated[bIdx]) updated[bIdx].url = e.target.value;
                               setWelcomerButtons(updated);
                             }}
                             className="w-full flex-1 bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-[#ff2b43]"
@@ -1401,7 +1409,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              setWelcomerButtons(welcomerButtons.filter((_, idx) => idx !== bIdx));
+                              setWelcomerButtons((welcomerButtons || []).filter((_, idx) => idx !== bIdx));
                             }}
                             className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 cursor-pointer"
                             title="Remove Button"
@@ -4415,9 +4423,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <div className="w-12 h-12 rounded-md overflow-hidden shrink-0 border border-black/40">
                         <img
                           src={
-                            thumbnailUrl.includes('user') || thumbnailUrl.includes('avatar')
-                              ? user.avatar
-                                ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+                            (thumbnailUrl || '').includes('user') || (thumbnailUrl || '').includes('avatar')
+                              ? user?.avatar
+                                ? user.avatar.startsWith('http')
+                                  ? user.avatar
+                                  : `https://cdn.discordapp.com/avatars/${user?.id || '0'}/${user.avatar}.png`
                                 : 'https://cdn.discordapp.com/embed/avatars/0.png'
                               : thumbnailUrl
                           }
@@ -4439,8 +4449,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       {footerIconUrl && (
                         <img
                           src={
-                            footerIconUrl.includes('server') || footerIconUrl.includes('guild')
-                              ? guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                            (footerIconUrl || '').includes('server') || (footerIconUrl || '').includes('guild')
+                              ? guild?.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
                               : footerIconUrl
                           }
                           alt="Server Icon"
@@ -4453,15 +4463,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
 
                 {/* Discord Link Action Buttons in Preview */}
-                {welcomerButtons.length > 0 && (
+                {(welcomerButtons || []).length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {welcomerButtons.map((btn, bIdx) => (
+                    {(welcomerButtons || []).map((btn, bIdx) => (
                       <div
                         key={bIdx}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#2b2d31] hover:bg-[#35373c] text-slate-200 text-[11px] font-medium border border-white/5 shadow-sm transition-colors cursor-pointer select-none"
                       >
-                        {btn.emoji && <span>{btn.emoji}</span>}
-                        <span>{btn.label || 'Link'}</span>
+                        {btn?.emoji && <span>{btn.emoji}</span>}
+                        <span>{btn?.label || 'Link'}</span>
                         <span className="text-[10px] text-slate-400">↗</span>
                       </div>
                     ))}
