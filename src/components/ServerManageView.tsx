@@ -182,6 +182,17 @@ const renderDiscordEmojiInline = (emojiStr?: string) => {
   return <span className="mr-1">{emojiStr}</span>;
 };
 
+export interface GuildMemberItem {
+  id: string;
+  username: string;
+  displayName: string;
+  discriminator?: string;
+  avatar: string;
+  roles?: string[];
+  isBot?: boolean;
+  tier?: string;
+}
+
 interface ServerManageViewProps {
   guild: GuildItem;
   user: UserProfile;
@@ -227,7 +238,76 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [ticketSubTab, setTicketSubTab] = useState<'overview' | 'config' | 'panel' | 'modals' | 'transcripts' | 'security'>('overview');
 
   // Dynamic Image Card Canvas state (Screenshots 508-509)
-  const [cardTemplate, setCardTemplate] = useState('Sentinel Dark');
+  // Enhanced Live Welcomer Image Studio States
+  const [cardTemplate, setCardTemplate] = useState('Crimson Sentinel');
+  const [cardOverlayDarkness, setCardOverlayDarkness] = useState(55);
+  const [cardBlur, setCardBlur] = useState(0);
+  const [cardAvatarShape, setCardAvatarShape] = useState<'squircle' | 'circle' | 'hexagon' | 'octagon'>('squircle');
+  const [cardAvatarGlow, setCardAvatarGlow] = useState<'red' | 'emerald' | 'cyan' | 'gold' | 'purple' | 'none'>('red');
+  const [cardAvatarBorderColor, setCardAvatarBorderColor] = useState('#ff0033');
+  const [cardAvatarBorderWidth, setCardAvatarBorderWidth] = useState(2);
+  const [cardFontFamily, setCardFontFamily] = useState<'Outfit' | 'Inter' | 'JetBrains Mono' | 'Cinzel'>('Outfit');
+  const [cardWelcomeTitle, setCardWelcomeTitle] = useState('WELCOME, {user}');
+  const [cardSubtitle, setCardSubtitle] = useState('You are citizen #{member_count} of {server}');
+  const [cardTitleColor, setCardTitleColor] = useState('#ffffff');
+  const [cardAccentColor, setCardAccentColor] = useState('#ff3344');
+  const [cardShowBadge, setCardShowBadge] = useState(true);
+  const [cardShowServerPill, setCardShowServerPill] = useState(true);
+  const [cardShowJoinedDate, setCardShowJoinedDate] = useState(true);
+  const [cardShowStatusDot, setCardShowStatusDot] = useState(true);
+  const [cardEditorActiveTab, setCardEditorActiveTab] = useState<'presets' | 'background' | 'avatar' | 'typography'>('presets');
+  const [cardMockUser, setCardMockUser] = useState<'currentUser' | 'axio' | 'kira' | 'specter'>('currentUser');
+
+  // Whitelist Members States
+  const [showMemberSelectModal, setShowMemberSelectModal] = useState(false);
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [availableMembers, setAvailableMembers] = useState<GuildMemberItem[]>([
+    {
+      id: user.id || '1500056784000253973',
+      username: user.username || 'CurrentAdmin',
+      displayName: user.username || 'Guild Administrator',
+      avatar: user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
+      tier: 'Server Owner',
+      roles: ['Owner', 'Administrator'],
+      isBot: false,
+    },
+    {
+      id: '1500056784000253973',
+      username: 'DexterCorpBot',
+      displayName: 'Dexter Corporation Sentinel',
+      avatar: '/dc-logo.png',
+      tier: 'System Sentinel',
+      roles: ['Bot', 'Sentinel Core'],
+      isBot: true,
+    },
+    {
+      id: '141279118800092',
+      username: 'AxioSecurity',
+      displayName: 'Axio (Security Admin)',
+      avatar: 'https://cdn.discordapp.com/embed/avatars/1.png',
+      tier: 'Security Lead',
+      roles: ['Administrator', 'Moderator'],
+      isBot: false,
+    },
+    {
+      id: '139981249911223',
+      username: 'KiraOps',
+      displayName: 'Kira (Operations Lead)',
+      avatar: 'https://cdn.discordapp.com/embed/avatars/2.png',
+      tier: 'High Council',
+      roles: ['Staff Council'],
+      isBot: false,
+    },
+    {
+      id: '128892188291021',
+      username: 'SpecterVanguard',
+      displayName: 'Specter (Moderation Officer)',
+      avatar: 'https://cdn.discordapp.com/embed/avatars/3.png',
+      tier: 'Moderator',
+      roles: ['Senior Mod'],
+      isBot: false,
+    },
+  ]);
   const [cardWidth, setCardWidth] = useState(800);
   const [cardHeight, setCardHeight] = useState(350);
   const [cardScale, setCardScale] = useState(100);
@@ -585,6 +665,20 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         }
       } catch (err) {
         console.warn('Roles fetch fallback:', err);
+      }
+
+      // 2.5 Fetch server members
+      try {
+        const mRes = await axios.get(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/members`));
+        if (Array.isArray(mRes.data) && mRes.data.length > 0) {
+          setAvailableMembers((prev) => {
+            const existingIds = new Set(mRes.data.map((m: any) => m.id));
+            const merged = [...mRes.data, ...prev.filter((p) => !existingIds.has(p.id))];
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('Members fetch fallback:', err);
       }
 
       // 3. Fetch server settings from MongoDB
@@ -2099,206 +2193,753 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     </>
                   )}
 
-                  {/* SUBTAB 2: Dynamic Image Cards (Screenshots 508-509) */}
+                  {/* SUBTAB 2: Professional Live Welcomer Card Studio */}
                   {welcomerSubTab === 'cards' && (
-                    <div className="space-y-6">
-                      {/* Templates Bar */}
-                      <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-mono font-bold tracking-wider text-slate-300 uppercase">
-                            WELCOME TEMPLATES DECK
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-mono">Select Base Theme</span>
+                    <div className="space-y-6 animate-fade-in-up">
+                      {/* Studio Top Control Bar */}
+                      <div className="liquid-glass rounded-2xl p-4 sm:p-5 border border-white/10 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/20 to-purple-500/20 border border-red-500/30 flex items-center justify-center text-red-400 shadow-lg shadow-red-500/10">
+                            <Layers className="w-5 h-5 text-red-400" />
+                          </div>
+                          <div>
+                            <h3 className="font-display font-bold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
+                              <span>Live Welcomer Image Card Studio</span>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 font-bold uppercase">
+                                Real-Time Vector
+                              </span>
+                            </h3>
+                            <p className="text-xs text-slate-400">
+                              Craft ultra-premium, dynamic Discord arrival cards with live vector preview, custom frames, and atmospheric lighting.
+                            </p>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                          {['Sentinel Dark', 'Modern Minimalist', 'Cyberpunk Grid', 'Neon Glow', 'Obsidian Shield'].map((tmpl) => (
+
+                        {/* Simulation User Switcher */}
+                        <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10 text-xs">
+                          <span className="text-[10px] text-slate-400 font-mono uppercase px-2 font-semibold">PREVIEW AS:</span>
+                          {(['currentUser', 'axio', 'kira', 'specter'] as const).map((mockKey) => (
                             <button
-                              key={tmpl}
-                              onClick={() => {
-                                setCardTemplate(tmpl);
-                                if (tmpl === 'Sentinel Dark') {
-                                  setCardBgColor('#0a0c12');
-                                  setCardBgImage('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');
-                                } else if (tmpl === 'Modern Minimalist') {
-                                  setCardBgColor('#000000');
-                                  setCardBgImage('');
-                                } else if (tmpl === 'Cyberpunk Grid') {
-                                  setCardBgColor('#050811');
-                                  setCardBgImage('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80');
-                                } else if (tmpl === 'Neon Glow') {
-                                  setCardBgColor('#0d0f1a');
-                                  setCardBgImage('https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=80');
-                                } else {
-                                  setCardBgColor('#06070a');
-                                  setCardBgImage('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80');
-                                }
-                              }}
-                              className={`p-3 rounded-xl border text-xs font-semibold text-center transition-all cursor-pointer ${
-                                cardTemplate === tmpl
-                                  ? 'bg-white text-black border-white shadow-lg'
-                                  : 'bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10'
+                              key={mockKey}
+                              type="button"
+                              onClick={() => setCardMockUser(mockKey)}
+                              className={`px-2.5 py-1 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                                cardMockUser === mockKey
+                                  ? 'bg-white text-black shadow-md font-bold'
+                                  : 'text-slate-400 hover:text-white hover:bg-white/5'
                               }`}
                             >
-                              {tmpl}
+                              {mockKey === 'currentUser' ? 'You' : mockKey.toUpperCase()}
                             </button>
                           ))}
                         </div>
                       </div>
 
-                      {/* Canvas Interactive Visual Preview */}
-                      <div className="liquid-glass rounded-2xl p-6 border border-white/10 space-y-4">
+                      {/* LIVE INTERACTIVE CANVAS DISPLAY */}
+                      <div className="liquid-glass rounded-3xl p-6 sm:p-8 border border-white/10 space-y-4 shadow-2xl relative overflow-hidden group">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-mono font-bold tracking-wider text-slate-300 uppercase">
-                            DYNAMIC CARD RENDER CANVAS ({cardWidth}x{cardHeight})
-                          </span>
-                          <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Live Vector Pipeline
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                            </span>
+                            <span className="text-xs font-mono font-bold tracking-wider text-slate-300 uppercase">
+                              LIVE CARD RENDER PREVIEW ({cardWidth}px × {cardHeight}px)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs font-mono">
+                            <span className="text-slate-400">Active Theme:</span>
+                            <span className="text-white font-bold px-2 py-0.5 rounded bg-white/10 border border-white/15">
+                              {cardTemplate}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Visual Canvas Box */}
-                        <div className="w-full flex justify-center py-4 bg-black/40 rounded-2xl border border-white/5 overflow-hidden">
-                          <div
-                            style={{
-                              backgroundColor: cardBgColor,
-                              backgroundImage: cardBgImage ? `url(${cardBgImage})` : 'none',
-                              backgroundSize: cardFitMode,
-                              backgroundPosition: 'center',
-                              opacity: cardOpacity / 100,
-                            }}
-                            className="relative w-full max-w-[680px] h-[280px] rounded-2xl border border-white/20 p-6 flex flex-col justify-between shadow-2xl overflow-hidden transition-all duration-300"
-                          >
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+                        {/* Visual Card Canvas Preview Box */}
+                        <div className="w-full flex justify-center py-6 bg-black/60 rounded-3xl border border-white/5 overflow-hidden p-2">
+                          {(() => {
+                            const mock = getMockUserPreview();
+                            const titleFormatted = cardWelcomeTitle
+                              .replace('{user}', mock.username)
+                              .replace('{server}', guild.name)
+                              .replace('{member_count}', String(mock.num));
+                            const subtitleFormatted = cardSubtitle
+                              .replace('{user}', mock.username)
+                              .replace('{server}', guild.name)
+                              .replace('{member_count}', String(mock.num));
 
-                            <div className="relative z-10 flex items-center justify-between">
-                              <span className="text-[10px] font-mono tracking-widest text-slate-400 uppercase px-2 py-0.5 rounded bg-black/60 border border-white/10">
-                                {guild.name}
+                            // Glow effect class mapping
+                            const glowStyles: Record<string, string> = {
+                              red: 'shadow-[0_0_35px_rgba(255,0,51,0.6)] ring-2 ring-red-500/80',
+                              emerald: 'shadow-[0_0_35px_rgba(16,185,129,0.6)] ring-2 ring-emerald-400/80',
+                              cyan: 'shadow-[0_0_35px_rgba(6,182,212,0.6)] ring-2 ring-cyan-400/80',
+                              gold: 'shadow-[0_0_35px_rgba(245,158,11,0.6)] ring-2 ring-amber-400/80',
+                              purple: 'shadow-[0_0_35px_rgba(168,85,247,0.6)] ring-2 ring-purple-500/80',
+                              none: 'ring-1 ring-white/20',
+                            };
+
+                            // Shape class mapping
+                            const shapeStyles: Record<string, string> = {
+                              circle: 'rounded-full',
+                              squircle: 'rounded-3xl',
+                              hexagon: 'rounded-2xl rotate-3',
+                              octagon: 'rounded-xl',
+                            };
+
+                            return (
+                              <div
+                                style={{
+                                  backgroundColor: cardBgColor,
+                                  backgroundImage: cardBgImage ? `url(${cardBgImage})` : 'none',
+                                  backgroundSize: cardFitMode,
+                                  backgroundPosition: 'center',
+                                  fontFamily: cardFontFamily,
+                                }}
+                                className="relative w-full max-w-[700px] min-h-[290px] rounded-3xl border border-white/20 p-7 flex flex-col justify-between shadow-2xl overflow-hidden transition-all duration-300"
+                              >
+                                {/* Atmospheric Overlay */}
+                                <div
+                                  className="absolute inset-0 pointer-events-none transition-all duration-300"
+                                  style={{
+                                    backgroundColor: `rgba(0,0,0,${cardOverlayDarkness / 100})`,
+                                    backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : 'none',
+                                  }}
+                                />
+
+                                {/* Ambient Red Glow Spot */}
+                                <div className="absolute -top-12 -right-12 w-64 h-64 bg-red-600/20 rounded-full blur-3xl pointer-events-none" />
+                                <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
+
+                                {/* Card Header Row */}
+                                <div className="relative z-10 flex items-center justify-between gap-2">
+                                  {cardShowServerPill ? (
+                                    <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/70 border border-white/15 text-xs text-slate-200 font-mono shadow-md backdrop-blur-md">
+                                      <div className="w-4 h-4 rounded-full overflow-hidden bg-[#12141c]">
+                                        <img src="/dc-logo.png" alt="Icon" className="w-full h-full object-cover" />
+                                      </div>
+                                      <span className="font-bold tracking-wider uppercase text-[11px] text-white">
+                                        {guild.name}
+                                      </span>
+                                    </div>
+                                  ) : <div />}
+
+                                  {cardShowBadge && (
+                                    <div
+                                      style={{ borderColor: cardAccentColor }}
+                                      className="px-3.5 py-1 rounded-full bg-black/70 border text-xs font-mono font-bold tracking-widest shadow-md backdrop-blur-md"
+                                    >
+                                      <span style={{ color: cardAccentColor }}>
+                                        CITIZEN #{mock.num}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Card Center Row (Avatar + Headline) */}
+                                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 my-auto py-2">
+                                  {/* Dynamic Avatar Container */}
+                                  <div className="relative shrink-0">
+                                    <div
+                                      className={`w-24 h-24 p-1 overflow-hidden transition-all duration-300 bg-[#0e1017] flex items-center justify-center ${shapeStyles[cardAvatarShape]} ${glowStyles[cardAvatarGlow]}`}
+                                      style={{
+                                        borderWidth: `${cardAvatarBorderWidth}px`,
+                                        borderColor: cardAvatarBorderColor,
+                                      }}
+                                    >
+                                      <img
+                                        src={mock.avatar}
+                                        alt={mock.username}
+                                        className={`w-full h-full object-cover ${shapeStyles[cardAvatarShape]}`}
+                                      />
+                                    </div>
+                                    {cardShowStatusDot && (
+                                      <span className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-emerald-500 border-3 border-black shadow-lg" />
+                                    )}
+                                  </div>
+
+                                  {/* Dynamic Titles */}
+                                  <div className="space-y-1.5 text-center sm:text-left">
+                                    <h3
+                                      style={{ color: cardTitleColor }}
+                                      className="font-extrabold text-2xl sm:text-3xl tracking-tight leading-none drop-shadow-lg"
+                                    >
+                                      {titleFormatted}
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-slate-300 font-medium drop-shadow leading-relaxed">
+                                      {subtitleFormatted}
+                                    </p>
+                                    <div className="pt-1 flex items-center justify-center sm:justify-start gap-2 text-[10px] font-mono text-slate-400">
+                                      <span className="px-2 py-0.5 rounded bg-white/10 border border-white/10 text-white font-semibold">
+                                        VERIFIED CITIZEN
+                                      </span>
+                                      <span>&bull;</span>
+                                      <span>ACCESS GRANTED</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Card Footer Row */}
+                                <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-slate-400 pt-3 border-t border-white/10">
+                                  {cardShowJoinedDate ? (
+                                    <span className="flex items-center gap-1.5">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                      JOINED {new Date().toLocaleDateString()}
+                                    </span>
+                                  ) : <span />}
+                                  <span className="text-white/80 font-bold tracking-wider">
+                                    DEXTER CORPORATION &bull; SENTINEL CORE
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Quick Canvas Actions */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMainImageUrl(cardBgImage);
+                                alert('Card background applied to main Welcomer embed image!');
+                              }}
+                              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Apply to Welcomer Embed</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleSendTestMessage}
+                              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer border border-white/15 flex items-center gap-1.5"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Send Live Test Card</span>
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCardTemplate('Crimson Sentinel');
+                              setCardBgColor('#08090e');
+                              setCardBgImage('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');
+                              setCardOverlayDarkness(55);
+                              setCardAvatarShape('squircle');
+                              setCardAvatarGlow('red');
+                              setCardAvatarBorderColor('#ff0033');
+                              setCardAvatarBorderWidth(2);
+                              setCardFontFamily('Outfit');
+                              setCardWelcomeTitle('WELCOME, {user}');
+                              setCardSubtitle('You are citizen #{member_count} of {server}');
+                              setCardAccentColor('#ff3344');
+                            }}
+                            className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>Reset Studio Defaults</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* STUDIO CONTROLS ACCORDION / TABS */}
+                      <div className="liquid-glass rounded-3xl p-6 sm:p-7 border border-white/10 space-y-6 shadow-2xl">
+                        {/* Control Category Tabs */}
+                        <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto">
+                          {[
+                            { id: 'presets', label: '1. Curated Themes & Presets', icon: Sparkles },
+                            { id: 'background', label: '2. Background & Atmosphere', icon: Image },
+                            { id: 'avatar', label: '3. Avatar & Glow Styling', icon: Shield },
+                            { id: 'typography', label: '4. Live Typography & Pills', icon: MessageSquare },
+                          ].map((ctab) => (
+                            <button
+                              key={ctab.id}
+                              type="button"
+                              onClick={() => setCardEditorActiveTab(ctab.id as any)}
+                              className={`px-4 py-2.5 rounded-2xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+                                cardEditorActiveTab === ctab.id
+                                  ? 'bg-white text-black shadow-lg font-bold'
+                                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              }`}
+                            >
+                              <ctab.icon className="w-3.5 h-3.5" />
+                              <span>{ctab.label}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* TAB 1: CURATED THEMES */}
+                        {cardEditorActiveTab === 'presets' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+                                1-Click Master Presets
                               </span>
-                              <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase px-2 py-0.5 rounded bg-black/60 border border-white/10">
-                                MEMBER #{guild.memberCount || 1429}
-                              </span>
+                              <span className="text-[10px] text-slate-400">Instantly loads colors, glows, backgrounds & fonts</span>
                             </div>
 
-                            <div className="relative z-10 flex items-center gap-5">
-                              <div className="relative w-20 h-20 rounded-2xl p-1 bg-white/10 border border-white/30 overflow-hidden shadow-2xl">
-                                <img
-                                  src={user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
-                                  alt="Avatar Preview"
-                                  className="w-full h-full object-cover rounded-xl"
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                              {[
+                                {
+                                  name: 'Crimson Sentinel',
+                                  desc: 'Brushed metal with crimson energy sparks',
+                                  bg: '#08090e',
+                                  img: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+                                  glow: 'red',
+                                  accent: '#ff0033',
+                                  shape: 'squircle',
+                                  font: 'Outfit',
+                                },
+                                {
+                                  name: 'Cyberpunk Neon',
+                                  desc: 'Synthwave violet with electric cyan rays',
+                                  bg: '#090a16',
+                                  img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+                                  glow: 'cyan',
+                                  accent: '#00f0ff',
+                                  shape: 'hexagon',
+                                  font: 'JetBrains Mono',
+                                },
+                                {
+                                  name: 'Obsidian Void',
+                                  desc: 'Deep carbon fiber with crisp white contrast',
+                                  bg: '#000000',
+                                  img: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=80',
+                                  glow: 'none',
+                                  accent: '#ffffff',
+                                  shape: 'circle',
+                                  font: 'Inter',
+                                },
+                                {
+                                  name: 'Emerald Matrix',
+                                  desc: 'Sub-millisecond green defense shield',
+                                  bg: '#040d08',
+                                  img: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+                                  glow: 'emerald',
+                                  accent: '#10b981',
+                                  shape: 'octagon',
+                                  font: 'JetBrains Mono',
+                                },
+                                {
+                                  name: 'Midnight Aurora',
+                                  desc: 'Deep space cosmic aurora with violet mist',
+                                  bg: '#0d0f1a',
+                                  img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+                                  glow: 'purple',
+                                  accent: '#a855f7',
+                                  shape: 'squircle',
+                                  font: 'Outfit',
+                                },
+                                {
+                                  name: 'Royal Gold',
+                                  desc: 'VIP prestige dark gold with luxury borders',
+                                  bg: '#0a0907',
+                                  img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80',
+                                  glow: 'gold',
+                                  accent: '#f59e0b',
+                                  shape: 'squircle',
+                                  font: 'Cinzel',
+                                },
+                              ].map((preset) => (
+                                <button
+                                  key={preset.name}
+                                  type="button"
+                                  onClick={() => {
+                                    setCardTemplate(preset.name);
+                                    setCardBgColor(preset.bg);
+                                    setCardBgImage(preset.img);
+                                    setCardAvatarGlow(preset.glow as any);
+                                    setCardAccentColor(preset.accent);
+                                    setCardAvatarBorderColor(preset.accent);
+                                    setCardAvatarShape(preset.shape as any);
+                                    setCardFontFamily(preset.font as any);
+                                  }}
+                                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 relative overflow-hidden group hover:scale-[1.02] ${
+                                    cardTemplate === preset.name
+                                      ? 'bg-white text-black border-white shadow-xl'
+                                      : 'bg-white/[0.03] border-white/10 text-slate-300 hover:text-white hover:bg-white/[0.08]'
+                                  }`}
+                                >
+                                  <div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-display font-bold text-sm tracking-tight">
+                                        {preset.name}
+                                      </span>
+                                      <span
+                                        className="w-3.5 h-3.5 rounded-full border border-black/40 shadow-sm"
+                                        style={{ backgroundColor: preset.accent }}
+                                      />
+                                    </div>
+                                    <p className={`text-xs mt-1 leading-relaxed ${cardTemplate === preset.name ? 'text-slate-600' : 'text-slate-400'}`}>
+                                      {preset.desc}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center justify-between text-[10px] font-mono opacity-80 pt-1 border-t border-black/10">
+                                    <span>Glow: {preset.glow.toUpperCase()}</span>
+                                    <span>Shape: {preset.shape.toUpperCase()}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TAB 2: BACKGROUND & ATMOSPHERE */}
+                        {cardEditorActiveTab === 'background' && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  CUSTOM BACKGROUND IMAGE URL
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="https://images.unsplash.com/..."
+                                  value={cardBgImage}
+                                  onChange={(e) => setCardBgImage(e.target.value)}
+                                  className="w-full bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-red-500/50 transition-colors"
                                 />
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-black" />
+                                <p className="text-[10px] text-slate-500">
+                                  Supports high-resolution PNG, JPG, or WebP links (1200x500 recommended)
+                                </p>
                               </div>
 
-                              <div className="space-y-1">
-                                <h3 className="font-display font-bold text-2xl text-white tracking-tight drop-shadow-md">
-                                  WELCOME, {user.username.toUpperCase()}
-                                </h3>
-                                <p className="text-xs text-slate-300 font-mono drop-shadow">
-                                  You are our {guild.memberCount || 1429}th Sentinel Citizen
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  CANVAS BASE COLOR
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={cardBgColor}
+                                    onChange={(e) => setCardBgColor(e.target.value)}
+                                    className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={cardBgColor}
+                                    onChange={(e) => setCardBgColor(e.target.value)}
+                                    className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  IMAGE FIT MODE
+                                </label>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setCardFitMode('cover')}
+                                    className={`py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                                      cardFitMode === 'cover'
+                                        ? 'bg-white text-black shadow-md'
+                                        : 'bg-white/5 text-slate-300 hover:text-white'
+                                    }`}
+                                  >
+                                    Cover (Full Bleed)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCardFitMode('contain')}
+                                    className={`py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                                      cardFitMode === 'contain'
+                                        ? 'bg-white text-black shadow-md'
+                                        : 'bg-white/5 text-slate-300 hover:text-white'
+                                    }`}
+                                  >
+                                    Contain (Padded)
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div className="space-y-2 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-semibold text-slate-300">Dark Overlay Opacity</span>
+                                  <span className="font-mono text-white font-bold">{cardOverlayDarkness}%</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="90"
+                                  value={cardOverlayDarkness}
+                                  onChange={(e) => setCardOverlayDarkness(Number(e.target.value))}
+                                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                                />
+                                <p className="text-[10px] text-slate-500 font-mono">
+                                  Controls shadow depth behind text for maximum readability.
+                                </p>
+                              </div>
+
+                              <div className="space-y-2 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-semibold text-slate-300">Background Backdrop Blur</span>
+                                  <span className="font-mono text-white font-bold">{cardBlur}px</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="16"
+                                  value={cardBlur}
+                                  onChange={(e) => setCardBlur(Number(e.target.value))}
+                                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                                />
+                                <p className="text-[10px] text-slate-500 font-mono">
+                                  Smooth glassmorphic blur softens complex background images.
                                 </p>
                               </div>
                             </div>
-
-                            <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-white/10">
-                              <span>JOINED {new Date().toLocaleDateString()}</span>
-                              <span className="text-slate-200">DEXTERCORP SENTINEL CORE</span>
-                            </div>
                           </div>
-                        </div>
+                        )}
 
-                        {/* Layer Tree Controls & Canvas Options */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-                            <span className="text-xs font-bold text-white uppercase tracking-wider">
-                              CANVAS LAYERS
-                            </span>
-                            <div className="flex gap-2">
-                              <button className="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer">
-                                + Text Layer
-                              </button>
-                              <button className="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer">
-                                + Shape Layer
-                              </button>
-                              <button className="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer">
-                                + Image Layer
-                              </button>
-                            </div>
-                            <div className="space-y-1 text-xs font-mono text-slate-300">
-                              <div className="p-2 rounded bg-black/40 border border-white/5 flex items-center justify-between">
-                                <span>1. Background Image Layer</span>
-                                <span className="text-slate-500">Active</span>
+                        {/* TAB 3: AVATAR & GLOW STYLING */}
+                        {cardEditorActiveTab === 'avatar' && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  AVATAR FRAME SHAPE
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                  {(['squircle', 'circle', 'hexagon', 'octagon'] as const).map((shape) => (
+                                    <button
+                                      key={shape}
+                                      type="button"
+                                      onClick={() => setCardAvatarShape(shape)}
+                                      className={`py-2.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer ${
+                                        cardAvatarShape === shape
+                                          ? 'bg-white text-black shadow-lg font-bold'
+                                          : 'bg-white/5 text-slate-300 hover:text-white'
+                                      }`}
+                                    >
+                                      {shape}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="p-2 rounded bg-black/40 border border-white/5 flex items-center justify-between">
-                                <span>2. User Avatar Frame</span>
-                                <span className="text-slate-500">Dynamic</span>
-                              </div>
-                              <div className="p-2 rounded bg-black/40 border border-white/5 flex items-center justify-between">
-                                <span>3. Welcome Title Text</span>
-                                <span className="text-slate-500">Dynamic</span>
-                              </div>
-                            </div>
-                          </div>
 
-                          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-                            <span className="text-xs font-bold text-white uppercase tracking-wider">
-                              CANVAS CONFIGURATION
-                            </span>
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                              <div>
-                                <label className="text-[10px] text-slate-400 font-mono">WIDTH (PX)</label>
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  AVATAR GLOW AURA (ENERGY SHIELD)
+                                </label>
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                  {[
+                                    { id: 'red', label: 'Crimson', color: '#ff0033' },
+                                    { id: 'emerald', label: 'Emerald', color: '#10b981' },
+                                    { id: 'cyan', label: 'Cyan', color: '#06b6d4' },
+                                    { id: 'gold', label: 'Gold', color: '#f59e0b' },
+                                    { id: 'purple', label: 'Violet', color: '#a855f7' },
+                                    { id: 'none', label: 'Off', color: '#64748b' },
+                                  ].map((glow) => (
+                                    <button
+                                      key={glow.id}
+                                      type="button"
+                                      onClick={() => setCardAvatarGlow(glow.id as any)}
+                                      className={`py-2 rounded-xl text-xs font-semibold flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                                        cardAvatarGlow === glow.id
+                                          ? 'bg-white text-black shadow-lg font-bold'
+                                          : 'bg-white/5 text-slate-300 hover:text-white'
+                                      }`}
+                                    >
+                                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: glow.color }} />
+                                      <span className="text-[10px]">{glow.label}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  AVATAR BORDER COLOR
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={cardAvatarBorderColor}
+                                    onChange={(e) => setCardAvatarBorderColor(e.target.value)}
+                                    className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={cardAvatarBorderColor}
+                                    onChange={(e) => setCardAvatarBorderColor(e.target.value)}
+                                    className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-semibold text-slate-300">Border Ring Width</span>
+                                  <span className="font-mono text-white font-bold">{cardAvatarBorderWidth}px</span>
+                                </div>
                                 <input
-                                  type="number"
-                                  value={cardWidth}
-                                  onChange={(e) => setCardWidth(Number(e.target.value))}
-                                  className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-white"
+                                  type="range"
+                                  min="1"
+                                  max="6"
+                                  value={cardAvatarBorderWidth}
+                                  onChange={(e) => setCardAvatarBorderWidth(Number(e.target.value))}
+                                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
                                 />
                               </div>
-                              <div>
-                                <label className="text-[10px] text-slate-400 font-mono">HEIGHT (PX)</label>
-                                <input
-                                  type="number"
-                                  value={cardHeight}
-                                  onChange={(e) => setCardHeight(Number(e.target.value))}
-                                  className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-white"
-                                />
-                              </div>
-                            </div>
 
-                            <div>
-                              <label className="text-[10px] text-slate-400 font-mono">CUSTOM BACKGROUND URL</label>
-                              <input
-                                type="text"
-                                value={cardBgImage}
-                                onChange={(e) => setCardBgImage(e.target.value)}
-                                placeholder="https://..."
-                                className="w-full bg-[#13141d] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-[10px] text-slate-400 font-mono">FIT MODE</span>
-                              <div className="flex gap-1">
+                              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                                <span className="text-xs font-semibold text-white">Online Presence Status Dot</span>
                                 <button
-                                  onClick={() => setCardFitMode('cover')}
-                                  className={`px-2.5 py-1 rounded text-xs font-semibold ${
-                                    cardFitMode === 'cover' ? 'bg-white text-black' : 'bg-white/5 text-slate-300'
+                                  type="button"
+                                  onClick={() => setCardShowStatusDot(!cardShowStatusDot)}
+                                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                                    cardShowStatusDot ? 'bg-white border-white' : 'bg-white/10 border-white/10'
                                   }`}
                                 >
-                                  Cover
-                                </button>
-                                <button
-                                  onClick={() => setCardFitMode('contain')}
-                                  className={`px-2.5 py-1 rounded text-xs font-semibold ${
-                                    cardFitMode === 'contain' ? 'bg-white text-black' : 'bg-white/5 text-slate-300'
-                                  }`}
-                                >
-                                  Contain
+                                  <span
+                                    className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                      cardShowStatusDot ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                                    }`}
+                                  />
                                 </button>
                               </div>
                             </div>
                           </div>
-                        </div>
+                        )}
+
+                        {/* TAB 4: LIVE TYPOGRAPHY & PILLS */}
+                        {cardEditorActiveTab === 'typography' && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  HEADLINE TEMPLATE (TITLE)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cardWelcomeTitle}
+                                  onChange={(e) => setCardWelcomeTitle(e.target.value)}
+                                  placeholder="e.g. WELCOME, {user}"
+                                  className="w-full bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500/50 transition-colors"
+                                />
+                                <p className="text-[10px] text-slate-500 font-mono">
+                                  Available: {'{user}'}, {'{server}'}, {'{member_count}'}
+                                </p>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  SUBTITLE TEMPLATE
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cardSubtitle}
+                                  onChange={(e) => setCardSubtitle(e.target.value)}
+                                  placeholder="e.g. You are citizen #{member_count} of {server}"
+                                  className="w-full bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-red-500/50 transition-colors"
+                                />
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  CARD FONT FAMILY
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                  {(['Outfit', 'Inter', 'JetBrains Mono', 'Cinzel'] as const).map((font) => (
+                                    <button
+                                      key={font}
+                                      type="button"
+                                      onClick={() => setCardFontFamily(font)}
+                                      className={`py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                                        cardFontFamily === font
+                                          ? 'bg-white text-black shadow-lg font-bold'
+                                          : 'bg-white/5 text-slate-300 hover:text-white'
+                                      }`}
+                                    >
+                                      {font.split(' ')[0]}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  ACCENT BADGE COLOR
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={cardAccentColor}
+                                    onChange={(e) => setCardAccentColor(e.target.value)}
+                                    className="w-10 h-10 rounded-xl bg-transparent border border-white/20 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={cardAccentColor}
+                                    onChange={(e) => setCardAccentColor(e.target.value)}
+                                    className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 pt-2">
+                                <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                                  <span className="text-xs font-semibold text-white">Show Server Name Pill</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCardShowServerPill(!cardShowServerPill)}
+                                    className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                                      cardShowServerPill ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                                    }`}
+                                  >
+                                    <span
+                                      className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                        cardShowServerPill ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                                      }`}
+                                    />
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                                  <span className="text-xs font-semibold text-white">Show Citizen # Badge</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCardShowBadge(!cardShowBadge)}
+                                    className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                                      cardShowBadge ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                                    }`}
+                                  >
+                                    <span
+                                      className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                        cardShowBadge ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                                      }`}
+                                    />
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+                                  <span className="text-xs font-semibold text-white">Show Joined Date Timestamp</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCardShowJoinedDate(!cardShowJoinedDate)}
+                                    className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer border ${
+                                      cardShowJoinedDate ? 'bg-white border-white' : 'bg-white/10 border-white/10'
+                                    }`}
+                                  >
+                                    <span
+                                      className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full transition-all ${
+                                        cardShowJoinedDate ? 'bg-black translate-x-5' : 'bg-white translate-x-0'
+                                      }`}
+                                    />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -2839,43 +3480,295 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
               </div>
 
-              {/* Section 7: Whitelist Manager */}
-              <div className="liquid-glass border border-white/5 rounded-2xl p-5 space-y-3">
-                <h4 className="font-display font-semibold text-xs text-white uppercase tracking-wider">
-                  Whitelisted Trusted Administrators
-                </h4>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter Discord User ID to whitelist..."
-                    value={newWhitelistUser}
-                    onChange={(e) => setNewWhitelistUser(e.target.value)}
-                    className="flex-1 bg-[#0a0c10] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-white/40"
-                  />
-                  <button
-                    onClick={addWhitelistUser}
-                    className="px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-black text-xs font-semibold transition-all cursor-pointer shadow-md active:scale-95"
-                  >
-                    + Add Whitelist
-                  </button>
+              {/* Section 7: Professional Whitelist & Member Selection Studio */}
+              <div className="liquid-glass border border-white/10 rounded-3xl p-6 sm:p-7 space-y-6 shadow-2xl relative overflow-hidden">
+                {/* Header with Title & Quota */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10">
+                      <UserCheck className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-bold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
+                        <span>Whitelisted Trusted Members & Staff</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold uppercase">
+                          Zero-Trust Bypass
+                        </span>
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Selected members are completely immune to automated Anti-Nuke punishments, role rollbacks, rate-limits, and mutiny filters.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
+                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white font-bold">
+                      {whitelist.length} Members Whitelisted
+                    </span>
+                  </div>
                 </div>
 
-                <div className="space-y-1.5 pt-1">
-                  {whitelist.map((id) => (
-                    <div
-                      key={id}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 text-xs font-mono"
+                {/* Primary Action Controls: Member Picker Modal Trigger & Direct ID Input */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                  {/* Select Member from Server Button */}
+                  <div className="sm:col-span-5">
+                    <button
+                      type="button"
+                      onClick={() => setShowMemberSelectModal(true)}
+                      className="w-full h-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 transform active:scale-98"
                     >
-                      <span className="text-slate-300 font-semibold">{id}</span>
-                      <button
-                        onClick={() => removeWhitelistUser(id)}
-                        className="text-slate-500 hover:text-white p-1 cursor-pointer transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <UserPlus className="w-4 h-4 text-black" />
+                      <span>Select Member from Server</span>
+                    </button>
+                  </div>
+
+                  {/* Direct User ID Input */}
+                  <div className="sm:col-span-7 flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        placeholder="Or enter custom Discord User ID..."
+                        value={newWhitelistUser}
+                        onChange={(e) => setNewWhitelistUser(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addWhitelistUser();
+                          }
+                        }}
+                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-3.5 py-3 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                      />
                     </div>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={addWhitelistUser}
+                      disabled={!newWhitelistUser.trim()}
+                      className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-semibold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
+                    >
+                      + Add ID
+                    </button>
+                  </div>
                 </div>
+
+                {/* Whitelisted Members Cards List */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 font-semibold uppercase tracking-wider">
+                    <span>ACTIVE WHITELIST ROSTER ({whitelist.length})</span>
+                    <span className="text-emerald-400">All Security Modules Bypassed</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {whitelist.map((id) => {
+                      const member = getMemberDetails(id);
+                      return (
+                        <div
+                          key={id}
+                          className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md group"
+                        >
+                          {/* Member Avatar & Identity */}
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="relative w-11 h-11 rounded-2xl p-0.5 bg-white/10 border border-white/20 shrink-0 overflow-hidden shadow-lg">
+                              <img
+                                src={member.avatar}
+                                alt={member.displayName}
+                                className="w-full h-full object-cover rounded-xl"
+                              />
+                              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-black" />
+                            </div>
+
+                            <div className="min-w-0 space-y-0.5">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-display font-bold text-sm text-white truncate">
+                                  {member.displayName}
+                                </span>
+                                {member.isBot && (
+                                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                                    BOT
+                                  </span>
+                                )}
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-white/5 text-slate-300 border border-white/10">
+                                  {member.tier || 'Trusted Staff'}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+                                <span>@{member.username}</span>
+                                <span>&bull;</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard?.writeText(id);
+                                    setIdCopied(true);
+                                    setTimeout(() => setIdCopied(false), 2000);
+                                  }}
+                                  className="text-[10px] bg-black/40 hover:bg-black/80 px-2 py-0.5 rounded text-slate-400 hover:text-white transition-colors cursor-pointer border border-white/5"
+                                  title="Click to copy ID"
+                                >
+                                  ID: {id}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Bypass Tags & Remove Action */}
+                          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                            <div className="hidden md:flex items-center gap-1.5 text-[10px] font-mono">
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                                Anti-Ban
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                                Anti-Kick
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                                Anti-Channels
+                              </span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                                Anti-Roles
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => removeWhitelistUser(id)}
+                              className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer border border-white/5"
+                              title="Revoke Whitelist"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* MODAL: SELECT MEMBER FROM SERVER WITH FULL NAMES & AVATARS */}
+                {showMemberSelectModal && (
+                  <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-[#0b0c13]/95 border border-white/10 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 backdrop-blur-2xl animate-fade-in-up relative overflow-hidden">
+                      {/* Top Shimmer */}
+                      <div className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent rounded-full animate-shimmer" />
+
+                      {/* Modal Header */}
+                      <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10">
+                            <UserPlus className="w-5 h-5 text-emerald-400" />
+                          </div>
+                          <div>
+                            <h3 className="font-display font-bold text-base sm:text-lg text-white tracking-tight">
+                              Select Server Member
+                            </h3>
+                            <p className="text-xs text-slate-400 mt-0.5">
+                              Pick a member by name or avatar to add to the Anti-Nuke Whitelist.
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMemberSelectModal(false);
+                            setMemberSearchQuery('');
+                          }}
+                          className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer hover:rotate-90"
+                          title="Close"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Live Member Search Input */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search members by name, @handle, or ID..."
+                          value={memberSearchQuery}
+                          onChange={(e) => setMemberSearchQuery(e.target.value)}
+                          className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 transition-colors font-mono"
+                          autoFocus
+                        />
+                      </div>
+
+                      {/* Scrollable Members List */}
+                      <div className="space-y-2 max-h-72 overflow-y-auto p-1 scrollbar-thin">
+                        {availableMembers
+                          .filter((m) => {
+                            if (!memberSearchQuery.trim()) return true;
+                            const q = memberSearchQuery.toLowerCase();
+                            return (
+                              m.displayName.toLowerCase().includes(q) ||
+                              m.username.toLowerCase().includes(q) ||
+                              m.id.includes(q)
+                            );
+                          })
+                          .map((m) => {
+                            const isWhitelisted = whitelist.includes(m.id);
+                            return (
+                              <div
+                                key={m.id}
+                                className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 flex items-center justify-between gap-3 transition-colors"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#12141c] border border-white/10 shrink-0">
+                                    <img src={m.avatar} alt={m.displayName} className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-display font-bold text-xs text-white truncate">
+                                        {m.displayName}
+                                      </span>
+                                      {m.isBot && (
+                                        <span className="text-[8px] font-mono px-1 rounded bg-indigo-500/20 text-indigo-400">
+                                          BOT
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-mono truncate">
+                                      @{m.username} &bull; ID: {m.id}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  {isWhitelisted ? (
+                                    <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1 font-mono">
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      <span>Whitelisted</span>
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setWhitelist((prev) => [...prev, m.id]);
+                                      }}
+                                      className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs transition-all cursor-pointer shadow-md active:scale-95"
+                                    >
+                                      + Whitelist
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+
+                      {/* Modal Footer */}
+                      <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/5">
+                        <span>Showing {availableMembers.length} server members</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMemberSelectModal(false);
+                            setMemberSearchQuery('');
+                          }}
+                          className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold cursor-pointer"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
