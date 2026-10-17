@@ -1474,6 +1474,70 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     },
   ];
 
+  const getMemberDetails = (id: string): GuildMemberItem => {
+    const found = availableMembers.find((m) => m.id === id);
+    if (found) return found;
+    if (id === user?.id) {
+      return {
+        id,
+        username: user.username || 'Admin',
+        displayName: user.username || 'Guild Administrator',
+        avatar: user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
+        tier: 'Server Owner',
+        roles: ['Administrator'],
+        isBot: false,
+      };
+    }
+    if (id === '1500056784000253973') {
+      return {
+        id,
+        username: 'DexterCorpSentinel',
+        displayName: 'Dexter Sentinel Core',
+        avatar: '/dc-logo.png',
+        tier: 'System Sentinel',
+        roles: ['Bot', 'Administrator'],
+        isBot: true,
+      };
+    }
+    if (id === '141279118800092') {
+      return {
+        id,
+        username: 'AxioSecurity',
+        displayName: 'Axio (Security Admin)',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/1.png',
+        tier: 'Security Lead',
+        roles: ['Admin', 'Security'],
+        isBot: false,
+      };
+    }
+    return {
+      id,
+      username: `Member_${id.slice(-4)}`,
+      displayName: `Discord User (${id.slice(0, 6)}...)`,
+      avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+      tier: 'Trusted Staff',
+      roles: ['Staff Member'],
+      isBot: false,
+    };
+  };
+
+  const getMockUserPreview = () => {
+    if (cardMockUser === 'axio') {
+      return { username: 'AXIO', avatar: 'https://cdn.discordapp.com/embed/avatars/1.png', num: 1428 };
+    }
+    if (cardMockUser === 'kira') {
+      return { username: 'KIRA', avatar: 'https://cdn.discordapp.com/embed/avatars/2.png', num: 1429 };
+    }
+    if (cardMockUser === 'specter') {
+      return { username: 'SPECTER', avatar: 'https://cdn.discordapp.com/embed/avatars/3.png', num: 1430 };
+    }
+    return {
+      username: (user?.username || 'CITIZEN').toUpperCase(),
+      avatar: user?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
+      num: guild.memberCount || 1431,
+    };
+  };
+
   return (
     <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-['Inter'] selection:bg-white/20 selection:text-white relative">
       {/* Background ambient lighting & mesh */}
