@@ -108,6 +108,62 @@ const DiscordFormattedText: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
+const getEmojiDisplayName = (emojiStr: string): string => {
+  if (emojiStr.startsWith('<')) {
+    const parts = emojiStr.split(':');
+    if (parts.length > 1) {
+      const name = parts[1].toLowerCase();
+      if (name.includes('arrow')) return 'Red Arrow';
+      if (name.includes('verified')) return 'Verified';
+      if (name.includes('flame')) return 'Flame';
+      if (name.includes('crown')) return 'Fire Crown';
+      if (name.includes('admin')) return 'Admin Shield';
+      if (name.includes('check')) return 'Red Check';
+      return parts[1].replace(/^\d+/, '').slice(0, 10) || 'Custom';
+    }
+  }
+  const unicodeNames: Record<string, string> = {
+    '⚡': 'Lightning',
+    '🛡️': 'Security',
+    '🔥': 'Flame',
+    '👑': 'Crown',
+    '💎': 'Diamond',
+    '🚀': 'Rocket',
+    '✨': 'Sparkles',
+    '📜': 'Rules',
+    '📢': 'Announce',
+    '🎫': 'Ticket',
+    '🔒': 'Locked',
+    '✅': 'Verified',
+    '❤️': 'Heart',
+    '⭐': 'Star',
+    '⚔️': 'Combat',
+  };
+  return unicodeNames[emojiStr] || 'Emoji';
+};
+
+const renderEmojiVisual = (emojiStr: string) => {
+  if (!emojiStr) return null;
+  const customMatch = emojiStr.match(/<(a)?:([a-zA-Z0-9_]+):(\d+)>/);
+  if (customMatch) {
+    const isAnimated = customMatch[1] === 'a';
+    const emojiName = customMatch[2];
+    const emojiId = customMatch[3];
+    return (
+      <img
+        src={`https://cdn.discordapp.com/emojis/${emojiId}.${isAnimated ? 'gif' : 'png'}?size=64&quality=lossless`}
+        alt={emojiName}
+        className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-md group-hover:scale-110 transition-transform"
+      />
+    );
+  }
+  return (
+    <span className="text-2xl sm:text-3xl filter drop-shadow group-hover:scale-115 transition-transform select-none">
+      {emojiStr}
+    </span>
+  );
+};
+
 const renderDiscordEmojiInline = (emojiStr?: string) => {
   if (!emojiStr) return null;
   const customMatch = emojiStr.match(/<(a)?:([a-zA-Z0-9_]+):(\d+)>/);
@@ -246,13 +302,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [ticketChannelStyle, setTicketChannelStyle] = useState('ticket-{code}');
   const [ticketStaffRoles, setTicketStaffRoles] = useState<string[]>([]);
   const [ticketLimit, setTicketLimit] = useState('1');
-  const [ticketPanelTitle, setTicketPanelTitle] = useState('ðŸŽ« Support Desk & Inquiries');
+  const [ticketPanelTitle, setTicketPanelTitle] = useState('🎫 Support Desk & Inquiries');
   const [ticketPanelDesc, setTicketPanelDesc] = useState(
     'Welcome to our support desk! If you require assistance, have billing questions, or wish to report an issue, please open a private ticket below.'
   );
   const [ticketPanelColor, setTicketPanelColor] = useState('#5865F2');
   const [ticketButtonText, setTicketButtonText] = useState('Open Support Ticket');
-  const [ticketButtonEmoji, setTicketButtonEmoji] = useState('ðŸ“©');
+  const [ticketButtonEmoji, setTicketButtonEmoji] = useState('✉️');
   const [ticketButtonStyle, setTicketButtonStyle] = useState<number>(1);
   const [ticketAuthorName, setTicketAuthorName] = useState('');
   const [ticketAuthorIcon, setTicketAuthorIcon] = useState('');
@@ -270,13 +326,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [unverifiedRole, setUnverifiedRole] = useState('');
   const [verifyIgnoredChannels, setVerifyIgnoredChannels] = useState<string[]>([]);
   const [verifyMethod, setVerifyMethod] = useState<'button' | 'code'>('button');
-  const [verifyGateTitle, setVerifyGateTitle] = useState('ðŸ›¡ï¸ Server Verification Gate');
+  const [verifyGateTitle, setVerifyGateTitle] = useState('🛡️ Server Verification Gate');
   const [verifyGateDesc, setVerifyGateDesc] = useState(
     'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'
   );
   const [verifyGateColor, setVerifyGateColor] = useState('#10b981');
   const [verifyButtonText, setVerifyButtonText] = useState('Verify Account');
-  const [verifyButtonEmoji, setVerifyButtonEmoji] = useState('âœ…');
+  const [verifyButtonEmoji, setVerifyButtonEmoji] = useState('✅');
   const [verifyButtonStyle, setVerifyButtonStyle] = useState<number>(3);
   const [verifyAuthorName, setVerifyAuthorName] = useState('');
   const [verifyAuthorIcon, setVerifyAuthorIcon] = useState('');
@@ -295,10 +351,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
   // Embed Editor State
   const [contentMessage, setContentMessage] = useState('Welcome {user}!');
-  const [embedTitle, setEmbedTitle] = useState('ðŸ  Welcome to Dexter Corporation ðŸ‘¿');
+  const [embedTitle, setEmbedTitle] = useState('🛡️ Welcome to Dexter Corporation ⚡');
   const [embedColor, setEmbedColor] = useState('#ff0033');
   const [description, setDescription] = useState(
-    "Hey ðŸ¥· {user}!\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
+    "Hey 👋 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
   );
   const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
   const [authorIconUrl, setAuthorIconUrl] = useState('');
@@ -307,9 +363,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [mainImageUrl, setMainImageUrl] = useState('https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dm5ma3lsMTE5MWpxa25xb2x4eTc4NXFhcjlycTVnMXV6eGZjbnlscSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WW5p7jd8ImZ16q4w2r/giphy.gif');
   const [welcomerButtons, setWelcomerButtons] = useState<Array<{ label: string; url: string; emoji?: string }>>([
-    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“¢' },
-    { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“•' },
-    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: 'ðŸŽ«' },
+    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
+    { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📜' },
+    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
   ]);
 
   // 2. Anti-Nuke Settings
@@ -387,11 +443,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   // 8. Autoreact Settings
   const [autoreactEnabled, setAutoreactEnabled] = useState(true);
   const [autoreactRules, setAutoreactRules] = useState([
-    { id: '1', channel: 'suggestions', emojis: 'ðŸ‘ ðŸ‘Ž' },
-    { id: '2', channel: 'announcements', emojis: 'â¤ï¸ ðŸŽ‰ ðŸ”¥' },
+    { id: '1', channel: 'suggestions', emojis: '👍 👎' },
+    { id: '2', channel: 'announcements', emojis: '❤️ 🎉 🔥' },
   ]);
   const [newReactChannel, setNewReactChannel] = useState('suggestions');
-  const [newReactEmojis, setNewReactEmojis] = useState('ðŸ‘ ðŸ‘Ž');
+  const [newReactEmojis, setNewReactEmojis] = useState('👍 👎');
 
   // 9. Autoresponder Settings
   const [autoresponderEnabled, setAutoresponderEnabled] = useState(true);
@@ -434,7 +490,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [senderPreMessage, setSenderPreMessage] = useState(
     'Hey, welcome to **Dexter Corporation**! The easiest way to personalize, protect, and dispatch rich interactive messages to your Discord server.'
   );
-  const [senderEmbedTitle, setSenderEmbedTitle] = useState('ðŸ›¡ï¸ Dexter Components V2');
+  const [senderEmbedTitle, setSenderEmbedTitle] = useState('🛡️ Dexter Components V2');
   const [senderEmbedColor, setSenderEmbedColor] = useState('#ff0033');
   const [senderEmbedDesc, setSenderEmbedDesc] = useState(
     '### Welcome to Dexter Corporation\nCustomize your layout with rich text, dividers, custom emojis, and media cards.'
@@ -481,14 +537,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     '<:86067verified86x:1554068835227930624>',
     '<a:Admin128:1554066211636248597>',
     '<a:736775redcheck:1554068843981439036>',
-    'ðŸš€',
-    'ðŸ’Ž',
-    'ðŸ›¡ï¸',
-    'ðŸ“œ',
-    'ðŸ“¢',
-    'ðŸŽ«',
-    'âš¡',
-    'ðŸ‘‘',
+    '🚀',
+    '💎',
+    '🛡️',
+    '📜',
+    '📢',
+    '🎫',
+    '⚡',
+    '👑',
   ]);
   const [emojiToast, setEmojiToast] = useState('');
 
@@ -939,7 +995,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         id: Date.now().toString(),
         label: 'New Link',
         url: 'https://discord.gg',
-        emoji: 'ðŸ”—',
+        emoji: '🔗',
       },
     ]);
   };
@@ -1023,8 +1079,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     if (type === 'rules') {
       handleApplyTemplate({
         preMessage: 'Hey @everyone, please make sure to read and agree to our server rules before participating in the community!',
-        title: 'ðŸ“œ Official Server Rules & Guidelines',
-        description: '### Welcome to ' + guild.name + '\n\n<:2392verified:1554068820828626944> **1. Respect Everyone**\nTreat all members with respect. No harassment, hate speech, or toxicity.\n\n<:2392verified:1554068820828626944> **2. No Spam or Self-Promotion**\nDo not advertise other Discord servers, social media, or paid services in public channels or DMs.\n\n<:2392verified:1554068820828626944> **3. Follow Discord ToS**\nAdhere strictly to Discord\'s Terms of Service and Community Guidelines.\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nClick below to verify or accept our terms.',
+        title: '📜 Official Server Rules & Guidelines',
+        description: '### Welcome to ' + guild.name + '\n\n<:2392verified:1554068820828626944> **1. Respect Everyone**\nTreat all members with respect. No harassment, hate speech, or toxicity.\n\n<:2392verified:1554068820828626944> **2. No Spam or Self-Promotion**\nDo not advertise other Discord servers, social media, or paid services in public channels or DMs.\n\n<:2392verified:1554068820828626944> **3. Follow Discord ToS**\nAdhere strictly to Discord\'s Terms of Service and Community Guidelines.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nClick below to verify or accept our terms.',
         color: '#10b981',
         authorName: guild.name + ' Administration',
         authorIcon: '',
@@ -1041,9 +1097,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       });
     } else if (type === 'announcement') {
       handleApplyTemplate({
-        preMessage: 'ðŸ“¢ @everyone **IMPORTANT COMMUNITY ANNOUNCEMENT** â€” Major security and bot system upgrades are live!',
-        title: 'ðŸš¨ Important System Announcement & Security Dispatch',
-        description: '### DexterCorp V2 Deployment Complete\n\n<a:flame:1554068992648290415> **Sentinel Anti-Nuke** is now active 24/7 across all server shards.\n<a:1706redcrownfire:1554068818337468476> **Verification Gate** updated to prevent malicious automated bot accounts.\n<a:73288animatedarrowred:1554068830689431563> All members are encouraged to check the documentation below.\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nStay safe and report any anomalies to our security staff.',
+        preMessage: '📢 @everyone **IMPORTANT COMMUNITY ANNOUNCEMENT** — Major security and bot system upgrades are live!',
+        title: '🚨 Important System Announcement & Security Dispatch',
+        description: '### DexterCorp V2 Deployment Complete\n\n<a:flame:1554068992648290415> **Sentinel Anti-Nuke** is now active 24/7 across all server shards.\n<a:1706redcrownfire:1554068818337468476> **Verification Gate** updated to prevent malicious automated bot accounts.\n<a:73288animatedarrowred:1554068830689431563> All members are encouraged to check the documentation below.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nStay safe and report any anomalies to our security staff.',
         color: '#ff2b43',
         authorName: 'DexterCorp Sentinel Core',
         authorIcon: '',
@@ -1060,8 +1116,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       });
     } else if (type === 'verification') {
       handleApplyTemplate({
-        preMessage: 'ðŸ›¡ï¸ Welcome to **' + guild.name + '**! Complete verification below to gain access to all channels.',
-        title: 'ðŸ”’ Member Security Verification Gate',
+        preMessage: '🛡️ Welcome to **' + guild.name + '**! Complete verification below to gain access to all channels.',
+        title: '🔒 Member Security Verification Gate',
         description: '### Human Verification Required\n\nTo protect the server against automated raids, spam bots, and unauthorized accounts, please verify your account.\n\n<:86067verified86x:1554068835227930624> **Instant Verification**\n<a:73288animatedarrowred:1554068830689431563> Click the verification button below to instantly receive the **Verified Member** role.',
         color: '#5865F2',
         authorName: 'DexterCorp Gatekeeper',
@@ -1078,9 +1134,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       });
     } else if (type === 'booster') {
       handleApplyTemplate({
-        preMessage: 'âœ¨ **BOOST OUR SERVER** and unlock exclusive VIP perks and badges today!',
-        title: 'ðŸ’Ž VIP Server Booster Perks & Privileges',
-        description: '### Exclusive Booster Rewards\n\nSupport **' + guild.name + '** by boosting and get instant access to:\n\nâœ¨ **Custom Pink Booster Role & Colored Name**\nâœ¨ **Access to Secret VIP Voice & Chat Lounges**\nâœ¨ **Permission to attach files, images, and external emojis**\nâœ¨ **Direct priority support in tickets**\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\nThank you to all our generous server boosters!',
+        preMessage: '✨ **BOOST OUR SERVER** and unlock exclusive VIP perks and badges today!',
+        title: '💎 VIP Server Booster Perks & Privileges',
+        description: '### Exclusive Booster Rewards\n\nSupport **' + guild.name + '** by boosting and get instant access to:\n\n✨ **Custom Pink Booster Role & Colored Name**\n✨ **Access to Secret VIP Voice & Chat Lounges**\n✨ **Permission to attach files, images, and external emojis**\n✨ **Direct priority support in tickets**\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\nThank you to all our generous server boosters!',
         color: '#ec4899',
         authorName: 'DexterCorp Booster Rewards',
         authorIcon: '',
@@ -1091,8 +1147,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         showDivider: true,
         spoiler: false,
         buttons: [
-          { id: '1', label: 'Boost Server', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ’Ž' },
-          { id: '2', label: 'Claim Perks', url: 'https://discord.gg/dextercorp', emoji: 'âœ¨' },
+          { id: '1', label: 'Boost Server', url: 'https://discord.gg/dextercorp', emoji: '💎' },
+          { id: '2', label: 'Claim Perks', url: 'https://discord.gg/dextercorp', emoji: '✨' },
         ],
       });
     }
@@ -1606,33 +1662,33 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('ðŸ  Welcome to Dexter Corporation ðŸ‘¿');
+                      setEmbedTitle('🛡️ Welcome to Dexter Corporation ⚡');
                       setEmbedColor('#ff0033');
                       setDescription(
-                        "Hey ðŸ¥· {user}!\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
+                        "Hey 👋 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
                       );
                       setMainImageUrl('');
                       setThumbnailUrl('');
-                      setAuthorName('DEXTER CORPORATIONâ„¢');
-                      setFooterText('Dexter Corporation â€¢ Member #{server_membercount}');
+                      setAuthorName('DEXTER CORPORATION™');
+                      setFooterText('Dexter Corporation • Member #{server_membercount}');
                       setFooterIconUrl('{server_icon}');
                       setContentMessage('Hey {user}, welcome to **Dexter Corporation**!');
                       setWelcomerButtons([
-                        { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“¢' },
-                        { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ“•' },
-                        { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: 'ðŸŽ«' },
+                        { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
+                        { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📜' },
+                        { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
                       ]);
                     }}
                     className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white transition-all cursor-pointer flex items-center gap-1.5"
                   >
-                    ðŸ”¥ Dexter Corporation Style
+                    🔥 Dexter Corporation Style
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setEmbedTitle('Welcome to {server_name}!');
                       setEmbedColor('#ff2b43');
-                      setDescription("We're glad to have you here. You are member #{server_membercount}!\nâ€¢ Make sure to check out the rules.\nâ€¢ Choose your roles and enjoy your stay.");
+                      setDescription("We're glad to have you here. You are member #{server_membercount}!\n• Make sure to check out the rules.\n• Choose your roles and enjoy your stay.");
                       setMainImageUrl('');
                       setThumbnailUrl('{user_avatar}');
                       setAuthorName('DEXTERCORP SECURITY');
@@ -1640,12 +1696,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    ðŸ›¡ï¸ Crimson Security
+                    🛡️ Crimson Security
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('âœ§ Welcome to {server_name} âœ§');
+                      setEmbedTitle('✨ Welcome to {server_name} ✨');
                       setEmbedColor('#10b981');
                       setDescription("Hey {user}, welcome! Read the guidelines in rules and get verified to start chatting.");
                       setMainImageUrl('');
@@ -1655,12 +1711,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    ðŸŒ¿ Clean Minimal (No Image)
+                    🌱 Clean Minimal (No Image)
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setEmbedTitle('ðŸ”¥ Welcome to {server_name}!');
+                      setEmbedTitle('🔥 Welcome to {server_name}!');
                       setEmbedColor('#8b5cf6');
                       setDescription("Welcome {user}! Hop into chat and introduce yourself.\nCheck announcements for ongoing events!");
                       setMainImageUrl('');
@@ -1670,7 +1726,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     }}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-slate-200 transition-all cursor-pointer"
                   >
-                    ðŸŽ® Gaming & Events
+                    🎮 Gaming & Events
                   </button>
                 </div>
                 <button
@@ -1683,7 +1739,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   }}
                   className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 transition-all cursor-pointer"
                 >
-                  âœ• Clear All Images
+                  ✕ Clear All Images
                 </button>
               </div>
 
@@ -1924,7 +1980,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           onClick={() => setThumbnailUrl('')}
                           className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
                         >
-                          âœ• Clear
+                          ✕ Clear
                         </button>
                       )}
                     </div>
@@ -1957,7 +2013,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           onClick={() => setMainImageUrl('')}
                           className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
                         >
-                          âœ• Clear Image
+                          ✕ Clear Image
                         </button>
                       )}
                     </div>
@@ -1986,7 +2042,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       {(welcomerButtons || []).length < 5 && (
                         <button
                           type="button"
-                          onClick={() => setWelcomerButtons([...(welcomerButtons || []), { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: 'ðŸ”—' }])}
+                          onClick={() => setWelcomerButtons([...(welcomerButtons || []), { label: 'New Link', url: 'https://discord.gg/dextercorp', emoji: '🔗' }])}
                           className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-400 border border-cyan-500/20 text-xs font-semibold cursor-pointer"
                         >
                           + Add Button
@@ -1999,7 +2055,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         <div key={bIdx} className="flex flex-col sm:flex-row items-center gap-2 bg-[#0a0b10] p-2.5 rounded-lg border border-white/5">
                           <input
                             type="text"
-                            placeholder="Emoji (e.g. ðŸ“¢)"
+                            placeholder="Emoji (e.g. 📢)"
                             value={btn?.emoji || ''}
                             onChange={(e) => {
                               const updated = [...(welcomerButtons || [])];
@@ -2039,7 +2095,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             className="text-rose-400 hover:text-rose-300 p-1 rounded hover:bg-rose-500/10 cursor-pointer"
                             title="Remove Button"
                           >
-                            âœ•
+                            ✕
                           </button>
                         </div>
                       ))}
@@ -2692,8 +2748,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-[#0a0c10] border border-white/5 rounded-2xl">
                   {[
-                    { id: 'instant', label: 'âš¡ INSTANT' },
-                    { id: 'threshold', label: 'ðŸ“Š THRESHOLD' },
+                    { id: 'instant', label: '⚡ INSTANT' },
+                    { id: 'threshold', label: '📊 THRESHOLD' },
                   ].map((btn) => {
                     const isActive = detectionMode === btn.id;
                     return (
@@ -3799,7 +3855,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40"
                     >
                       <option value="English">English</option>
-                      <option value="Hindi">Hindi / à¤¹à¤¿à¤¨à¥à¤¦à¥€</option>
+                      <option value="Hindi">Hindi / हिन्दी</option>
                       <option value="Spanish">Spanish</option>
                     </select>
                   </div>
@@ -4615,7 +4671,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   onClick={handleStartGiveaway}
                   className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
                 >
-                  ðŸŽ‰ Start Live Giveaway
+                  🎉 Start Live Giveaway
                 </button>
 
                 <div className="space-y-2 pt-2">
@@ -4630,7 +4686,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <div>
                         <p className="font-bold text-white">{g.prize}</p>
                         <p className="text-[10px] text-slate-400">
-                          Channel: #{g.channel} â€¢ {g.winners} Winner(s)
+                          Channel: #{g.channel} • {g.winners} Winner(s)
                         </p>
                       </div>
                       <span className="px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20 font-mono text-[10px] font-bold">
@@ -4650,7 +4706,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           {/* TAB 12: MESSAGE SENDER (OBSIDIAN EDITION) */}
           {/* ======================================================== */}
           {(activeModule === 'embed_builder' || activeModule === 'message_sender') && (
-            <div className="space-y-6 animate-in fade-in">
+            <div className="space-y-6 animate-fade-in-up">
               {/* Toast Notification */}
               {emojiToast && (
                 <div className="fixed top-20 right-6 z-50 bg-[#1e2029] border border-emerald-500/40 text-emerald-300 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce">
@@ -4740,7 +4796,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     ) : senderSent ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-emerald-300" />
-                        <span>âœ“ Sent!</span>
+                        <span>✓ Sent!</span>
                       </>
                     ) : (
                       <>
@@ -4955,7 +5011,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         : 'bg-white/5 border-white/5 text-slate-400'
                     }`}
                   >
-                    <span>{senderShowDivider ? 'âœ“ Divider Line Active' : '+ Add Separator Line'}</span>
+                    <span>{senderShowDivider ? '✓ Divider Line Active' : '+ Add Separator Line'}</span>
                   </button>
                   <button
                     type="button"
@@ -4992,7 +5048,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     type="text"
                     value={senderEmbedTitle}
                     onChange={(e) => setSenderEmbedTitle(e.target.value)}
-                    placeholder="e.g. ðŸ“¢ Official Community Announcement"
+                    placeholder="e.g. 📢 Official Community Announcement"
                     className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -5155,7 +5211,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           <label className="text-[9px] font-bold text-slate-400 uppercase">EMOJI</label>
                           <input
                             type="text"
-                            placeholder="ðŸ“¢ or <:name:id>"
+                            placeholder="📢 or <:name:id>"
                             value={btn.emoji || ''}
                             onChange={(e) => handleUpdateSenderButton(btn.id, 'emoji', e.target.value)}
                             className="w-full bg-[#0e0f15] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
@@ -5212,7 +5268,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ) : senderSent ? (
                   <>
                     <Check className="w-4 h-4 text-emerald-300" />
-                    <span>âœ“ Message Dispatched Successfully!</span>
+                    <span>✓ Message Dispatched Successfully!</span>
                   </>
                 ) : (
                   <>
@@ -5228,7 +5284,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               {/* MODAL 1: TEMPLATES & BACKUPS */}
               {showTemplatesModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                  <div className="bg-[#12131a] border border-white/10 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+                  <div className="bg-[#12131a] border border-white/10 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-fade-in-up zoom-in-95">
                     <div className="flex items-center justify-between border-b border-white/5 pb-3">
                       <div className="flex items-center gap-2">
                         <Bookmark className="w-5 h-5 text-amber-400" />
@@ -5397,75 +5453,95 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
               )}
 
-              {/* MODAL 2: SERVER CUSTOM EMOJIS */}
+              {/* MODAL 2: SERVER CUSTOM EMOJIS (Professional Obsidian Glass Edition) */}
               {showEmojiModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                  <div className="bg-[#12131a] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                      <div>
-                        <h3 className="font-orbitron font-bold text-base text-white">
-                          Server Custom Emojis
-                        </h3>
-                        <p className="text-[11px] text-slate-400">
-                          Click any emoji to insert into {emojiTargetField === 'preMessage' ? 'Pre-Message' : emojiTargetField === 'title' ? 'Embed Title' : 'Embed Description'} & copy to clipboard
-                        </p>
+                <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                  <div className="bg-[#0c0d14]/95 border border-white/10 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 backdrop-blur-2xl animate-fade-in-up relative overflow-hidden">
+                    {/* Top Shimmer Line */}
+                    <div className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent rounded-full animate-shimmer" />
+
+                    {/* Modal Header */}
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500/20 to-amber-500/20 border border-red-500/30 flex items-center justify-center text-red-400 shadow-lg shadow-red-500/10">
+                          <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
+                        </div>
+                        <div>
+                          <h3 className="font-display font-bold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
+                            <span>Server Custom Emojis</span>
+                            <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10">
+                              Pro
+                            </span>
+                          </h3>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Click any emoji to insert into <span className="text-white font-medium">{emojiTargetField === 'preMessage' ? 'Pre-Message' : emojiTargetField === 'title' ? 'Embed Title' : 'Embed Description'}</span> & copy to clipboard
+                          </p>
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowEmojiModal(false)}
-                        className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+                        className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer hover:rotate-90"
+                        title="Close"
                       >
-                        <X className="w-5 h-5" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
 
-                    {/* Target Selector */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">INSERT INTO:</span>
-                      <button
-                        type="button"
-                        onClick={() => setEmojiTargetField('preMessage')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                          emojiTargetField === 'preMessage'
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white/5 text-slate-400'
-                        }`}
-                      >
-                        Pre-Message
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEmojiTargetField('title')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                          emojiTargetField === 'title'
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white/5 text-slate-400'
-                        }`}
-                      >
-                        Title
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEmojiTargetField('description')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                          emojiTargetField === 'description'
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white/5 text-slate-400'
-                        }`}
-                      >
-                        Description
-                      </button>
-                    </div>
-
-                    {/* Storage Quota */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
-                        <span>EMOJI STORAGE QUOTA</span>
-                        <span>{serverCustomEmojis.length} / 15 USED</span>
+                    {/* Target Selector Segmented Control */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <span>Target Insertion Field</span>
+                        <span className="text-white font-mono">Active: {emojiTargetField}</span>
                       </div>
-                      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="grid grid-cols-3 gap-1.5 bg-black/40 p-1 rounded-2xl border border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => setEmojiTargetField('preMessage')}
+                          className={`py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                            emojiTargetField === 'preMessage'
+                              ? 'bg-white text-black shadow-lg shadow-white/10'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
+                        >
+                          <span>Pre-Message</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEmojiTargetField('title')}
+                          className={`py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                            emojiTargetField === 'title'
+                              ? 'bg-white text-black shadow-lg shadow-white/10'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
+                        >
+                          <span>Title</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEmojiTargetField('description')}
+                          className={`py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                            emojiTargetField === 'description'
+                              ? 'bg-white text-black shadow-lg shadow-white/10'
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          }`}
+                        >
+                          <span>Description</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Storage Quota Bar */}
+                    <div className="space-y-1.5 bg-white/[0.02] p-3 rounded-2xl border border-white/5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-300">Emoji Storage Capacity</span>
+                        <span className="font-mono text-xs font-bold text-white">
+                          {serverCustomEmojis.length} <span className="text-slate-500">/ 15</span>
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden p-0.5 border border-white/5">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400 rounded-full transition-all duration-500 shadow-sm"
                           style={{ width: `${(serverCustomEmojis.length / 15) * 100}%` }}
                         />
                       </div>
@@ -5473,53 +5549,80 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
                     {/* Add New Custom Emoji */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        ADD NEW CUSTOM EMOJI
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>Add New Custom Emoji</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Discord CDN or Unicode</span>
                       </label>
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="e.g. <:pepe_cool:123456789> or ðŸš€"
+                          placeholder="e.g. <:pepe_cool:123456789> or 🚀"
                           value={customEmojiInput}
                           onChange={(e) => setCustomEmojiInput(e.target.value)}
-                          className="flex-1 bg-[#1a1b26] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddCustomEmoji();
+                            }
+                          }}
+                          className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500/50 transition-colors font-mono"
                         />
                         <button
                           type="button"
                           onClick={handleAddCustomEmoji}
-                          disabled={serverCustomEmojis.length >= 15}
-                          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer disabled:opacity-40"
+                          disabled={serverCustomEmojis.length >= 15 || !customEmojiInput.trim()}
+                          className="px-5 py-2.5 rounded-2xl bg-white hover:bg-slate-200 text-black font-bold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:scale-[1.02] active:scale-95"
                         >
-                          + Add Emoji
+                          + Add
                         </button>
                       </div>
-                      <p className="text-[10px] text-slate-400">
-                        Paste any Discord emoji format (e.g. &lt;:name:id&gt; or &lt;a:name:id&gt;)
+                      <p className="text-[10px] text-slate-500">
+                        Paste any Discord emoji tag format (e.g. &lt;:name:id&gt; or &lt;a:name:id&gt;) or native emoji symbol.
                       </p>
                     </div>
 
-                    {/* Active Server Emojis Grid */}
+                    {/* Active Server Emojis Grid (5 Columns, Crisp Preview Cards) */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        ACTIVE SERVER EMOJIS ({serverCustomEmojis.length})
-                      </label>
-                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-56 overflow-y-auto p-1">
-                        {serverCustomEmojis.map((em, eIdx) => (
-                          <button
-                            key={eIdx}
-                            type="button"
-                            onClick={() => handleInsertEmoji(em)}
-                            className="p-3 rounded-xl bg-[#1a1b26] hover:bg-white/10 border border-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95 group"
-                            title={em}
-                          >
-                            <span className="text-xl flex items-center justify-center">
-                              {renderDiscordEmojiInline(em)}
-                            </span>
-                            <span className="text-[8px] text-slate-400 font-mono truncate max-w-[50px] group-hover:text-white">
-                              {em.startsWith('<') ? em.split(':')[1] : em}
-                            </span>
-                          </button>
-                        ))}
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          Active Server Emojis ({serverCustomEmojis.length})
+                        </label>
+                        <span className="text-[10px] text-emerald-400 font-medium">Click to insert & copy</span>
+                      </div>
+                      <div className="grid grid-cols-5 gap-2 max-h-60 overflow-y-auto p-1 scrollbar-thin">
+                        {serverCustomEmojis.map((em, eIdx) => {
+                          const displayName = getEmojiDisplayName(em);
+                          return (
+                            <button
+                              key={eIdx}
+                              type="button"
+                              onClick={() => handleInsertEmoji(em)}
+                              className="p-2.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.1] border border-white/5 hover:border-white/20 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-200 hover:scale-105 hover:-translate-y-0.5 active:scale-95 group relative shadow-md"
+                              title={`${displayName} (${em})`}
+                            >
+                              <div className="w-10 h-10 flex items-center justify-center">
+                                {renderEmojiVisual(em)}
+                              </div>
+                              <span className="text-[9px] text-slate-400 font-medium truncate max-w-[56px] group-hover:text-white transition-colors">
+                                {displayName}
+                              </span>
+                              {/* Remove hover button */}
+                              {serverCustomEmojis.length > 5 && (
+                                <button
+                                  type="button"
+                                  onClick={(ev) => {
+                                    ev.stopPropagation();
+                                    setServerCustomEmojis((curr) => curr.filter((_, i) => i !== eIdx));
+                                  }}
+                                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500/80 hover:bg-rose-500 text-white text-[9px] font-bold items-center justify-center hidden group-hover:flex shadow-sm cursor-pointer"
+                                  title="Remove emoji"
+                                >
+                                  &times;
+                                </button>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -5528,12 +5631,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </div>
           )}
 
-          {/* ======================================================== */}
-          {/* ======================================================== */}
           {/* TAB: SUPPORT TICKETS (Screenshots 515-521) */}
           {/* ======================================================== */}
           {activeModule === 'tickets' && (
-            <div className="space-y-6 animate-in fade-in">
+            <div className="space-y-6 animate-fade-in-up">
               {/* Header Title & Master Switch (Screenshots 515-521) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
                 <div>
@@ -6477,7 +6578,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           {/* TAB: SERVER VERIFICATION GATE */}
           {/* ======================================================== */}
           {activeModule === 'verification' && (
-            <div className="space-y-6 animate-in fade-in">
+            <div className="space-y-6 animate-fade-in-up">
               {/* Module Header Card */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-[#0e1412] to-[#121a17] border border-emerald-500/30 shadow-xl">
                 <div className="flex items-center gap-3">
@@ -6527,52 +6628,52 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     onClick={() => {
-                      setVerifyGateTitle('ðŸ›¡ï¸ Server Verification Gate');
+                      setVerifyGateTitle('🛡️ Server Verification Gate');
                       setVerifyGateDesc(
                         'Welcome to the server! To protect the community against automated bots, please verify your account below to unlock access to all channels.'
                       );
                       setVerifyGateColor('#10b981');
                       setVerifyButtonText('Verify Account');
-                      setVerifyButtonEmoji('âœ…');
+                      setVerifyButtonEmoji('✅');
                       setVerifyMethod('button');
                     }}
                     className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">âš¡ Instant 1-Click</div>
+                    <div className="font-bold text-xs text-white">⚡ Instant 1-Click</div>
                     <div className="text-[10px] text-slate-400">Fastest member onboarding</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setVerifyGateTitle('ðŸ” Captcha Security Challenge');
+                      setVerifyGateTitle('🧩 Captcha Security Challenge');
                       setVerifyGateDesc(
                         'Automated raid protection is active. Click the button below to solve an interactive verification challenge and unlock member privileges.'
                       );
                       setVerifyGateColor('#06b6d4');
                       setVerifyButtonText('Solve Captcha Challenge');
-                      setVerifyButtonEmoji('ðŸ§©');
+                      setVerifyButtonEmoji('🧩');
                       setVerifyMethod('code');
                     }}
                     className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/5 hover:border-cyan-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">ðŸ§© Modal Captcha</div>
+                    <div className="font-bold text-xs text-white">🧩 Modal Captcha</div>
                     <div className="text-[10px] text-slate-400">Deter scripted spam accounts</div>
                   </button>
 
                   <button
                     onClick={() => {
-                      setVerifyGateTitle('ðŸ“œ Community Rules Agreement');
+                      setVerifyGateTitle('📜 Community Rules Agreement');
                       setVerifyGateDesc(
                         'By clicking verify below, you acknowledge having read and agreed to follow all community server rules and Discord TOS guidelines.'
                       );
                       setVerifyGateColor('#8b5cf6');
                       setVerifyButtonText('I Agree & Enter Server');
-                      setVerifyButtonEmoji('ðŸ“œ');
+                      setVerifyButtonEmoji('📜');
                       setVerifyMethod('button');
                     }}
                     className="py-2.5 px-3 rounded-lg bg-white/5 hover:bg-purple-500/20 border border-white/5 hover:border-purple-500/40 text-left transition-all cursor-pointer"
                   >
-                    <div className="font-bold text-xs text-white">ðŸ“œ Rules Agreement</div>
+                    <div className="font-bold text-xs text-white">📜 Rules Agreement</div>
                     <div className="text-[10px] text-slate-400">Policy consent gateway</div>
                   </button>
                 </div>
@@ -6674,7 +6775,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                         }`}
                       >
-                        âš¡ 1-Click Button
+                        ⚡ 1-Click Button
                       </button>
                       <button
                         type="button"
@@ -6685,7 +6786,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                         }`}
                       >
-                        ðŸ§© Captcha Modal
+                        🧩 Captcha Modal
                       </button>
                     </div>
                     <p className="text-[10px] text-slate-500">
@@ -6732,7 +6833,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       type="text"
                       value={verifyGateTitle}
                       onChange={(e) => setVerifyGateTitle(e.target.value)}
-                      placeholder="e.g. ðŸ›¡ï¸ Server Verification Gate"
+                      placeholder="e.g. 🛡️ Server Verification Gate"
                       className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -6772,7 +6873,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         type="text"
                         value={verifyButtonEmoji}
                         onChange={(e) => setVerifyButtonEmoji(e.target.value)}
-                        placeholder="e.g. âœ… or ðŸ›¡ï¸"
+                        placeholder="e.g. ✅ or 🛡️"
                         className="w-full bg-[#131815] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
@@ -6783,7 +6884,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                       <span>BUTTON COLOR PALETTE (DISCORD STYLE)</span>
                       <span className="text-[10px] text-emerald-400 font-mono font-semibold">
-                        {verifyButtonStyle === 3 ? 'ðŸŸ¢ Success Green' : verifyButtonStyle === 1 ? 'ðŸ”µ Blurple Blue' : verifyButtonStyle === 2 ? 'âšª Secondary Grey' : 'ðŸ”´ Danger Red'}
+                        {verifyButtonStyle === 3 ? '🟢 Success Green' : verifyButtonStyle === 1 ? '🔵 Blurple Blue' : verifyButtonStyle === 2 ? '⚪ Secondary Grey' : '🔴 Danger Red'}
                       </span>
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -6806,7 +6907,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                             }`}
                           >
                             <span className={`w-4 h-4 rounded-full ${btnColor.bg} border border-white/20 shrink-0 flex items-center justify-center text-[10px]`}>
-                              {isSelected ? 'âœ“' : ''}
+                              {isSelected ? '✓' : ''}
                             </span>
                             <span className="truncate">{btnColor.label}</span>
                           </button>
@@ -6943,7 +7044,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     ) : verifyDeploySuccess ? (
                       <>
                         <Check className="w-4 h-4 text-emerald-300" />
-                        <span>âœ“ Verification Gate Live on Discord!</span>
+                        <span>✓ Verification Gate Live on Discord!</span>
                       </>
                     ) : (
                       <>
@@ -6967,7 +7068,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           {/* TAB: PREMIUM SENTINEL ENTERPRISE TIER */}
           {/* ======================================================== */}
           {activeModule === 'premium' && (
-            <div className="space-y-6 animate-in fade-in">
+            <div className="space-y-6 animate-fade-in-up">
               <div className="relative rounded-3xl p-8 border border-white/20 bg-gradient-to-b from-white/10 via-black to-black overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
                 <div className="relative z-10 space-y-6">
@@ -7155,7 +7256,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-1">
                       <h4 className="font-bold text-white text-xs">
-                        {renderPreview(ticketPanelTitle) || 'ðŸŽ« Support Desk & Inquiries'}
+                        {renderPreview(ticketPanelTitle) || '🎫 Support Desk & Inquiries'}
                       </h4>
                       <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
                         {renderPreview(ticketPanelDesc) ||
@@ -7210,7 +7311,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       ticketButtonStyle
                     )}`}
                   >
-                    <span>{ticketButtonEmoji || 'ðŸ“©'}</span>
+                    <span>{ticketButtonEmoji || '✉️'}</span>
                     <span>{ticketButtonText || 'Open Support Ticket'}</span>
                   </button>
                 </div>
@@ -7230,7 +7331,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ) : ticketDeploySuccess ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>âœ“ Ticket Panel Live on Discord!</span>
+                    <span>✓ Ticket Panel Live on Discord!</span>
                   </>
                 ) : (
                   <>
@@ -7293,7 +7394,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 space-y-1">
                       <h4 className="font-bold text-white text-xs">
-                        {renderPreview(verifyGateTitle) || 'ðŸ›¡ï¸ Server Verification Gate'}
+                        {renderPreview(verifyGateTitle) || '🛡️ Server Verification Gate'}
                       </h4>
                       <p className="text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
                         {renderPreview(verifyGateDesc) ||
@@ -7348,7 +7449,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       verifyButtonStyle
                     )}`}
                   >
-                    <span>{verifyButtonEmoji || 'âœ…'}</span>
+                    <span>{verifyButtonEmoji || '✅'}</span>
                     <span>{verifyButtonText || 'Verify Account'}</span>
                   </button>
                 </div>
@@ -7368,7 +7469,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 ) : verifyDeploySuccess ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>âœ“ Verification Gate Live on Discord!</span>
+                    <span>✓ Verification Gate Live on Discord!</span>
                   </>
                 ) : (
                   <>
@@ -7509,7 +7610,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       >
                         {renderDiscordEmojiInline(btn.emoji)}
                         <span>{btn.label || 'Link'}</span>
-                        <span className="text-[10px] text-slate-400">â†—</span>
+                        <span className="text-[10px] text-slate-400">↗</span>
                       </div>
                     ))}
                   </div>
@@ -7528,7 +7629,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                     {senderSending
                       ? 'Dispatching...'
                       : senderSent
-                      ? 'âœ“ Dispatched to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)
+                      ? '✓ Dispatched to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)
                       : 'Send to #' + (availableChannels.find((c) => c.id === senderChannel)?.name || senderChannel)}
                   </span>
                 </button>
@@ -7652,7 +7753,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       >
                         {btn?.emoji && <span>{btn.emoji}</span>}
                         <span>{btn?.label || 'Link'}</span>
-                        <span className="text-[10px] text-slate-400">â†—</span>
+                        <span className="text-[10px] text-slate-400">↗</span>
                       </div>
                     ))}
                   </div>
@@ -7667,7 +7768,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 >
                   <Send className="w-3.5 h-3.5 text-black" />
                   <span>
-                    {testSent ? 'âœ“ Sent Test Message to #' + targetChannel : 'Send Test Message'}
+                    {testSent ? '✓ Sent Test Message to #' + targetChannel : 'Send Test Message'}
                   </span>
                 </button>
               </div>
@@ -7687,7 +7788,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 onClick={() => setShowVariablesGuide(false)}
                 className="text-slate-400 hover:text-white cursor-pointer"
               >
-                âœ•
+                ✕
               </button>
             </div>
             <div className="space-y-3 text-xs">
@@ -7728,7 +7829,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 onClick={() => setShowAuditLogs(false)}
                 className="text-slate-400 hover:text-white cursor-pointer"
               >
-                âœ•
+                ✕
               </button>
             </div>
             <div className="space-y-2 max-h-72 overflow-y-auto text-xs font-mono">

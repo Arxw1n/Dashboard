@@ -147,16 +147,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
+            <div className="w-10 h-10 rounded-2xl bg-[#12141c] border border-white/20 flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-all overflow-hidden ring-1 ring-red-500/30">
               <img
-                src="/astra-avatar.png"
-                alt="Dexter"
-                className="w-full h-full object-contain"
+                src="/dc-logo.png"
+                alt="Dexter Corporation"
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   if (!img.dataset.fallback) {
                     img.dataset.fallback = '1';
-                    img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                    img.src = '/logo.png';
                   }
                 }}
               />
@@ -222,12 +222,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Left Column: Headline & CTA */}
           <div className="space-y-6">
             {/* Live Telemetry Pill */}
-            <div className="inline-flex items-center gap-2 liquid-glass rounded-full px-4 py-1.5 text-xs font-medium text-slate-300">
+            <div className="inline-flex items-center gap-2.5 liquid-glass rounded-full px-4 py-1.5 text-xs font-medium text-slate-300 border border-red-500/20 shadow-lg shadow-red-500/10">
+              <img src="/dc-logo.png" alt="DC" className="w-4 h-4 rounded-full object-cover ring-1 ring-red-400/50" />
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
-              <span>Protecting 2,500+ Discord Communities</span>
+              <span>Dexter Sentinel &bull; Protecting 2,500+ Communities</span>
             </div>
 
             {/* Huge Headline */}
@@ -490,8 +491,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* FOOTER */}
       <footer className="border-t border-white/5 py-10 relative z-10 text-xs text-slate-500">
         <div className="container max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2.5">
+            <img src="/dc-logo.png" alt="DC" className="w-5 h-5 rounded-full object-cover ring-1 ring-white/20" />
             <span className="font-display font-semibold text-white">Dexter Corporation</span>
             <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
           </div>

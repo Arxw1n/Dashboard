@@ -175,11 +175,11 @@ export const ServersTab: React.FC<ServersTabProps> = ({
               className="flex items-center gap-2.5 group min-w-0 cursor-pointer"
             >
               <img
-                src="/astra-avatar.png"
-                alt="Dexter"
-                className="h-8 w-8 rounded-xl object-contain group-hover:scale-105 transition-transform duration-300 flex-shrink-0 border border-white/10"
+                src="/dc-logo.png"
+                alt="Dexter Corporation"
+                className="h-8 w-8 rounded-xl object-cover group-hover:scale-105 transition-transform duration-300 flex-shrink-0 border border-white/20 ring-1 ring-red-500/30"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                  (e.target as HTMLImageElement).src = '/logo.png';
                 }}
               />
               <span className="font-display font-bold text-sm sm:text-base tracking-tight text-white truncate">

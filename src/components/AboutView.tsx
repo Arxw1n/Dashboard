@@ -38,8 +38,8 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, onNavigateDashboar
             className="flex items-center gap-3 cursor-pointer group"
             onClick={onBack}
           >
-            <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-              <Shield className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-[#12141c] border border-white/20 flex items-center justify-center text-white shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all overflow-hidden ring-1 ring-red-500/30">
+              <img src="/dc-logo.png" alt="Dexter Corporation" className="w-full h-full object-cover" />
             </div>
             <span className="font-display font-bold text-lg tracking-tight text-white">
               Dexter<span className="text-slate-400">Corp</span>

@@ -48,16 +48,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
         <div className="relative mx-auto mb-6">
           <div className="relative w-16 h-16 mx-auto">
             <div className="absolute inset-0 bg-white/20 rounded-2xl blur-xl opacity-60 animate-pulse-glow" />
-            <div className="relative w-16 h-16 rounded-2xl border border-white/20 bg-[#12141c] overflow-hidden shadow-2xl flex items-center justify-center">
+            <div className="relative w-16 h-16 rounded-2xl border border-white/20 bg-[#12141c] overflow-hidden shadow-2xl flex items-center justify-center ring-1 ring-red-500/40">
               <img
-                src="/astra-avatar.png"
+                src="/dc-logo.png"
                 alt="DexterCorp"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   if (!img.dataset.fallback) {
                     img.dataset.fallback = '1';
-                    img.src = 'https://obsidiansecurity.in/assets/bot-logo-gif-CqVxt4Yt.gif';
+                    img.src = '/logo.png';
                   }
                 }}
               />

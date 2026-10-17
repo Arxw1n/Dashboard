@@ -39,9 +39,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => setActiveTab('servers')} 
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-500 shadow-lg shadow-violet-500/25 group-hover:scale-105 transition-transform">
-            <Shield className="w-5 h-5 text-white" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 pulse-badge"></span>
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-[#12141c] border border-white/20 shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all overflow-hidden ring-1 ring-red-500/40">
+            <img src="/dc-logo.png" alt="Dexter Corporation" className="w-full h-full object-cover" />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 pulse-badge z-10"></span>
           </div>
           <div>
             <div className="flex items-center gap-2">
