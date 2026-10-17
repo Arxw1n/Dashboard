@@ -68,6 +68,8 @@ export default async function handler(req, res) {
           enabled: Boolean(gData?.welcome?.enabled !== false && gData?.welcome?.channel),
           channelId: gData?.welcome?.channel || '',
           content: gData?.welcome?.content || 'Welcome $user_mention to $guild_name!',
+          mode: gData?.welcome?.mode || (gData?.welcome?.messageType === 'Only Dynamic Image Card' ? 'card_only' : 'card_only'),
+          messageType: gData?.welcome?.messageType || (gData?.welcome?.mode === 'card_only' ? 'Only Dynamic Image Card' : 'Only Dynamic Image Card'),
           autorole: gData?.autorole?.humanRoles?.[0] || '',
           embeds: (() => {
             const emb = { ...(gData?.welcome?.embeds || {}) };
@@ -192,6 +194,8 @@ export default async function handler(req, res) {
           enabled: settings.welcome.enabled !== false,
           channel: settings.welcome.enabled ? (settings.welcome.channelId || settings.welcome.channel || null) : null,
           content: settings.welcome.content || 'Welcome $user_mention to $guild_name!',
+          mode: settings.welcome.mode || (settings.welcome.messageType === 'Only Dynamic Image Card' ? 'card_only' : 'card_only'),
+          messageType: settings.welcome.messageType || (settings.welcome.mode === 'card_only' ? 'Only Dynamic Image Card' : 'Only Dynamic Image Card'),
           embeds: cleanedEmbeds,
           cardBgImage: cardImage || '',
           cardImageBase64: settings.welcome.cardImageBase64 || '',

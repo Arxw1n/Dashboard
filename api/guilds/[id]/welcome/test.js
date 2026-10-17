@@ -256,40 +256,61 @@ export default async function handler(req, res) {
 
     const activeMedia = effectiveImageUrl || welcome?.cardBgImage || welcome?.mainImageUrl || '';
 
-    // Send payload to Discord Channel (Prioritize attached custom rendered card, then animated media/JSON)
+    const isCardOnly =
+      welcome?.mode === 'card_only' ||
+      welcome?.messageType === 'Only Dynamic Image Card' ||
+      welcome?.messageType === 'Dynamic Card Only';
+
+    const isTextOnly =
+      welcome?.mode === 'text_only' ||
+      welcome?.messageType === 'Text Only';
+
+    const isEmbedOnly =
+      welcome?.mode === 'embed_only' ||
+      welcome?.messageType === 'Rich Embed Only';
+
+    // Send payload to Discord Channel
     let sendRes;
-    if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
-      try {
-        const rawBase64 = welcome.cardImageBase64.replace(/^data:image\/\w+;base64,/, '');
-        const imageBuffer = Buffer.from(rawBase64, 'base64');
-        embedObj.image = { url: 'attachment://welcome-card.png' };
-        payload.embeds = [embedObj];
 
-        const formData = new FormData();
-        formData.append('payload_json', JSON.stringify(payload));
-        formData.append('files[0]', new Blob([imageBuffer], { type: 'image/png' }), 'welcome-card.png');
+    if (isCardOnly) {
+      // 1. ONLY DYNAMIC IMAGE CARD: Standalone image card directly in chat (No embed box!)
+      payload.embeds = [];
+      if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
+        try {
+          const rawBase64 = welcome.cardImageBase64.replace(/^data:image\/\w+;base64,/, '');
+          const imageBuffer = Buffer.from(rawBase64, 'base64');
 
-        sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bot ${botToken}`,
-          },
-          body: formData,
-        });
-      } catch (uploadErr) {
-        console.warn('FormData card attachment failed, falling back to JSON:', uploadErr);
-      }
-    } else if (activeMedia && isAnimatedMedia(activeMedia)) {
-      if (isVideoMedia(activeMedia) || activeMedia.includes('tenor.com/view') || activeMedia.includes('giphy.com/gifs')) {
+          const formData = new FormData();
+          formData.append('payload_json', JSON.stringify(payload));
+          formData.append('files[0]', new Blob([imageBuffer], { type: 'image/png' }), 'welcome-card.png');
+
+          sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bot ${botToken}`,
+            },
+            body: formData,
+          });
+        } catch (uploadErr) {
+          console.warn('FormData standalone card attachment failed, falling back:', uploadErr);
+        }
+      } else if (activeMedia) {
         if (!payload.content) payload.content = '';
         if (!payload.content.includes(activeMedia)) {
           payload.content = (payload.content ? payload.content + '\n' : '') + activeMedia;
         }
-      } else {
-        embedObj.image = { url: activeMedia };
+        sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bot ${botToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
       }
-      payload.embeds = [embedObj];
-
+    } else if (isTextOnly) {
+      // 2. TEXT ONLY MODE: Pure markdown message ping with buttons
+      payload.embeds = [];
       sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
         method: 'POST',
         headers: {
@@ -298,13 +319,62 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify(payload),
       });
+    } else {
+      // 3. HYBRID (Card + Embed) OR CLASSIC RICH EMBED
+      if (isEmbedOnly) {
+        delete embedObj.image;
+      }
+
+      if (!isEmbedOnly && welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
+        try {
+          const rawBase64 = welcome.cardImageBase64.replace(/^data:image\/\w+;base64,/, '');
+          const imageBuffer = Buffer.from(rawBase64, 'base64');
+          embedObj.image = { url: 'attachment://welcome-card.png' };
+          payload.embeds = [embedObj];
+
+          const formData = new FormData();
+          formData.append('payload_json', JSON.stringify(payload));
+          formData.append('files[0]', new Blob([imageBuffer], { type: 'image/png' }), 'welcome-card.png');
+
+          sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bot ${botToken}`,
+            },
+            body: formData,
+          });
+        } catch (uploadErr) {
+          console.warn('FormData card attachment failed, falling back to JSON:', uploadErr);
+        }
+      } else if (!isEmbedOnly && activeMedia && isAnimatedMedia(activeMedia)) {
+        if (isVideoMedia(activeMedia) || activeMedia.includes('tenor.com/view') || activeMedia.includes('giphy.com/gifs')) {
+          if (!payload.content) payload.content = '';
+          if (!payload.content.includes(activeMedia)) {
+            payload.content = (payload.content ? payload.content + '\n' : '') + activeMedia;
+          }
+        } else {
+          embedObj.image = { url: activeMedia };
+        }
+        payload.embeds = [embedObj];
+
+        sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bot ${botToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+      }
     }
 
     if (!sendRes) {
-      if (effectiveImageUrl) {
-        embedObj.image = { url: effectiveImageUrl };
+      if (!isCardOnly && !isTextOnly) {
+        if (!isEmbedOnly && effectiveImageUrl) {
+          embedObj.image = { url: effectiveImageUrl };
+        }
+        payload.embeds = [embedObj];
       }
-      payload.embeds = [embedObj];
 
       sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
         method: 'POST',

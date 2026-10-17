@@ -431,7 +431,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   // 1. Welcomer State (Screenshot 4)
   const [welcomerEnabled, setWelcomerEnabled] = useState(true);
   const [targetChannel, setTargetChannel] = useState('welcome');
-  const [messageType, setMessageType] = useState('Rich Embed');
+  const [welcomerMode, setWelcomerMode] = useState<'card_only' | 'embed_card' | 'embed_only' | 'text_only'>('card_only');
+  const [messageType, setMessageType] = useState('Only Dynamic Image Card');
   const [autoDeleteDuration, setAutoDeleteDuration] = useState('');
 
   // Embed Editor State
@@ -713,6 +714,19 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             setWelcomerEnabled(Boolean(res.data.welcome.enabled));
             if (res.data.welcome.content) setContentMessage(res.data.welcome.content);
             if (res.data.welcome.channelId) setTargetChannel(res.data.welcome.channelId);
+            if (res.data.welcome.mode) {
+              setWelcomerMode(res.data.welcome.mode);
+              if (res.data.welcome.mode === 'card_only') setMessageType('Only Dynamic Image Card');
+              else if (res.data.welcome.mode === 'embed_card') setMessageType('Dynamic Card + Rich Embed');
+              else if (res.data.welcome.mode === 'text_only') setMessageType('Text Only');
+              else setMessageType('Rich Embed');
+            } else if (res.data.welcome.messageType) {
+              setMessageType(res.data.welcome.messageType);
+              if (res.data.welcome.messageType === 'Only Dynamic Image Card' || res.data.welcome.messageType === 'Dynamic Card Only') setWelcomerMode('card_only');
+              else if (res.data.welcome.messageType === 'Dynamic Card + Rich Embed') setWelcomerMode('embed_card');
+              else if (res.data.welcome.messageType === 'Text Only') setWelcomerMode('text_only');
+              else setWelcomerMode('embed_only');
+            }
             if (res.data.welcome.embeds) {
               const emb = res.data.welcome.embeds;
               if (emb.title) setEmbedTitle(emb.title);
@@ -1253,6 +1267,8 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         },
         welcome: {
           enabled: welcomerEnabled,
+          mode: welcomerMode,
+          messageType,
           content: contentMessage,
           channelId: targetChannel,
           autorole: autoroleEnabled ? autoroleHumans : '',
@@ -1476,10 +1492,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       }
     }
 
+    const isCardOnly = welcomerMode === 'card_only' || messageType === 'Only Dynamic Image Card' || messageType === 'Dynamic Card Only';
+    const isTextOnly = welcomerMode === 'text_only' || messageType === 'Text Only';
+
     try {
       const res = await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
         channelId: targetChannel,
         welcome: {
+          mode: welcomerMode,
+          messageType,
           content: dispatchContent,
           cardBgImage: activeImage,
           mainImageUrl: activeImage,
@@ -1487,7 +1508,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           cardWelcomeTitle,
           cardSubtitle,
           buttons: welcomerButtons,
-          embeds: {
+          embeds: (isCardOnly || isTextOnly) ? undefined : {
             title: embedTitle,
             description: description,
             color: embedColor,
@@ -1499,7 +1520,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         },
       });
       const chan = res.data?.channelName || targetChannel;
-      alert(`✓ Welcomer Card successfully sent to #${chan} on Discord!`);
+      alert(`✓ ${isCardOnly ? 'Dynamic Image Card' : 'Welcome message'} successfully sent to #${chan} on Discord!`);
     } catch (e: any) {
       console.warn('Test send fallback:', e);
       const errMsg = e.response?.data?.error || e.message || 'Failed to send to Discord';
@@ -2451,6 +2472,213 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </button>
               </div>
 
+              {/* WELCOME DELIVERY MODE SELECTOR */}
+              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-4 shadow-xl">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-3">
+                  <div>
+                    <h3 className="font-orbitron font-bold text-sm tracking-wider text-white uppercase flex items-center gap-2">
+                      <span>WELCOME DELIVERY MODE</span>
+                      <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 font-bold uppercase">
+                        {welcomerMode === 'card_only'
+                          ? 'Standalone Card Mode'
+                          : welcomerMode === 'embed_card'
+                          ? 'Hybrid Mode'
+                          : welcomerMode === 'embed_only'
+                          ? 'Embed Only'
+                          : 'Text Mode'}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Choose how new members receive their arrival greeting on Discord.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSendTestMessage}
+                    disabled={testSent}
+                    className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-200 text-black text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Send className="w-3.5 h-3.5 text-black" />
+                    <span>{testSent ? '✓ Sent to Discord!' : 'Send Test to Discord'}</span>
+                  </button>
+                </div>
+
+                {/* 4-Card Visual Mode Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* Option 1: Only Dynamic Image Card */}
+                  <div
+                    onClick={() => {
+                      setWelcomerMode('card_only');
+                      setMessageType('Only Dynamic Image Card');
+                    }}
+                    className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 group ${
+                      welcomerMode === 'card_only'
+                        ? 'bg-gradient-to-b from-red-500/20 via-red-950/20 to-black/60 border-red-500 shadow-lg shadow-red-500/10 ring-1 ring-red-500/50'
+                        : 'bg-[#13141d]/80 hover:bg-[#13141d] border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl">🎴</span>
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+                          RECOMMENDED
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white group-hover:text-red-300 transition-colors">
+                          Only Dynamic Image Card
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                          Pure standalone canvas card sent directly in chat without cluttering embed borders, author, or thumbnails.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-slate-500">Full-bleed PNG</span>
+                      <span className={welcomerMode === 'card_only' ? 'text-red-400 font-bold' : 'text-slate-500'}>
+                        {welcomerMode === 'card_only' ? '● SELECTED' : 'Select'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Option 2: Dynamic Card + Rich Embed */}
+                  <div
+                    onClick={() => {
+                      setWelcomerMode('embed_card');
+                      setMessageType('Dynamic Card + Rich Embed');
+                    }}
+                    className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 group ${
+                      welcomerMode === 'embed_card'
+                        ? 'bg-gradient-to-b from-purple-500/20 via-purple-950/20 to-black/60 border-purple-500 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/50'
+                        : 'bg-[#13141d]/80 hover:bg-[#13141d] border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl">🖼️</span>
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">
+                          HYBRID
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                          Card + Rich Embed
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                          Dynamic card embedded inside a structured Discord embed with author, fields, colored strip, and footer.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-slate-500">Embed + Image</span>
+                      <span className={welcomerMode === 'embed_card' ? 'text-purple-400 font-bold' : 'text-slate-500'}>
+                        {welcomerMode === 'embed_card' ? '● SELECTED' : 'Select'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Option 3: Rich Embed Only */}
+                  <div
+                    onClick={() => {
+                      setWelcomerMode('embed_only');
+                      setMessageType('Rich Embed');
+                    }}
+                    className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 group ${
+                      welcomerMode === 'embed_only'
+                        ? 'bg-gradient-to-b from-blue-500/20 via-blue-950/20 to-black/60 border-blue-500 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/50'
+                        : 'bg-[#13141d]/80 hover:bg-[#13141d] border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl">📜</span>
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold border border-blue-500/30">
+                          CLASSIC
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
+                          Rich Embed Only
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                          Traditional Discord embed layout with title, description, thumbnail, and author without a dynamic canvas card.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-slate-500">No Image Card</span>
+                      <span className={welcomerMode === 'embed_only' ? 'text-blue-400 font-bold' : 'text-slate-500'}>
+                        {welcomerMode === 'embed_only' ? '● SELECTED' : 'Select'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Option 4: Text Message Only */}
+                  <div
+                    onClick={() => {
+                      setWelcomerMode('text_only');
+                      setMessageType('Text Only');
+                    }}
+                    className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 group ${
+                      welcomerMode === 'text_only'
+                        ? 'bg-gradient-to-b from-amber-500/20 via-amber-950/20 to-black/60 border-amber-500 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/50'
+                        : 'bg-[#13141d]/80 hover:bg-[#13141d] border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl">💬</span>
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                          MINIMAL
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                          Text Message Only
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                          Clean markdown mention message in chat with action buttons. Fastest delivery and zero media load.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-slate-500">Pure Text Mention</span>
+                      <span className={welcomerMode === 'text_only' ? 'text-amber-400 font-bold' : 'text-slate-500'}>
+                        {welcomerMode === 'text_only' ? '● SELECTED' : 'Select'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mode Active Alert Banner */}
+                {welcomerMode === 'card_only' && (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-red-500/15 via-purple-500/10 to-transparent border border-red-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-base">
+                        🎴
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-white flex items-center gap-2">
+                          <span>Active Mode: Only Dynamic Image Card</span>
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono font-bold">100% CLEAN DISCORD CHAT</span>
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          The welcome message will display the dynamic image card at full width, accompanied by the member mention and interactive action buttons — NO embed box, NO duplicate text!
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setWelcomerSubTab('cards')}
+                      className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-red-300" />
+                      <span>Edit Card Graphics Studio →</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Form Fields: Target Channel & Message Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-4 space-y-2">
@@ -2506,13 +2734,24 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   </label>
                   <select
                     value={messageType}
-                    onChange={(e) => setMessageType(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setMessageType(val);
+                      if (val === 'Only Dynamic Image Card') setWelcomerMode('card_only');
+                      else if (val === 'Dynamic Card + Rich Embed') setWelcomerMode('embed_card');
+                      else if (val === 'Text Only') setWelcomerMode('text_only');
+                      else setWelcomerMode('embed_only');
+                    }}
                     className="w-full bg-[#13141d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/40 transition-colors cursor-pointer"
                   >
-                    <option value="Rich Embed">Rich Embed</option>
-                    <option value="Text Only">Text Only</option>
-                    <option value="Embed + Text">Embed + Text</option>
+                    <option value="Only Dynamic Image Card">🎴 Only Dynamic Image Card (Clean Standalone)</option>
+                    <option value="Dynamic Card + Rich Embed">🖼️ Dynamic Card + Rich Embed (Hybrid)</option>
+                    <option value="Rich Embed">📜 Rich Embed Only (Classic)</option>
+                    <option value="Text Only">💬 Text Only (Minimal)</option>
                   </select>
+                  <p className="text-[10px] text-slate-500">
+                    Quick selector for message format and rendering layout
+                  </p>
                 </div>
               </div>
 
@@ -2807,6 +3046,150 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           </button>
                         </div>
                       ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE DISCORD CHAT PREVIEW (Updates dynamically based on selected delivery mode) */}
+              <div className="bg-[#0e0f15] border border-white/5 rounded-2xl p-5 space-y-3 shadow-xl">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <h3 className="font-orbitron font-bold text-xs tracking-wider text-slate-200 uppercase">
+                      DISCORD LIVE OUTPUT PREVIEW (#{targetChannel || 'welcome'})
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/10">
+                      Mode: <strong className="text-white">{messageType}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleSendTestMessage}
+                      disabled={testSent}
+                      className="px-3 py-1 rounded-xl bg-white hover:bg-slate-200 text-black text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Send className="w-3 h-3 text-black" />
+                      <span>{testSent ? '✓ Sent!' : 'Dispatch to Discord'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-[#313338] rounded-2xl p-4 text-xs font-sans text-slate-200 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#ff0033]/20 border border-[#ff0033]/40 overflow-hidden shrink-0 flex items-center justify-center">
+                      <img
+                        src="/dc-logo.png"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                        }}
+                        alt="Bot Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-white">Dexter Corporation</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#5865F2] text-[10px] font-bold text-white uppercase tracking-wider">
+                          BOT
+                        </span>
+                        <span className="text-[10px] text-slate-400">Today at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+
+                      {/* Content Message (Outside embed) */}
+                      {contentMessage && (
+                        <p className="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">
+                          {renderPreview(contentMessage)}
+                        </p>
+                      )}
+
+                      {/* MODE 1: Only Dynamic Image Card (Clean standalone card image without outer embed box) */}
+                      {welcomerMode === 'card_only' && (
+                        <div className="space-y-2 pt-1">
+                          <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl max-w-2xl bg-black">
+                            <img
+                              src={cardBgImage || mainImageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80'}
+                              alt="Dynamic Welcome Card"
+                              className="w-full h-auto object-cover max-h-[350px]"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent p-5 flex flex-col justify-end">
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-bold uppercase w-fit mb-1">
+                                MEMBER ALLOCATION #{guild.memberCount || 100}
+                              </span>
+                              <h4 className="text-lg font-bold text-white drop-shadow-md">
+                                {renderPreview(cardWelcomeTitle || 'WELCOME, {user}')}
+                              </h4>
+                              <p className="text-xs text-slate-300 drop-shadow">
+                                {renderPreview(cardSubtitle || 'You are citizen #{member_count} of {server}')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* MODE 2 & 3: Rich Embed (with or without card) */}
+                      {(welcomerMode === 'embed_card' || welcomerMode === 'embed_only') && (
+                        <div
+                          className="p-4 rounded-xl bg-[#2b2d31] border-l-4 space-y-2 shadow-lg max-w-2xl"
+                          style={{ borderLeftColor: embedColor || '#ff0033' }}
+                        >
+                          {authorName && (
+                            <div className="flex items-center gap-2">
+                              {authorIconUrl && (
+                                <img src={authorIconUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
+                              )}
+                              <span className="text-xs font-semibold text-slate-300">{authorName}</span>
+                            </div>
+                          )}
+                          {embedTitle && (
+                            <h4 className="font-bold text-white text-sm">{renderPreview(embedTitle)}</h4>
+                          )}
+                          {description && (
+                            <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">
+                              {renderPreview(description)}
+                            </p>
+                          )}
+                          {thumbnailUrl && (
+                            <div className="flex justify-end">
+                              <img src={thumbnailUrl} alt="Thumbnail" className="w-16 h-16 rounded-xl object-cover" />
+                            </div>
+                          )}
+                          {welcomerMode === 'embed_card' && (cardBgImage || mainImageUrl) && (
+                            <div className="pt-2">
+                              <img
+                                src={cardBgImage || mainImageUrl}
+                                alt="Embedded Card"
+                                className="w-full h-auto rounded-xl object-cover max-h-[300px]"
+                              />
+                            </div>
+                          )}
+                          {footerText && (
+                            <div className="flex items-center gap-2 pt-2 border-t border-white/5 text-[10px] text-slate-400">
+                              {footerIconUrl && (
+                                <img src={footerIconUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
+                              )}
+                              <span>{renderPreview(footerText)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Interactive Action Buttons */}
+                      {(welcomerButtons || []).length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 pt-2">
+                          {(welcomerButtons || []).map((b, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1.5 rounded-lg bg-[#4e5058] hover:bg-[#585b63] text-white text-xs font-semibold flex items-center gap-1.5 shadow-md cursor-pointer"
+                            >
+                              {b.emoji && <span>{b.emoji}</span>}
+                              <span>{b.label}</span>
+                              <ExternalLink className="w-3 h-3 text-slate-300 ml-0.5" />
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3707,10 +4090,27 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                                 <span className="text-[10px] text-slate-400 ml-1">Simulated Just Now</span>
                               </div>
                               <p className="text-slate-200">{renderPreview(contentMessage)}</p>
-                              {embedTitle && (
+                              {welcomerMode === 'card_only' ? (
+                                <div className="mt-2 rounded-xl overflow-hidden border border-white/10 shadow-lg max-w-lg bg-black">
+                                  <img
+                                    src={cardBgImage || mainImageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80'}
+                                    alt="Card"
+                                    className="w-full h-auto object-cover max-h-[220px]"
+                                  />
+                                </div>
+                              ) : embedTitle && (
                                 <div className="mt-2 p-3 rounded-lg bg-[#2b2d31] border-l-4 space-y-1" style={{ borderLeftColor: embedColor }}>
                                   <h4 className="font-bold text-white">{renderPreview(embedTitle)}</h4>
                                   <p className="text-[11px] text-slate-300 whitespace-pre-wrap">{renderPreview(description)}</p>
+                                  {welcomerMode === 'embed_card' && (cardBgImage || mainImageUrl) && (
+                                    <div className="pt-2">
+                                      <img
+                                        src={cardBgImage || mainImageUrl}
+                                        alt="Embedded Card"
+                                        className="w-full h-auto rounded-lg object-cover max-h-[180px]"
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
