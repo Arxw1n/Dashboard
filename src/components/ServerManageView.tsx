@@ -806,8 +806,45 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     fetchGuildData();
   }, [guild.id]);
 
+  // Helper to detect if a media URL is an animated GIF or video
+  const isAnimatedOrVideoMedia = (url?: string): boolean => {
+    if (!url || typeof url !== 'string') return false;
+    const clean = url.trim().toLowerCase().split('?')[0];
+    return (
+      clean.endsWith('.gif') ||
+      clean.endsWith('.mp4') ||
+      clean.endsWith('.webm') ||
+      clean.endsWith('.mov') ||
+      clean.endsWith('.m4v') ||
+      url.toLowerCase().includes('.gif') ||
+      url.toLowerCase().includes('tenor.com') ||
+      url.toLowerCase().includes('giphy.com') ||
+      url.toLowerCase().includes('gph.is') ||
+      (url.toLowerCase().includes('discordapp.') && url.toLowerCase().includes('.gif'))
+    );
+  };
+
+  const isVideoMedia = (url?: string): boolean => {
+    if (!url || typeof url !== 'string') return false;
+    const clean = url.trim().toLowerCase().split('?')[0];
+    return (
+      clean.endsWith('.mp4') ||
+      clean.endsWith('.webm') ||
+      clean.endsWith('.mov') ||
+      clean.endsWith('.m4v') ||
+      url.toLowerCase().includes('streamable.com') ||
+      url.toLowerCase().includes('youtube.com') ||
+      url.toLowerCase().includes('youtu.be')
+    );
+  };
+
   // Generate Composite Welcome Card Image to Base64 PNG using HTML5 Canvas
   const generateCardImageBase64 = async (): Promise<string> => {
+    const activeBg = (cardBgImage || mainImageUrl || '').trim();
+    if (activeBg && isAnimatedOrVideoMedia(activeBg)) {
+      // DO NOT flatten animated GIFs or videos to a static canvas PNG
+      return '';
+    }
     return new Promise((resolve) => {
       try {
         const canvas = document.createElement('canvas');
@@ -1132,11 +1169,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setIsSaving(true);
     setSaveSuccess(false);
 
+    const activeImage = (cardBgImage || mainImageUrl || '').trim();
+    const isAnimated = isAnimatedOrVideoMedia(activeImage);
     let cardImageBase64 = '';
-    try {
-      cardImageBase64 = await generateCardImageBase64();
-    } catch {
-      // fallback
+    if (!isAnimated) {
+      try {
+        cardImageBase64 = await generateCardImageBase64();
+      } catch {
+        // fallback
+      }
     }
 
     try {
@@ -1361,18 +1402,31 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const handleSendTestMessage = async () => {
     setTestSent(true);
     const activeImage = (cardBgImage || mainImageUrl || '').trim();
+    const isAnimated = isAnimatedOrVideoMedia(activeImage);
+    const isVideo = isVideoMedia(activeImage);
+
     let cardImageBase64 = '';
-    try {
-      cardImageBase64 = await generateCardImageBase64();
-    } catch (e) {
-      console.warn('Card render failed, fallback to url:', e);
+    if (!isAnimated) {
+      try {
+        cardImageBase64 = await generateCardImageBase64();
+      } catch (e) {
+        console.warn('Card render failed, fallback to url:', e);
+      }
+    }
+
+    // If video or Tenor/Giphy page link, ensure URL is in content so Discord native player embeds it
+    let dispatchContent = contentMessage;
+    if (activeImage && (isVideo || activeImage.includes('tenor.com/view') || activeImage.includes('giphy.com/gifs'))) {
+      if (!dispatchContent.includes(activeImage)) {
+        dispatchContent = (dispatchContent ? dispatchContent + '\n' : '') + activeImage;
+      }
     }
 
     try {
       const res = await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
         channelId: targetChannel,
         welcome: {
-          content: contentMessage,
+          content: dispatchContent,
           cardBgImage: activeImage,
           mainImageUrl: activeImage,
           cardImageBase64: cardImageBase64 || undefined,
@@ -1385,7 +1439,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             color: embedColor,
             author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
             thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-            image: (!cardImageBase64 && activeImage) ? { url: activeImage } : undefined,
+            image: (!cardImageBase64 && activeImage && !isVideo && !activeImage.includes('tenor.com/view')) ? { url: activeImage } : undefined,
             footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
           },
         },
@@ -2798,17 +2852,29 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                               octagon: 'rounded-xl',
                             };
 
+                            const isVideo = isVideoMedia(cardBgImage);
+
                             return (
                               <div
                                 style={{
                                   backgroundColor: cardBgColor,
-                                  backgroundImage: cardBgImage ? `url(${cardBgImage})` : 'none',
+                                  backgroundImage: (!isVideo && cardBgImage) ? `url(${cardBgImage})` : 'none',
                                   backgroundSize: cardFitMode,
                                   backgroundPosition: 'center',
                                   fontFamily: cardFontFamily,
                                 }}
                                 className="relative w-full max-w-[700px] min-h-[290px] rounded-3xl border border-white/20 p-7 flex flex-col justify-between shadow-2xl overflow-hidden transition-all duration-300"
                               >
+                                {isVideo && cardBgImage && (
+                                  <video
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    src={cardBgImage}
+                                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                                  />
+                                )}
                                 {/* Atmospheric Overlay */}
                                 <div
                                   className="absolute inset-0 pointer-events-none transition-all duration-300"

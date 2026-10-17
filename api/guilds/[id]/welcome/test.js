@@ -240,9 +240,44 @@ export default async function handler(req, res) {
       }
     }
 
+    const isAnimatedMedia = (url) => {
+      if (!url || typeof url !== 'string') return false;
+      const clean = url.trim().toLowerCase().split('?')[0];
+      return clean.endsWith('.gif') || clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.mov') ||
+             url.toLowerCase().includes('.gif') || url.toLowerCase().includes('tenor.com') || url.toLowerCase().includes('giphy.com');
+    };
+
+    const isVideoMedia = (url) => {
+      if (!url || typeof url !== 'string') return false;
+      const clean = url.trim().toLowerCase().split('?')[0];
+      return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.mov') || clean.endsWith('.m4v') ||
+             url.toLowerCase().includes('streamable.com') || url.toLowerCase().includes('youtube.com') || url.toLowerCase().includes('youtu.be');
+    };
+
+    const activeMedia = effectiveImageUrl || welcome?.cardBgImage || welcome?.mainImageUrl || '';
+
     // Send payload to Discord Channel (Either with attached rendered card or direct JSON)
     let sendRes;
-    if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
+    if (activeMedia && isAnimatedMedia(activeMedia)) {
+      if (isVideoMedia(activeMedia) || activeMedia.includes('tenor.com/view') || activeMedia.includes('giphy.com/gifs')) {
+        if (!payload.content) payload.content = '';
+        if (!payload.content.includes(activeMedia)) {
+          payload.content = (payload.content ? payload.content + '\n' : '') + activeMedia;
+        }
+      } else {
+        embedObj.image = { url: activeMedia };
+      }
+      payload.embeds = [embedObj];
+
+      sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+    } else if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
       try {
         const rawBase64 = welcome.cardImageBase64.replace(/^data:image\/\w+;base64,/, '');
         const imageBuffer = Buffer.from(rawBase64, 'base64');
