@@ -47,6 +47,7 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Menu,
   Layers,
   LayoutDashboard,
   Eye,
@@ -214,8 +215,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   });
 
   const [isModuleSyncing, setIsModuleSyncing] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSelectModule = (id: string) => {
+    setMobileMenuOpen(false);
     if (id === activeModule) return;
     setIsModuleSyncing(true);
     setTimeout(() => {
@@ -1960,13 +1963,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#06070a] text-white flex flex-col font-['Inter'] selection:bg-white/20 selection:text-white relative">
+    <div className="h-screen w-full bg-[#06070a] text-white flex flex-col font-['Inter'] selection:bg-white/20 selection:text-white relative overflow-hidden">
       {/* Background ambient lighting & mesh */}
       <div className="absolute inset-0 bg-mesh pointer-events-none opacity-40"></div>
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[140px] pointer-events-none"></div>
 
       {/* Top Header Bar */}
-      <header className="h-16 border-b border-white/5 bg-[#06070a]/80 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
+      <header className="h-16 shrink-0 border-b border-white/5 bg-[#06070a]/90 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between z-30">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -1986,6 +1989,16 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Mobile Navigation Drawer Trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-xl liquid-glass hover:bg-white/10 text-white flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+            title="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            <span className="capitalize hidden xs:inline">{activeModule.replace('_', ' ')}</span>
+          </button>
+
           <button
             className="p-2 rounded-xl liquid-glass hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
             title="Toggle Theme"
@@ -2006,9 +2019,23 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
       </header>
 
       {/* Main 3-Column Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden relative z-10">
+        {/* Mobile Backdrop Overlay */}
+        {mobileMenuOpen && (
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 lg:hidden animate-fade-in"
+          />
+        )}
+
         {/* Left Column: Server Card + Action Buttons + Modules Sidebar */}
-        <aside className="w-full lg:w-72 bg-[#06070a]/90 backdrop-blur-xl border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto">
+        <aside
+          className={`
+            fixed inset-y-16 left-0 z-40 w-72 bg-[#06070a]/95 backdrop-blur-2xl border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto scrollbar-thin transition-transform duration-300 ease-in-out
+            lg:static lg:inset-auto lg:h-full lg:translate-x-0 lg:z-auto
+            ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+          `}
+        >
           {/* Active Server Card */}
           <div className="liquid-glass rounded-2xl p-3.5 flex items-center gap-3 shadow-lg hover:scale-[1.01] transition-all">
             <div className="w-11 h-11 rounded-xl bg-white/5 p-0.5 overflow-hidden shrink-0 border border-white/10">
@@ -2091,7 +2118,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         </aside>
 
         {/* Center Column: Configuration Form (Changes based on activeModule!) */}
-        <main className="flex-1 bg-[#06070a] p-6 lg:p-8 overflow-y-auto space-y-6 relative min-h-[500px]">
+        <main className="flex-1 h-full bg-[#06070a] p-6 lg:p-8 overflow-y-auto space-y-6 relative scrollbar-thin">
           {isModuleSyncing ? (
             <SyncingLoader
               fullScreen={false}
@@ -8568,7 +8595,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         {/* Right Column: Live Discord Message Preview (Screenshot 4) */}
         {((activeModule === 'welcomer' && welcomerSubTab === 'messages') ||
           ['embed_builder', 'message_sender', 'verification'].includes(activeModule)) && (
-          <aside className="w-full lg:w-96 bg-[#08080c] border-l border-white/5 p-5 shrink-0 overflow-y-auto space-y-3">
+          <aside className="w-full lg:w-96 h-full bg-[#08080c] border-l border-white/5 p-5 shrink-0 overflow-y-auto space-y-3 scrollbar-thin">
           <div className="flex items-center justify-between pb-2">
             <span className="font-orbitron font-bold text-xs tracking-wider text-slate-300 uppercase">
               {activeModule === 'tickets'
