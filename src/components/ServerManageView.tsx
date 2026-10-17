@@ -435,22 +435,22 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [autoDeleteDuration, setAutoDeleteDuration] = useState('');
 
   // Embed Editor State
-  const [contentMessage, setContentMessage] = useState('Welcome {user}!');
-  const [embedTitle, setEmbedTitle] = useState('🛡️ Welcome to Dexter Corporation ⚡');
+  const [contentMessage, setContentMessage] = useState('<a:flame:1554068992648290415> Hey {user}, welcome to **Dexter Corporation**!');
+  const [embedTitle, setEmbedTitle] = useState('<:196592blackcrown:1554068837358506024> DEXTER CORPORATION™');
   const [embedColor, setEmbedColor] = useState('#ff0033');
   const [description, setDescription] = useState(
-    "Hey 👋 {user}!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **You are our #{server_membercount}th Member**\n<a:flame:1554068992648290415> **Joined** {user_joined} Â· {user.joined_date}\n\n<a:73288animatedarrowred:1554068830689431563> **Read our ToS** <#rules>\n<a:73288animatedarrowred:1554068830689431563> **Check out our latest Announcements** <#announcements>\n<a:73288animatedarrowred:1554068830689431563> **Need help? Open a Support Ticket** <#tickets>"
+    "### <:86067verified86x:1554068835227930624> WELCOME, {user}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n<:2392verified:1554068820828626944> **Citizen Allocation:** `#{server_membercount}`\n<a:73288animatedarrowred:1554068830689431563> **Security Clearance:** `Verified Resident`\n<a:flame:1554068992648290415> **Sentinel System:** `Active & Guarded`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n<:8357arrowviolett:1554068823139815434> **Get Started:** Check out announcements or verify below."
   );
-  const [authorName, setAuthorName] = useState('DEXTERCORP SECURITY');
-  const [authorIconUrl, setAuthorIconUrl] = useState('');
-  const [footerText, setFooterText] = useState('Enjoy your stay in {server_name}');
-  const [footerIconUrl, setFooterIconUrl] = useState('');
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [mainImageUrl, setMainImageUrl] = useState('https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dm5ma3lsMTE5MWpxa25xb2x4eTc4NXFhcjlycTVnMXV6eGZjbnlscSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WW5p7jd8ImZ16q4w2r/giphy.gif');
+  const [authorName, setAuthorName] = useState('DEXTER CORPORATION™ • SYSTEM GATEWAY');
+  const [authorIconUrl, setAuthorIconUrl] = useState('https://cdn.discordapp.com/icons/1440364047013904466/8a7a6a83edf0e8febecc3519ff0162e0.png');
+  const [footerText, setFooterText] = useState('Dexter Corporation Sentinel Core • Member #{server_membercount}');
+  const [footerIconUrl, setFooterIconUrl] = useState('https://cdn.discordapp.com/icons/1440364047013904466/8a7a6a83edf0e8febecc3519ff0162e0.png');
+  const [thumbnailUrl, setThumbnailUrl] = useState('https://cdn.discordapp.com/icons/1440364047013904466/8a7a6a83edf0e8febecc3519ff0162e0.png');
+  const [mainImageUrl, setMainImageUrl] = useState('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');
   const [welcomerButtons, setWelcomerButtons] = useState<Array<{ label: string; url: string; emoji?: string }>>([
-    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '📢' },
-    { label: 'ToS', url: 'https://discord.gg/dextercorp', emoji: '📜' },
-    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '🎫' },
+    { label: 'Announcements', url: 'https://discord.gg/dextercorp', emoji: '<:8357arrowviolett:1554068823139815434>' },
+    { label: 'Support', url: 'https://discord.gg/dextercorp', emoji: '<:196592blackcrown:1554068837358506024>' },
+    { label: 'Verify', url: 'https://discord.gg/dextercorp', emoji: '<a:764230verified:1554068847106199663>' },
   ]);
 
   // 2. Anti-Nuke Settings
@@ -838,13 +838,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     );
   };
 
-  // Generate Composite Welcome Card Image to Base64 PNG using HTML5 Canvas
-  const generateCardImageBase64 = async (): Promise<string> => {
-    const activeBg = (cardBgImage || mainImageUrl || '').trim();
-    if (activeBg && isAnimatedOrVideoMedia(activeBg)) {
-      // DO NOT flatten animated GIFs or videos to a static canvas PNG
-      return '';
+  const getCORSFriendlyUrl = (url: string) => {
+    if (!url || url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('/')) {
+      return url;
     }
+    return BOT_CONFIG.getApiUrl(`/api/proxy-image?url=${encodeURIComponent(url)}`);
+  };
+
+  // Generate Composite Welcome Card Image to Base64 PNG using HTML5 Canvas (100% Reliable & CORS-Safe)
+  const generateCardImageBase64 = async (): Promise<string> => {
     return new Promise((resolve) => {
       try {
         const canvas = document.createElement('canvas');
@@ -1074,9 +1076,55 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
           try {
             resolve(canvas.toDataURL('image/png'));
-          } catch (e) {
-            console.warn('Canvas export tainted or failed, returning empty:', e);
-            resolve('');
+          } catch (taintErr) {
+            console.warn('Canvas tainted by external image, generating clean fallback composite card:', taintErr);
+            // Draw clean procedural vector card without tainted cross-origin data
+            const cleanCanvas = document.createElement('canvas');
+            cleanCanvas.width = 800;
+            cleanCanvas.height = 360;
+            const cCtx = cleanCanvas.getContext('2d');
+            if (cCtx) {
+              cCtx.fillStyle = cardBgColor || '#0a0c14';
+              cCtx.fillRect(0, 0, 800, 360);
+              const g = cCtx.createRadialGradient(400, 180, 20, 400, 180, 400);
+              g.addColorStop(0, 'rgba(255, 0, 51, 0.25)');
+              g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+              cCtx.fillStyle = g;
+              cCtx.fillRect(0, 0, 800, 360);
+              cCtx.strokeStyle = cardAccentColor || '#ff0033';
+              cCtx.lineWidth = 2;
+              if ((cCtx as any).roundRect) (cCtx as any).roundRect(4, 4, 792, 352, 20);
+              cCtx.stroke();
+              cCtx.fillStyle = '#ffffff';
+              cCtx.font = 'bold 12px monospace';
+              cCtx.fillText(`${guild.name.toUpperCase()} • CITIZEN #${mock.num}`, 40, 44);
+              cCtx.fillStyle = '#141724';
+              cCtx.strokeStyle = cardAccentColor || '#ff0033';
+              cCtx.lineWidth = 3;
+              if ((cCtx as any).roundRect) (cCtx as any).roundRect(42, 96, 110, 110, 24);
+              cCtx.fill();
+              cCtx.stroke();
+              cCtx.fillStyle = cardAccentColor || '#ff0033';
+              cCtx.font = 'bold 42px monospace';
+              cCtx.textAlign = 'center';
+              cCtx.fillText(mock.username.slice(0, 2).toUpperCase(), 97, 166);
+              cCtx.textAlign = 'left';
+              cCtx.fillStyle = cardTitleColor || '#ffffff';
+              cCtx.font = 'bold 30px Outfit, sans-serif';
+              cCtx.fillText(titleFormatted.slice(0, 32), 176, 142);
+              cCtx.fillStyle = '#cbd5e1';
+              cCtx.font = '15px Outfit, sans-serif';
+              cCtx.fillText(subtitleFormatted.slice(0, 48), 176, 174);
+              cCtx.fillStyle = '#10b981';
+              cCtx.font = 'bold 11px monospace';
+              cCtx.fillText('VERIFIED CITIZEN • ACCESS GRANTED', 176, 204);
+              cCtx.fillStyle = '#94a3b8';
+              cCtx.font = '11px monospace';
+              cCtx.fillText('DEXTER CORPORATION • SENTINEL CORE', 40, 334);
+              resolve(cleanCanvas.toDataURL('image/png'));
+            } else {
+              resolve('');
+            }
           }
         };
 
@@ -1091,12 +1139,18 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           }
         };
 
-        if (cardBgImage && !cardBgImage.endsWith('.gif')) {
+        if (cardBgImage) {
           const img = new Image();
           img.crossOrigin = 'anonymous';
           img.onload = () => { bgImgLoaded = img; checkReady(); };
-          img.onerror = () => { checkReady(); };
-          img.src = cardBgImage;
+          img.onerror = () => {
+            const proxied = new Image();
+            proxied.crossOrigin = 'anonymous';
+            proxied.onload = () => { bgImgLoaded = proxied; checkReady(); };
+            proxied.onerror = () => { checkReady(); };
+            proxied.src = getCORSFriendlyUrl(cardBgImage);
+          };
+          img.src = getCORSFriendlyUrl(cardBgImage);
         } else {
           checkReady();
         }
@@ -1105,8 +1159,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         const aImg = new Image();
         aImg.crossOrigin = 'anonymous';
         aImg.onload = () => { avImgLoaded = aImg; checkReady(); };
-        aImg.onerror = () => { checkReady(); };
-        aImg.src = avUrl;
+        aImg.onerror = () => {
+          const proxiedAv = new Image();
+          proxiedAv.crossOrigin = 'anonymous';
+          proxiedAv.onload = () => { avImgLoaded = proxiedAv; checkReady(); };
+          proxiedAv.onerror = () => { checkReady(); };
+          proxiedAv.src = getCORSFriendlyUrl(avUrl);
+        };
+        aImg.src = getCORSFriendlyUrl(avUrl);
 
         setTimeout(() => {
           if (pending > 0) {
@@ -1169,15 +1229,11 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     setIsSaving(true);
     setSaveSuccess(false);
 
-    const activeImage = (cardBgImage || mainImageUrl || '').trim();
-    const isAnimated = isAnimatedOrVideoMedia(activeImage);
     let cardImageBase64 = '';
-    if (!isAnimated) {
-      try {
-        cardImageBase64 = await generateCardImageBase64();
-      } catch {
-        // fallback
-      }
+    try {
+      cardImageBase64 = await generateCardImageBase64();
+    } catch {
+      // fallback
     }
 
     try {
@@ -1406,12 +1462,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     const isVideo = isVideoMedia(activeImage);
 
     let cardImageBase64 = '';
-    if (!isAnimated) {
-      try {
-        cardImageBase64 = await generateCardImageBase64();
-      } catch (e) {
-        console.warn('Card render failed, fallback to url:', e);
-      }
+    try {
+      cardImageBase64 = await generateCardImageBase64();
+    } catch (e) {
+      console.warn('Card render failed, fallback to url:', e);
     }
 
     // If video or Tenor/Giphy page link, ensure URL is in content so Discord native player embeds it

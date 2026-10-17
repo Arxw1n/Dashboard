@@ -256,28 +256,9 @@ export default async function handler(req, res) {
 
     const activeMedia = effectiveImageUrl || welcome?.cardBgImage || welcome?.mainImageUrl || '';
 
-    // Send payload to Discord Channel (Either with attached rendered card or direct JSON)
+    // Send payload to Discord Channel (Prioritize attached custom rendered card, then animated media/JSON)
     let sendRes;
-    if (activeMedia && isAnimatedMedia(activeMedia)) {
-      if (isVideoMedia(activeMedia) || activeMedia.includes('tenor.com/view') || activeMedia.includes('giphy.com/gifs')) {
-        if (!payload.content) payload.content = '';
-        if (!payload.content.includes(activeMedia)) {
-          payload.content = (payload.content ? payload.content + '\n' : '') + activeMedia;
-        }
-      } else {
-        embedObj.image = { url: activeMedia };
-      }
-      payload.embeds = [embedObj];
-
-      sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bot ${botToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-    } else if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
+    if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
       try {
         const rawBase64 = welcome.cardImageBase64.replace(/^data:image\/\w+;base64,/, '');
         const imageBuffer = Buffer.from(rawBase64, 'base64');
@@ -298,6 +279,25 @@ export default async function handler(req, res) {
       } catch (uploadErr) {
         console.warn('FormData card attachment failed, falling back to JSON:', uploadErr);
       }
+    } else if (activeMedia && isAnimatedMedia(activeMedia)) {
+      if (isVideoMedia(activeMedia) || activeMedia.includes('tenor.com/view') || activeMedia.includes('giphy.com/gifs')) {
+        if (!payload.content) payload.content = '';
+        if (!payload.content.includes(activeMedia)) {
+          payload.content = (payload.content ? payload.content + '\n' : '') + activeMedia;
+        }
+      } else {
+        embedObj.image = { url: activeMedia };
+      }
+      payload.embeds = [embedObj];
+
+      sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
     }
 
     if (!sendRes) {
