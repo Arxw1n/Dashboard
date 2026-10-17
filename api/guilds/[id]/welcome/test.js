@@ -181,7 +181,13 @@ export default async function handler(req, res) {
       embedObj.thumbnail = { url: guildIconUrl };
     }
 
-    // Main Card Image (Supports custom GIF, Discord CDN attachments, and wallpapers)
+    // Guild ID fallback
+    let effectiveGuildId = guildId;
+    if (!effectiveGuildId || effectiveGuildId === '1001' || !/^\d{17,20}$/.test(String(effectiveGuildId))) {
+      effectiveGuildId = '1440364047013904466';
+    }
+
+    // Main Card Image (Supports composite card base64, custom GIF, and CDN wallpapers)
     if (effectiveImageUrl) {
       embedObj.image = { url: effectiveImageUrl };
     }
@@ -197,12 +203,12 @@ export default async function handler(req, res) {
         // Convert Discord channel mentions or raw IDs into valid https web links
         const chanMatch = btnUrl.match(/<#(\d{17,20})>/) || btnUrl.match(/^(\d{17,20})$/);
         if (chanMatch) {
-          btnUrl = `https://discord.com/channels/${guildId}/${chanMatch[1]}`;
+          btnUrl = `https://discord.com/channels/${effectiveGuildId}/${chanMatch[1]}`;
         } else if (btnUrl.startsWith('#')) {
           const cleanName = normalizeStr(btnUrl);
           const found = textChannels.find((c) => normalizeStr(c.name) === cleanName);
           if (found) {
-            btnUrl = `https://discord.com/channels/${guildId}/${found.id}`;
+            btnUrl = `https://discord.com/channels/${effectiveGuildId}/${found.id}`;
           }
         }
         if (!btnUrl.startsWith('http://') && !btnUrl.startsWith('https://')) {
@@ -234,15 +240,46 @@ export default async function handler(req, res) {
       }
     }
 
-    // Send payload to Discord Channel
-    const sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bot ${botToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    // Send payload to Discord Channel (Either with attached rendered card or direct JSON)
+    let sendRes;
+    if (welcome?.cardImageBase64 && typeof welcome.cardImageBase64 === 'string') {
+      try {
+        const rawBase64 = welcome.cardImageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const imageBuffer = Buffer.from(rawBase64, 'base64');
+        embedObj.image = { url: 'attachment://welcome-card.png' };
+        payload.embeds = [embedObj];
+
+        const formData = new FormData();
+        formData.append('payload_json', JSON.stringify(payload));
+        formData.append('files[0]', new Blob([imageBuffer], { type: 'image/png' }), 'welcome-card.png');
+
+        sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bot ${botToken}`,
+          },
+          body: formData,
+        });
+      } catch (uploadErr) {
+        console.warn('FormData card attachment failed, falling back to JSON:', uploadErr);
+      }
+    }
+
+    if (!sendRes) {
+      if (effectiveImageUrl) {
+        embedObj.image = { url: effectiveImageUrl };
+      }
+      payload.embeds = [embedObj];
+
+      sendRes = await fetch(`https://discord.com/api/v10/channels/${resolvedChannelId}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+    }
 
     const sendData = await sendRes.json();
 

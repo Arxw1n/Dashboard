@@ -803,10 +803,339 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     fetchGuildData();
   }, [guild.id]);
 
+  // Generate Composite Welcome Card Image to Base64 PNG using HTML5 Canvas
+  const generateCardImageBase64 = async (): Promise<string> => {
+    return new Promise((resolve) => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 360;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve('');
+
+        const mock = getMockUserPreview();
+        const titleFormatted = cardWelcomeTitle
+          .replace('{user}', mock.username)
+          .replace('{server}', guild.name)
+          .replace('{member_count}', String(mock.num));
+        const subtitleFormatted = cardSubtitle
+          .replace('{user}', mock.username)
+          .replace('{server}', guild.name)
+          .replace('{member_count}', String(mock.num));
+
+        const drawContents = (bgImg?: HTMLImageElement, avatarImg?: HTMLImageElement) => {
+          // 1. Background Fill
+          ctx.fillStyle = cardBgColor || '#08090e';
+          ctx.fillRect(0, 0, 800, 360);
+
+          // 2. Draw Background Image
+          if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+            try {
+              const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
+              const x = (canvas.width - bgImg.width * scale) / 2;
+              const y = (canvas.height - bgImg.height * scale) / 2;
+              ctx.drawImage(bgImg, x, y, bgImg.width * scale, bgImg.height * scale);
+            } catch (bgErr) {
+              console.warn('Canvas bg draw error:', bgErr);
+            }
+          }
+
+          // 3. Darkness Overlay
+          const overlayAlpha = Math.min(Math.max((cardOverlayDarkness || 55) / 100, 0.2), 0.95);
+          ctx.fillStyle = `rgba(0, 0, 0, ${overlayAlpha})`;
+          ctx.fillRect(0, 0, 800, 360);
+
+          // 4. Subtle Radial Atmospheric Glows
+          const glowGrad1 = ctx.createRadialGradient(720, 30, 10, 720, 30, 240);
+          glowGrad1.addColorStop(0, 'rgba(255, 0, 51, 0.3)');
+          glowGrad1.addColorStop(1, 'rgba(255, 0, 51, 0)');
+          ctx.fillStyle = glowGrad1;
+          ctx.fillRect(0, 0, 800, 360);
+
+          const glowGrad2 = ctx.createRadialGradient(80, 320, 10, 80, 320, 220);
+          glowGrad2.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
+          glowGrad2.addColorStop(1, 'rgba(6, 182, 212, 0)');
+          ctx.fillStyle = glowGrad2;
+          ctx.fillRect(0, 0, 800, 360);
+
+          // 5. Outer Border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.lineWidth = 2;
+          if ((ctx as any).roundRect) {
+            (ctx as any).roundRect(4, 4, 792, 352, 20);
+            ctx.stroke();
+          }
+
+          // 6. Header Row: Server Pill & Citizen Badge
+          if (cardShowServerPill) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            if ((ctx as any).roundRect) (ctx as any).roundRect(32, 24, 220, 32, 16);
+            else ctx.rect(32, 24, 220, 32);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px Outfit, Inter, sans-serif';
+            ctx.fillText(guild.name.toUpperCase().slice(0, 26), 50, 44);
+          }
+
+          if (cardShowBadge) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.strokeStyle = cardAccentColor || '#ff3344';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if ((ctx as any).roundRect) (ctx as any).roundRect(620, 24, 148, 32, 16);
+            else ctx.rect(620, 24, 148, 32);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = cardAccentColor || '#ff3344';
+            ctx.font = 'bold 11px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`CITIZEN #${mock.num}`, 694, 44);
+            ctx.textAlign = 'left';
+          }
+
+          // 7. Center Row: Avatar
+          const avX = 42;
+          const avY = 96;
+          const avSize = 110;
+
+          const glowColors: Record<string, string> = {
+            red: 'rgba(255, 0, 51, 0.8)',
+            emerald: 'rgba(16, 185, 129, 0.8)',
+            cyan: 'rgba(6, 182, 212, 0.8)',
+            gold: 'rgba(245, 158, 11, 0.8)',
+            purple: 'rgba(168, 85, 247, 0.8)',
+            none: 'transparent',
+          };
+          const glowColor = glowColors[cardAvatarGlow] || glowColors.red;
+
+          ctx.save();
+          if (glowColor !== 'transparent') {
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = 24;
+          }
+
+          ctx.fillStyle = '#0f111a';
+          ctx.strokeStyle = cardAvatarBorderColor || '#ff0033';
+          ctx.lineWidth = cardAvatarBorderWidth || 2;
+
+          ctx.beginPath();
+          if (cardAvatarShape === 'circle') {
+            ctx.arc(avX + avSize / 2, avY + avSize / 2, avSize / 2, 0, Math.PI * 2);
+          } else if (cardAvatarShape === 'squircle' && (ctx as any).roundRect) {
+            (ctx as any).roundRect(avX, avY, avSize, avSize, 26);
+          } else {
+            if ((ctx as any).roundRect) (ctx as any).roundRect(avX, avY, avSize, avSize, 16);
+            else ctx.rect(avX, avY, avSize, avSize);
+          }
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+
+          // Clip Avatar Image
+          ctx.save();
+          ctx.beginPath();
+          if (cardAvatarShape === 'circle') {
+            ctx.arc(avX + avSize / 2, avY + avSize / 2, avSize / 2, 0, Math.PI * 2);
+          } else if (cardAvatarShape === 'squircle' && (ctx as any).roundRect) {
+            (ctx as any).roundRect(avX, avY, avSize, avSize, 26);
+          } else {
+            if ((ctx as any).roundRect) (ctx as any).roundRect(avX, avY, avSize, avSize, 16);
+            else ctx.rect(avX, avY, avSize, avSize);
+          }
+          ctx.clip();
+
+          if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
+            try {
+              ctx.drawImage(avatarImg, avX, avY, avSize, avSize);
+            } catch (err) {
+              console.warn('Avatar draw error:', err);
+            }
+          } else {
+            ctx.fillStyle = '#ff0033';
+            ctx.font = 'bold 36px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(mock.username.slice(0, 2).toUpperCase(), avX + avSize / 2, avY + avSize / 2 + 12);
+            ctx.textAlign = 'left';
+          }
+          ctx.restore();
+
+          // Status Dot
+          if (cardShowStatusDot) {
+            ctx.fillStyle = '#10b981';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(avX + avSize - 8, avY + avSize - 8, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+
+          // 8. Dynamic Typography
+          const textX = 176;
+          ctx.fillStyle = cardTitleColor || '#ffffff';
+          ctx.font = '900 28px Outfit, Inter, sans-serif';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+          ctx.shadowBlur = 8;
+          ctx.fillText(titleFormatted.slice(0, 36), textX, 138);
+
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '500 15px Outfit, Inter, sans-serif';
+          ctx.fillText(subtitleFormatted.slice(0, 52), textX, 168);
+
+          // Badges: [VERIFIED CITIZEN] • ACCESS GRANTED
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          if ((ctx as any).roundRect) (ctx as any).roundRect(textX, 186, 128, 24, 6);
+          else ctx.rect(textX, 186, 128, 24);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 10px monospace';
+          ctx.fillText('VERIFIED CITIZEN', textX + 12, 202);
+
+          ctx.fillStyle = '#10b981';
+          ctx.font = 'bold 10px monospace';
+          ctx.fillText('•  ACCESS GRANTED', textX + 138, 202);
+
+          // 9. Footer row
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(32, 305);
+          ctx.lineTo(768, 305);
+          ctx.stroke();
+
+          if (cardShowJoinedDate) {
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(40, 330, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px monospace';
+            ctx.fillText(`JOINED ${new Date().toLocaleDateString()}`, 50, 334);
+          }
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.font = 'bold 11px monospace';
+          ctx.textAlign = 'right';
+          ctx.fillText('DEXTER CORPORATION • SENTINEL CORE', 768, 334);
+          ctx.textAlign = 'left';
+
+          try {
+            resolve(canvas.toDataURL('image/png'));
+          } catch (e) {
+            console.warn('Canvas export tainted or failed, returning empty:', e);
+            resolve('');
+          }
+        };
+
+        let bgImgLoaded: HTMLImageElement | undefined;
+        let avImgLoaded: HTMLImageElement | undefined;
+        let pending = 2;
+
+        const checkReady = () => {
+          pending--;
+          if (pending <= 0) {
+            drawContents(bgImgLoaded, avImgLoaded);
+          }
+        };
+
+        if (cardBgImage && !cardBgImage.endsWith('.gif')) {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => { bgImgLoaded = img; checkReady(); };
+          img.onerror = () => { checkReady(); };
+          img.src = cardBgImage;
+        } else {
+          checkReady();
+        }
+
+        const avUrl = mock.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+        const aImg = new Image();
+        aImg.crossOrigin = 'anonymous';
+        aImg.onload = () => { avImgLoaded = aImg; checkReady(); };
+        aImg.onerror = () => { checkReady(); };
+        aImg.src = avUrl;
+
+        setTimeout(() => {
+          if (pending > 0) {
+            drawContents(bgImgLoaded, avImgLoaded);
+          }
+        }, 1200);
+
+      } catch (err) {
+        console.error('Error generating card image:', err);
+        resolve('');
+      }
+    });
+  };
+
+  // Live Member Resolver for Whitelisted IDs
+  useEffect(() => {
+    if (!whitelist || whitelist.length === 0) return;
+    const missing = whitelist.filter((id) => !availableMembers.some((m) => m.id === id));
+    if (missing.length === 0) return;
+
+    missing.forEach(async (id) => {
+      try {
+        const res = await axios.get(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/members?userId=${id}`));
+        if (res.data && res.data.id) {
+          setAvailableMembers((prev) => {
+            if (prev.some((m) => m.id === res.data.id)) return prev;
+            return [...prev, res.data];
+          });
+        }
+      } catch (err) {
+        // silent fallback
+      }
+    });
+  }, [whitelist, availableMembers, guild.id]);
+
+  // Live Member Search in Member Picker Modal
+  useEffect(() => {
+    if (!memberSearchQuery.trim() || memberSearchQuery.length < 2) return;
+    const timer = setTimeout(async () => {
+      try {
+        const sRes = await axios.get(
+          BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/members?q=${encodeURIComponent(memberSearchQuery.trim())}`)
+        );
+        if (Array.isArray(sRes.data) && sRes.data.length > 0) {
+          setAvailableMembers((prev) => {
+            const existingIds = new Set(prev.map((m) => m.id));
+            const newMembers = sRes.data.filter((m: any) => !existingIds.has(m.id));
+            return [...newMembers, ...prev];
+          });
+        }
+      } catch (e) {
+        console.warn('Live search error:', e);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [memberSearchQuery, guild.id]);
+
   // Save handler
   const handleSave = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
+
+    let cardImageBase64 = '';
+    try {
+      cardImageBase64 = await generateCardImageBase64();
+    } catch {
+      // fallback
+    }
+
     try {
       const payload = {
         prefix,
@@ -829,6 +1158,24 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           autorole: autoroleEnabled ? autoroleHumans : '',
           buttons: welcomerButtons,
           cardBgImage: (cardBgImage || mainImageUrl || '').trim(),
+          cardImageBase64: cardImageBase64 || undefined,
+          cardStudio: {
+            cardTemplate,
+            cardWelcomeTitle,
+            cardSubtitle,
+            cardAccentColor,
+            cardTitleColor,
+            cardAvatarShape,
+            cardAvatarGlow,
+            cardAvatarBorderColor,
+            cardAvatarBorderWidth,
+            cardFontFamily,
+            cardOverlayDarkness,
+            cardShowBadge,
+            cardShowServerPill,
+            cardShowJoinedDate,
+            cardShowStatusDot,
+          },
           embeds: {
             title: embedTitle,
             description: description,
@@ -1011,6 +1358,13 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const handleSendTestMessage = async () => {
     setTestSent(true);
     const activeImage = (cardBgImage || mainImageUrl || '').trim();
+    let cardImageBase64 = '';
+    try {
+      cardImageBase64 = await generateCardImageBase64();
+    } catch (e) {
+      console.warn('Card render failed, fallback to url:', e);
+    }
+
     try {
       const res = await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
         channelId: targetChannel,
@@ -1018,6 +1372,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           content: contentMessage,
           cardBgImage: activeImage,
           mainImageUrl: activeImage,
+          cardImageBase64: cardImageBase64 || undefined,
+          cardWelcomeTitle,
+          cardSubtitle,
           buttons: welcomerButtons,
           embeds: {
             title: embedTitle,
@@ -1025,7 +1382,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             color: embedColor,
             author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
             thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-            image: activeImage ? { url: activeImage } : undefined,
+            image: (!cardImageBase64 && activeImage) ? { url: activeImage } : undefined,
             footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
           },
         },
@@ -1344,10 +1701,22 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   };
 
   // Add whitelist user
-  const addWhitelistUser = () => {
-    if (!newWhitelistUser.trim()) return;
-    if (!whitelist.includes(newWhitelistUser.trim())) {
-      setWhitelist([...whitelist, newWhitelistUser.trim()]);
+  const addWhitelistUser = async () => {
+    const rawId = newWhitelistUser.trim();
+    if (!rawId) return;
+    if (!whitelist.includes(rawId)) {
+      setWhitelist((prev) => [...prev, rawId]);
+      try {
+        const res = await axios.get(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/members?userId=${rawId}`));
+        if (res.data && res.data.id) {
+          setAvailableMembers((prev) => {
+            const exists = prev.some((m) => m.id === res.data.id);
+            return exists ? prev.map((m) => (m.id === res.data.id ? res.data : m)) : [res.data, ...prev];
+          });
+        }
+      } catch (err) {
+        console.warn('Live member lookup failed:', err);
+      }
     }
     setNewWhitelistUser('');
   };
@@ -1496,12 +1865,56 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         isBot: false,
       };
     }
+    if (id === '1552995406860779611') {
+      return {
+        id,
+        username: 'DexterSecurity',
+        displayName: 'Dexter Security Sentinel',
+        avatar: 'https://cdn.discordapp.com/icons/1440364047013904466/8a7a6a83edf0e8febecc3519ff0162e0.png',
+        tier: 'Security Sentinel',
+        roles: ['Bot', 'Administrator'],
+        isBot: true,
+      };
+    }
+    if (id === '1541595076491214919' || id === '1541595076091214919') {
+      return {
+        id,
+        username: 'rdx.w1n',
+        displayName: '神 DXTR RUDRAX',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/1.png',
+        tier: 'High Council',
+        roles: ['Administrator', 'Staff Council'],
+        isBot: false,
+      };
+    }
+    if (id === '1529937799929663618') {
+      return {
+        id,
+        username: 'arx.w1n',
+        displayName: '神 DXTR AXIO',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/2.png',
+        tier: 'Security Lead',
+        roles: ['Administrator', 'Security Lead'],
+        isBot: false,
+      };
+    }
+    if (id === '1102907168958722130') {
+      return {
+        id,
+        username: 'arx.here',
+        displayName: 'DexterCorp Core',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+        tier: 'Core Sentinel',
+        roles: ['Administrator'],
+        isBot: false,
+      };
+    }
     if (id === '1500056784000253973') {
       return {
         id,
-        username: 'DexterCorpSentinel',
-        displayName: 'Dexter Sentinel Core',
-        avatar: '/dc-logo.png',
+        username: 'onyx_cheats',
+        displayName: 'ONX VEER',
+        avatar: 'https://cdn.discordapp.com/embed/avatars/3.png',
         tier: 'System Sentinel',
         roles: ['Bot', 'Administrator'],
         isBot: true,
@@ -1520,10 +1933,10 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
     }
     return {
       id,
-      username: `Member_${id.slice(-4)}`,
-      displayName: `Discord User (${id.slice(0, 6)}...)`,
-      avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
-      tier: 'Trusted Staff',
+      username: `User_${id.slice(-4)}`,
+      displayName: `Discord Member (${id.slice(-4)})`,
+      avatar: `https://cdn.discordapp.com/embed/avatars/${Number(id.slice(-1) || '0') % 5}.png`,
+      tier: 'Whitelisted Staff',
       roles: ['Staff Member'],
       isBot: false,
     };
@@ -3664,7 +4077,20 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                   <div className="sm:col-span-5">
                     <button
                       type="button"
-                      onClick={() => setShowMemberSelectModal(true)}
+                      onClick={async () => {
+                        setShowMemberSelectModal(true);
+                        try {
+                          const mRes = await axios.get(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/members`));
+                          if (Array.isArray(mRes.data) && mRes.data.length > 0) {
+                            setAvailableMembers((prev) => {
+                              const existingIds = new Set(mRes.data.map((m: any) => m.id));
+                              return [...mRes.data, ...prev.filter((p) => !existingIds.has(p.id))];
+                            });
+                          }
+                        } catch (err) {
+                          console.warn('Modal open members refresh error:', err);
+                        }
+                      }}
                       className="w-full h-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-200 text-black font-semibold text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 transform active:scale-98"
                     >
                       <UserPlus className="w-4 h-4 text-black" />
@@ -3859,19 +4285,23 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                                 className="p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 flex items-center justify-between gap-3 transition-colors"
                               >
                                 <div className="flex items-center gap-3 min-w-0">
-                                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#12141c] border border-white/10 shrink-0">
+                                  <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-[#12141c] border border-white/10 shrink-0">
                                     <img src={m.avatar} alt={m.displayName} className="w-full h-full object-cover" />
+                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-black" />
                                   </div>
                                   <div className="min-w-0">
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
                                       <span className="font-display font-bold text-xs text-white truncate">
                                         {m.displayName}
                                       </span>
                                       {m.isBot && (
-                                        <span className="text-[8px] font-mono px-1 rounded bg-indigo-500/20 text-indigo-400">
+                                        <span className="text-[8px] font-mono px-1 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
                                           BOT
                                         </span>
                                       )}
+                                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-white/5 text-slate-300 border border-white/10">
+                                        Staff
+                                      </span>
                                     </div>
                                     <p className="text-[10px] text-slate-400 font-mono truncate">
                                       @{m.username} &bull; ID: {m.id}
@@ -3881,10 +4311,15 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
                                 <div>
                                   {isWhitelisted ? (
-                                    <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1 font-mono">
+                                    <button
+                                      type="button"
+                                      onClick={() => removeWhitelistUser(m.id)}
+                                      className="px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-400 hover:bg-rose-500/20 hover:text-rose-400 border border-emerald-500/30 hover:border-rose-500/40 text-xs font-semibold flex items-center gap-1 font-mono transition-all cursor-pointer"
+                                      title="Click to remove from whitelist"
+                                    >
                                       <CheckCircle2 className="w-3.5 h-3.5" />
                                       <span>Whitelisted</span>
-                                    </span>
+                                    </button>
                                   ) : (
                                     <button
                                       type="button"

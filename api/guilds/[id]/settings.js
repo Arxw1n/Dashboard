@@ -194,6 +194,7 @@ export default async function handler(req, res) {
           content: settings.welcome.content || 'Welcome $user_mention to $guild_name!',
           embeds: cleanedEmbeds,
           cardBgImage: cardImage || '',
+          cardImageBase64: settings.welcome.cardImageBase64 || '',
           cardStudio: settings.welcome.cardStudio || {},
           buttons: sanitizedWelcomeButtons,
         };

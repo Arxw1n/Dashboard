@@ -101,10 +101,10 @@ export const App: React.FC = () => {
       }
     }
     return {
-      id: '1001',
-      name: 'VOLT X CHEATS',
-      icon: null,
-      memberCount: 420,
+      id: '1440364047013904466',
+      name: 'Dexter Corporation',
+      icon: 'https://cdn.discordapp.com/icons/1440364047013904466/8a7a6a83edf0e8febecc3519ff0162e0.png',
+      memberCount: 100,
       ownerId: '1500056784000253973',
       hasBot: true,
       isAdmin: true,
@@ -474,10 +474,10 @@ export const App: React.FC = () => {
   // SCREEN 4: SERVER SETTINGS & WELCOMER MODULE CONFIGURATION (Screenshot 4)
   if (viewMode === 'server_manage') {
     const activeGuild = selectedGuild || {
-      id: '1001',
-      name: 'VOLT X CHEATS',
-      icon: null,
-      memberCount: 420,
+      id: '1440364047013904466',
+      name: 'Dexter Corporation',
+      icon: 'https://cdn.discordapp.com/icons/1440364047013904466/8a7a6a83edf0e8febecc3519ff0162e0.png',
+      memberCount: 100,
       ownerId: user?.id || '1500056784000253973',
       hasBot: true,
       isAdmin: true,
