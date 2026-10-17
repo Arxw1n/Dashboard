@@ -172,6 +172,22 @@ export default async function handler(req, res) {
           }
         }
 
+        // Sanitize button URLs so Discord never rejects message sending
+        let sanitizedWelcomeButtons = gData?.welcome?.buttons || [];
+        if (Array.isArray(settings.welcome.buttons)) {
+          sanitizedWelcomeButtons = settings.welcome.buttons.map((b) => {
+            if (!b) return b;
+            let btnUrl = String(b.url || '').trim();
+            const chanMatch = btnUrl.match(/<#(\d{17,20})>/) || btnUrl.match(/^(\d{17,20})$/);
+            if (chanMatch) {
+              btnUrl = `https://discord.com/channels/${guildId}/${chanMatch[1]}`;
+            } else if (btnUrl.startsWith('discord.gg/')) {
+              btnUrl = 'https://' + btnUrl;
+            }
+            return { ...b, url: btnUrl };
+          });
+        }
+
         updateGuildData.welcome = {
           enabled: settings.welcome.enabled !== false,
           channel: settings.welcome.enabled ? (settings.welcome.channelId || settings.welcome.channel || null) : null,
@@ -179,7 +195,7 @@ export default async function handler(req, res) {
           embeds: cleanedEmbeds,
           cardBgImage: cardImage || '',
           cardStudio: settings.welcome.cardStudio || {},
-          buttons: Array.isArray(settings.welcome.buttons) ? settings.welcome.buttons : (gData?.welcome?.buttons || []),
+          buttons: sanitizedWelcomeButtons,
         };
       }
 

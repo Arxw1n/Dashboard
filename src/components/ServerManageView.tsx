@@ -645,6 +645,9 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           setAvailableChannels(chRes.data);
           setTargetChannel((curr) => {
             if (!curr || curr === 'welcome' || curr === 'general') {
+              const normalizeStr = (s: string) => (s ? s.normalize('NFKD').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : '');
+              const welcomeCh = chRes.data.find((ch: any) => normalizeStr(ch.name).includes('welcome'));
+              if (welcomeCh) return welcomeCh.id;
               return chRes.data[0].id;
             }
             return curr;
@@ -720,25 +723,19 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
               }
               if (emb.footer?.text) setFooterText(emb.footer.text);
               if (emb.author?.name) setAuthorName(emb.author.name);
-              if (emb.image?.url && !emb.image.url.includes('unsplash')) {
-                setMainImageUrl(emb.image.url);
-              } else {
-                setMainImageUrl('');
+              const effectiveWelcomerImg = emb.image?.url || res.data.welcome.cardBgImage || '';
+              if (effectiveWelcomerImg) {
+                setMainImageUrl(effectiveWelcomerImg);
+                setCardBgImage(effectiveWelcomerImg);
               }
-              if (emb.thumbnail?.url && !emb.thumbnail.url.includes('unsplash')) {
+              if (emb.thumbnail?.url) {
                 setThumbnailUrl(emb.thumbnail.url);
-              } else {
-                setThumbnailUrl('');
               }
-              if (emb.author?.icon_url && !emb.author.icon_url.includes('unsplash')) {
+              if (emb.author?.icon_url) {
                 setAuthorIconUrl(emb.author.icon_url);
-              } else {
-                setAuthorIconUrl('');
               }
-              if (emb.footer?.icon_url && !emb.footer.icon_url.includes('unsplash')) {
+              if (emb.footer?.icon_url) {
                 setFooterIconUrl(emb.footer.icon_url);
-              } else {
-                setFooterIconUrl('');
               }
             }
             if (Array.isArray(res.data.welcome.buttons) && res.data.welcome.buttons.length > 0) {
@@ -831,13 +828,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           channelId: targetChannel,
           autorole: autoroleEnabled ? autoroleHumans : '',
           buttons: welcomerButtons,
+          cardBgImage: (cardBgImage || mainImageUrl || '').trim(),
           embeds: {
             title: embedTitle,
             description: description,
             color: embedColor,
             ...(authorName.trim() ? { author: { name: authorName.trim(), ...(authorIconUrl.trim() ? { icon_url: authorIconUrl.trim() } : {}) } } : {}),
             ...(thumbnailUrl.trim() ? { thumbnail: { url: thumbnailUrl.trim() } } : {}),
-            ...(mainImageUrl.trim() ? { image: { url: mainImageUrl.trim() } } : {}),
+            ...(((cardBgImage || mainImageUrl || '').trim()) ? { image: { url: (cardBgImage || mainImageUrl || '').trim() } } : {}),
             ...(footerText.trim() ? { footer: { text: footerText.trim(), ...(footerIconUrl.trim() ? { icon_url: footerIconUrl.trim() } : {}) } } : {}),
           },
         },
@@ -1012,11 +1010,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   // Send simulated & real test message to discord
   const handleSendTestMessage = async () => {
     setTestSent(true);
+    const activeImage = (cardBgImage || mainImageUrl || '').trim();
     try {
-      await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
+      const res = await axios.post(BOT_CONFIG.getApiUrl(`/api/guilds/${guild.id}/welcome/test`), {
         channelId: targetChannel,
         welcome: {
           content: contentMessage,
+          cardBgImage: activeImage,
+          mainImageUrl: activeImage,
           buttons: welcomerButtons,
           embeds: {
             title: embedTitle,
@@ -1024,13 +1025,17 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             color: embedColor,
             author: authorName ? { name: authorName, icon_url: authorIconUrl } : undefined,
             thumbnail: thumbnailUrl ? { url: thumbnailUrl } : undefined,
-            image: mainImageUrl ? { url: mainImageUrl } : undefined,
+            image: activeImage ? { url: activeImage } : undefined,
             footer: footerText ? { text: footerText, icon_url: footerIconUrl } : undefined,
           },
         },
       });
-    } catch (e) {
+      const chan = res.data?.channelName || targetChannel;
+      alert(`✓ Welcomer Card successfully sent to #${chan} on Discord!`);
+    } catch (e: any) {
       console.warn('Test send fallback:', e);
+      const errMsg = e.response?.data?.error || e.message || 'Failed to send to Discord';
+      alert(`⚠️ Failed to dispatch to Discord: ${errMsg}`);
     }
     setTimeout(() => setTestSent(false), 3500);
   };
@@ -2701,6 +2706,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                                     type="button"
                                     onClick={() => {
                                       setCardBgImage(wp.url);
+                                      setMainImageUrl(wp.url);
                                       setCardAccentColor(wp.accent);
                                       setCardAvatarBorderColor(wp.accent);
                                     }}

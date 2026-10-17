@@ -34,6 +34,7 @@ export default async function handler(req, res) {
     }
 
     const textChannels = allChannels.filter((c) => c.type === 0 || c.type === 5);
+    const normalizeStr = (s) => (s ? String(s).normalize('NFKD').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() : '');
 
     // If channelId is a valid Snowflake ID, check if it exists
     if (resolvedChannelId && /^\d{17,20}$/.test(String(resolvedChannelId))) {
@@ -42,16 +43,13 @@ export default async function handler(req, res) {
         resolvedChannelName = exactMatch.name;
       }
     } else {
-      // Auto-resolve channel by name or fallback
-      const cleanTarget = String(resolvedChannelId || 'welcome')
-        .replace(/[^a-zA-Z0-9]/g, '')
-        .toLowerCase();
+      // Auto-resolve channel by name or fallback with Unicode NFKD normalization
+      const cleanTarget = normalizeStr(resolvedChannelId || 'welcome');
 
-      // Look for channel containing "welcome", or matching clean name
       const welcomeMatch =
-        textChannels.find((c) => c.name.toLowerCase().includes('welcome')) ||
-        textChannels.find((c) => c.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().includes(cleanTarget)) ||
-        textChannels.find((c) => c.name.toLowerCase().includes('general') || c.name.toLowerCase().includes('chat')) ||
+        textChannels.find((c) => normalizeStr(c.name).includes('welcome')) ||
+        (cleanTarget ? textChannels.find((c) => normalizeStr(c.name).includes(cleanTarget)) : null) ||
+        textChannels.find((c) => normalizeStr(c.name).includes('general') || normalizeStr(c.name).includes('chat')) ||
         textChannels[0];
 
       if (welcomeMatch) {
@@ -105,9 +103,10 @@ export default async function handler(req, res) {
     const rawContent = welcome?.content || 'Welcome {user} to **{server_name}**!';
     const formattedContent = formatVar(rawContent);
 
-    // Resolve Image URL from card studio or embed image
+    // Resolve Image URL: card studio background, embed image, or main image
     const effectiveImageUrl =
       (typeof welcome?.cardBgImage === 'string' && isValidUrl(welcome.cardBgImage) ? welcome.cardBgImage : null) ||
+      (typeof welcome?.mainImageUrl === 'string' && isValidUrl(welcome.mainImageUrl) ? welcome.mainImageUrl : null) ||
       (typeof embedData.image?.url === 'string' && isValidUrl(embedData.image.url) ? embedData.image.url : null) ||
       (typeof welcome?.image === 'string' && isValidUrl(welcome.image) ? welcome.image : null);
 
@@ -189,23 +188,41 @@ export default async function handler(req, res) {
 
     payload.embeds = [embedObj];
 
-    // Buttons
+    // Buttons - Defensive URL sanitization to prevent Discord 400 errors
     if (welcome?.buttons && Array.isArray(welcome.buttons) && welcome.buttons.length > 0) {
-      const validButtons = welcome.buttons
-        .filter((b) => b && b.label && b.url && typeof b.url === 'string' && (b.url.startsWith('http://') || b.url.startsWith('https://')))
-        .slice(0, 5)
-        .map((b) => {
-          const btnObj = {
-            type: 2, // BUTTON
-            style: 5, // LINK
-            label: String(b.label).slice(0, 80),
-            url: b.url,
-          };
-          if (b.emoji) {
-            btnObj.emoji = { name: b.emoji };
+      const validButtons = [];
+      for (const b of welcome.buttons.slice(0, 5)) {
+        if (!b || !b.label) continue;
+        let btnUrl = String(b.url || '').trim();
+        // Convert Discord channel mentions or raw IDs into valid https web links
+        const chanMatch = btnUrl.match(/<#(\d{17,20})>/) || btnUrl.match(/^(\d{17,20})$/);
+        if (chanMatch) {
+          btnUrl = `https://discord.com/channels/${guildId}/${chanMatch[1]}`;
+        } else if (btnUrl.startsWith('#')) {
+          const cleanName = normalizeStr(btnUrl);
+          const found = textChannels.find((c) => normalizeStr(c.name) === cleanName);
+          if (found) {
+            btnUrl = `https://discord.com/channels/${guildId}/${found.id}`;
           }
-          return btnObj;
-        });
+        }
+        if (!btnUrl.startsWith('http://') && !btnUrl.startsWith('https://')) {
+          if (btnUrl.startsWith('discord.gg/')) {
+            btnUrl = 'https://' + btnUrl;
+          } else {
+            continue;
+          }
+        }
+        const btnObj = {
+          type: 2, // BUTTON
+          style: 5, // LINK
+          label: String(b.label).slice(0, 80),
+          url: btnUrl,
+        };
+        if (b.emoji) {
+          btnObj.emoji = { name: b.emoji };
+        }
+        validButtons.push(btnObj);
+      }
 
       if (validButtons.length > 0) {
         payload.components = [
