@@ -2,6 +2,14 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/proxy-image",
+      "destination": "/api/stats"
+    },
+    {
+      "source": "/api/commands",
+      "destination": "/api/stats?type=commands"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
