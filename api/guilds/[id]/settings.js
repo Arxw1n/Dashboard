@@ -71,20 +71,16 @@ export default async function handler(req, res) {
           autorole: gData?.autorole?.humanRoles?.[0] || '',
           embeds: (() => {
             const emb = { ...(gData?.welcome?.embeds || {}) };
-            if (emb.image && (!emb.image.url || emb.image.url.includes('unsplash') || !emb.image.url.trim())) {
+            if (emb.image && (!emb.image.url || !emb.image.url.trim())) {
               delete emb.image;
             }
-            if (emb.thumbnail && (!emb.thumbnail.url || emb.thumbnail.url.includes('unsplash') || !emb.thumbnail.url.trim())) {
+            if (emb.thumbnail && (!emb.thumbnail.url || !emb.thumbnail.url.trim())) {
               delete emb.thumbnail;
-            }
-            if (emb.author && emb.author.icon_url && emb.author.icon_url.includes('unsplash')) {
-              delete emb.author.icon_url;
-            }
-            if (emb.footer && emb.footer.icon_url && emb.footer.icon_url.includes('unsplash')) {
-              delete emb.footer.icon_url;
             }
             return emb;
           })(),
+          cardBgImage: gData?.welcome?.cardBgImage || gData?.welcome?.embeds?.image?.url || '',
+          cardStudio: gData?.welcome?.cardStudio || {},
           buttons: Array.isArray(gData?.welcome?.buttons) ? gData.welcome.buttons : [],
         },
         autorole: {
@@ -152,32 +148,37 @@ export default async function handler(req, res) {
 
       if (settings.welcome) {
         const cleanedEmbeds = { ...(settings.welcome.embeds || {}) };
-        if (cleanedEmbeds.image && (!cleanedEmbeds.image.url || !cleanedEmbeds.image.url.trim() || cleanedEmbeds.image.url.includes('unsplash'))) {
+        const cardImage = settings.welcome.cardBgImage?.trim() || settings.welcome.embeds?.image?.url?.trim();
+        if (cardImage) {
+          cleanedEmbeds.image = { url: cardImage };
+        } else if (cleanedEmbeds.image && (!cleanedEmbeds.image.url || !cleanedEmbeds.image.url.trim())) {
           delete cleanedEmbeds.image;
         }
-        if (cleanedEmbeds.thumbnail && (!cleanedEmbeds.thumbnail.url || !cleanedEmbeds.thumbnail.url.trim() || cleanedEmbeds.thumbnail.url.includes('unsplash'))) {
+        if (cleanedEmbeds.thumbnail && (!cleanedEmbeds.thumbnail.url || !cleanedEmbeds.thumbnail.url.trim())) {
           delete cleanedEmbeds.thumbnail;
         }
         if (cleanedEmbeds.author) {
           if (!cleanedEmbeds.author.name || !cleanedEmbeds.author.name.trim()) {
             delete cleanedEmbeds.author;
-          } else if (!cleanedEmbeds.author.icon_url || !cleanedEmbeds.author.icon_url.trim() || cleanedEmbeds.author.icon_url.includes('unsplash')) {
+          } else if (!cleanedEmbeds.author.icon_url || !cleanedEmbeds.author.icon_url.trim()) {
             delete cleanedEmbeds.author.icon_url;
           }
         }
         if (cleanedEmbeds.footer) {
           if (!cleanedEmbeds.footer.text || !cleanedEmbeds.footer.text.trim()) {
             delete cleanedEmbeds.footer;
-          } else if (!cleanedEmbeds.footer.icon_url || !cleanedEmbeds.footer.icon_url.trim() || cleanedEmbeds.footer.icon_url.includes('unsplash')) {
+          } else if (!cleanedEmbeds.footer.icon_url || !cleanedEmbeds.footer.icon_url.trim()) {
             delete cleanedEmbeds.footer.icon_url;
           }
         }
 
         updateGuildData.welcome = {
           enabled: settings.welcome.enabled !== false,
-          channel: settings.welcome.enabled ? (settings.welcome.channelId || null) : null,
+          channel: settings.welcome.enabled ? (settings.welcome.channelId || settings.welcome.channel || null) : null,
           content: settings.welcome.content || 'Welcome $user_mention to $guild_name!',
           embeds: cleanedEmbeds,
+          cardBgImage: cardImage || '',
+          cardStudio: settings.welcome.cardStudio || {},
           buttons: Array.isArray(settings.welcome.buttons) ? settings.welcome.buttons : (gData?.welcome?.buttons || []),
         };
       }

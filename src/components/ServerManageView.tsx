@@ -466,6 +466,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
   const [whitelist, setWhitelist] = useState<string[]>(['1500056784000253973', '141279118800092']);
   const [newWhitelistUser, setNewWhitelistUser] = useState('');
   const [idCopied, setIdCopied] = useState(false);
+  const [welcomerToast, setWelcomerToast] = useState<{ message: string; isError?: boolean } | null>(null);
   const [antiMentionPunishment, setAntiMentionPunishment] = useState('timeout');
   const [antiMentionDuration, setAntiMentionDuration] = useState('24');
   const [detectionMode, setDetectionMode] = useState('instant');
@@ -2461,27 +2462,51 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                           })()}
                         </div>
 
-                        {/* Quick Canvas Actions */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
-                          <div className="flex items-center gap-2">
+                        {/* Quick Canvas Actions with Target Channel Selector */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-white/5">
+                          <div className="flex flex-wrap items-center gap-3">
+                            {/* Target Discord Channel Dropdown */}
+                            <div className="flex items-center gap-2 bg-black/50 border border-white/15 rounded-2xl px-3 py-1.5 shadow-inner">
+                              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                DISPATCH CHANNEL:
+                              </span>
+                              <select
+                                value={targetChannel}
+                                onChange={(e) => setTargetChannel(e.target.value)}
+                                className="bg-transparent text-xs font-mono font-bold text-white focus:outline-none cursor-pointer"
+                              >
+                                {availableChannels
+                                  .filter((ch) => ch.type === 0 || ch.type === 5)
+                                  .map((ch) => (
+                                    <option key={ch.id} value={ch.id} className="bg-[#12131a] text-white">
+                                      #{ch.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            </div>
+
                             <button
                               type="button"
                               onClick={() => {
                                 setMainImageUrl(cardBgImage);
-                                alert('Card background applied to main Welcomer embed image!');
+                                setWelcomerToast({ message: '✓ Live card image synchronized with Welcomer embed!' });
+                                setTimeout(() => setWelcomerToast(null), 3000);
                               }}
-                              className="px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-black font-semibold text-xs transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                              className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer border border-white/15 flex items-center gap-1.5 shadow-sm active:scale-95"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                               <span>Apply to Welcomer Embed</span>
                             </button>
+
                             <button
                               type="button"
                               onClick={handleSendTestMessage}
-                              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer border border-white/15 flex items-center gap-1.5"
+                              disabled={testSent}
+                              className="px-5 py-2.5 rounded-2xl bg-white hover:bg-slate-200 text-black font-bold text-xs transition-all cursor-pointer shadow-xl flex items-center gap-2 transform active:scale-95 disabled:opacity-50"
                             >
-                              <Send className="w-3.5 h-3.5" />
-                              <span>Send Live Test Card</span>
+                              <Send className="w-3.5 h-3.5 text-black" />
+                              <span>{testSent ? 'Dispatching to Discord...' : 'Send Live Test Card'}</span>
                             </button>
                           </div>
                           <button
@@ -2709,9 +2734,12 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                                 </label>
                                 <input
                                   type="text"
-                                  placeholder="https://images.unsplash.com/..."
+                                  placeholder="https://cdn.discordapp.com/attachments/... or image URL"
                                   value={cardBgImage}
-                                  onChange={(e) => setCardBgImage(e.target.value)}
+                                  onChange={(e) => {
+                                    setCardBgImage(e.target.value);
+                                    setMainImageUrl(e.target.value);
+                                  }}
                                   className="w-full bg-black/40 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-red-500/50 transition-colors"
                                 />
                                 <p className="text-[10px] text-slate-500">
