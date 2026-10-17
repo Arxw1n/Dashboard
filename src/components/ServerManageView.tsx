@@ -51,6 +51,7 @@ import {
   LayoutDashboard,
   Eye,
   CheckCircle2,
+  ImageIcon,
 } from 'lucide-react';
 import { GuildItem, GuildSettings, UserProfile, CommandItem } from '../types';
 import { SyncingLoader } from './SyncingLoader';
@@ -2513,7 +2514,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                         <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto">
                           {[
                             { id: 'presets', label: '1. Curated Themes & Presets', icon: Sparkles },
-                            { id: 'background', label: '2. Background & Atmosphere', icon: Image },
+                            { id: 'background', label: '2. Background & Atmosphere', icon: ImageIcon },
                             { id: 'avatar', label: '3. Avatar & Glow Styling', icon: Shield },
                             { id: 'typography', label: '4. Live Typography & Pills', icon: MessageSquare },
                           ].map((ctab) => (
@@ -2651,7 +2652,56 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
 
                         {/* TAB 2: BACKGROUND & ATMOSPHERE */}
                         {cardEditorActiveTab === 'background' && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-6">
+                            {/* 1-Click Pro Wallpaper Gallery */}
+                            <div className="space-y-2.5">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                  <Sparkles className="w-3 h-3 text-red-400" />
+                                  <span>1-Click Curated Pro Wallpapers</span>
+                                </label>
+                                <span className="text-[10px] text-slate-500 font-mono">1080p Ultra-HD Themes</span>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                                {[
+                                  { name: 'Crimson Cyber', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80', accent: '#ff0033' },
+                                  { name: 'Tokyo Neon', url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80', accent: '#06b6d4' },
+                                  { name: 'Dark Nebula', url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1200&q=80', accent: '#8b5cf6' },
+                                  { name: 'Obsidian Mesh', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80', accent: '#94a3b8' },
+                                  { name: 'Matrix Grid', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80', accent: '#10b981' },
+                                  { name: 'Royal Gold', url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80', accent: '#f59e0b' },
+                                ].map((wp) => (
+                                  <button
+                                    key={wp.name}
+                                    type="button"
+                                    onClick={() => {
+                                      setCardBgImage(wp.url);
+                                      setCardAccentColor(wp.accent);
+                                      setCardAvatarBorderColor(wp.accent);
+                                    }}
+                                    className={`relative h-20 rounded-xl overflow-hidden border transition-all cursor-pointer group hover:scale-[1.04] ${
+                                      cardBgImage === wp.url
+                                        ? 'border-white ring-2 ring-white/50 shadow-lg'
+                                        : 'border-white/10 hover:border-white/30'
+                                    }`}
+                                  >
+                                    <img src={wp.url} alt={wp.name} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-300" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-2">
+                                      <span className="text-[10px] font-bold text-white tracking-tight truncate">
+                                        {wp.name}
+                                      </span>
+                                    </div>
+                                    {cardBgImage === wp.url && (
+                                      <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white text-black flex items-center justify-center">
+                                        <Check className="w-2.5 h-2.5" />
+                                      </div>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div className="space-y-4">
                               <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -2757,6 +2807,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                                 </p>
                               </div>
                             </div>
+                          </div>
                           </div>
                         )}
 
