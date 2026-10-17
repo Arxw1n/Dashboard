@@ -1378,12 +1378,6 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         { id: 'embed_builder', label: 'Message Sender', icon: Send },
       ],
     },
-    {
-      title: 'OTHER',
-      items: [
-        { id: 'premium', label: 'Premium Sentinel', icon: Crown },
-      ],
-    },
   ];
 
   return (
@@ -7063,96 +7057,6 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
             </div>
           )}
 
-
-          {/* ======================================================== */}
-          {/* TAB: PREMIUM SENTINEL ENTERPRISE TIER */}
-          {/* ======================================================== */}
-          {activeModule === 'premium' && (
-            <div className="space-y-6 animate-fade-in-up">
-              <div className="relative rounded-3xl p-8 border border-white/20 bg-gradient-to-b from-white/10 via-black to-black overflow-hidden shadow-2xl">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-black text-[10px] font-mono font-bold tracking-widest uppercase">
-                        <Crown className="w-3.5 h-3.5 fill-current" />
-                        SENTINEL ENTERPRISE TIER
-                      </div>
-                      <h2 className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
-                        Obsidian Sentinel Elite Core
-                      </h2>
-                      <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
-                        Enterprise-grade DDoS suppression, sub-millisecond AI automod heuristics, unlimited vanity embeds, custom webhook routing, and 24/7 dedicated shard cluster isolation.
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
-                        ● Active Guild License
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                    <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-2">
-                      <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white">
-                        <Zap className="w-4 h-4" />
-                      </div>
-                      <h4 className="font-display font-bold text-sm text-white">Dedicated Sharding</h4>
-                      <p className="text-xs text-slate-400">
-                        Isolated compute shard cluster guaranteeing 99.99% uptime with 0ms websocket latency under heavy traffic.
-                      </p>
-                    </div>
-
-                    <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-2">
-                      <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white">
-                        <ShieldCheck className="w-4 h-4" />
-                      </div>
-                      <h4 className="font-display font-bold text-sm text-white">Zero-Day Threat Defense</h4>
-                      <p className="text-xs text-slate-400">
-                        Instant heuristic token-grabber purge, mass mention quarantine, and automatic discord webhook spoofing denial.
-                      </p>
-                    </div>
-
-                    <div className="liquid-glass rounded-2xl p-5 border border-white/10 space-y-2">
-                      <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white">
-                        <Sparkles className="w-4 h-4" />
-                      </div>
-                      <h4 className="font-display font-bold text-sm text-white">Custom Bot Branding</h4>
-                      <p className="text-xs text-slate-400">
-                        Fully custom avatar, banner, custom presence activity status, and white-label bot integration.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <span className="text-slate-500 uppercase text-[10px]">CURRENT CLUSTER</span>
-                        <p className="text-white font-bold">NODE-US-EAST-04</p>
-                      </div>
-                      <div className="h-6 w-px bg-white/10" />
-                      <div>
-                        <span className="text-slate-500 uppercase text-[10px]">SECURITY LEVEL</span>
-                        <p className="text-emerald-400 font-bold">MAXIMUM SURVEILLANCE</p>
-                      </div>
-                      <div className="h-6 w-px bg-white/10" />
-                      <div>
-                        <span className="text-slate-500 uppercase text-[10px]">EXPIRATION</span>
-                        <p className="text-white font-bold">LIFETIME ACCESS</p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => alert('Your server already has full Obsidian Sentinel Enterprise active.')}
-                      className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-xs hover:bg-slate-200 transition-all cursor-pointer shadow-lg active:scale-95"
-                    >
-                      Manage Enterprise Shard
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Master Save Button Bar */}
           <div className="pt-2">
