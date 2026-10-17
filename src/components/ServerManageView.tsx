@@ -2028,22 +2028,22 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
           />
         )}
 
-        {/* Left Column: Server Card + Action Buttons + Modules Sidebar */}
+        {/* Left Column: Server Card + Action Buttons + Modules Sidebar (Fixed & Pinned) */}
         <aside
           className={`
-            fixed inset-y-16 left-0 z-40 w-72 bg-[#06070a]/95 backdrop-blur-2xl border-r border-white/5 p-4 flex flex-col space-y-4 shrink-0 overflow-y-auto scrollbar-thin transition-transform duration-300 ease-in-out
-            lg:static lg:inset-auto lg:h-full lg:translate-x-0 lg:z-auto
+            fixed top-16 bottom-0 left-0 z-30 w-64 lg:w-72 bg-[#06070a]/98 backdrop-blur-2xl border-r border-white/5 p-3 sm:p-3.5 flex flex-col space-y-2.5 overflow-y-auto scrollbar-none transition-transform duration-300 ease-in-out
+            lg:translate-x-0
             ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
           `}
         >
           {/* Active Server Card */}
-          <div className="liquid-glass rounded-2xl p-3.5 flex items-center gap-3 shadow-lg hover:scale-[1.01] transition-all">
-            <div className="w-11 h-11 rounded-xl bg-white/5 p-0.5 overflow-hidden shrink-0 border border-white/10">
+          <div className="liquid-glass rounded-xl p-2.5 flex items-center gap-2.5 shadow-md shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-white/5 p-0.5 overflow-hidden shrink-0 border border-white/10">
               {guild.icon ? (
                 <img
                   src={guild.icon}
                   alt={guild.name}
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full h-full object-cover rounded-md"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center font-display font-bold text-xs text-white">
@@ -2051,36 +2051,36 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                 </div>
               )}
             </div>
-            <div className="overflow-hidden flex-1">
-              <h3 className="font-display font-bold text-sm text-white truncate">{guild.name}</h3>
-              <p className="text-[10px] text-slate-400 font-mono truncate">ID: {guild.id}</p>
+            <div className="overflow-hidden flex-1 min-w-0">
+              <h3 className="font-display font-bold text-xs text-white truncate">{guild.name}</h3>
+              <p className="text-[9px] text-slate-400 font-mono truncate">ID: {guild.id}</p>
             </div>
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1.5 shrink-0">
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl liquid-glass hover:bg-white/10 text-white font-semibold text-xs transition-all cursor-pointer"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg liquid-glass hover:bg-white/10 text-white font-semibold text-[11px] transition-all cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-3 h-3" />
               <span>Refresh</span>
             </button>
 
             <button
               onClick={() => setShowAuditLogs(true)}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl liquid-glass hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs transition-all cursor-pointer"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg liquid-glass hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-[11px] transition-all cursor-pointer"
             >
-              <FileText className="w-3.5 h-3.5 text-slate-300" />
+              <FileText className="w-3 h-3 text-slate-300" />
               <span>Audit Logs</span>
             </button>
           </div>
 
-          {/* Categorized Modules Navigation (Obsidian Hierarchy) */}
-          <div className="pt-1 space-y-4">
+          {/* Categorized Modules Navigation (Obsidian Hierarchy - Clean Match to Screenshot) */}
+          <div className="pt-1 space-y-3 flex-1 select-none">
             {navCategories.map((cat) => (
               <div key={cat.title} className="space-y-1">
-                <div className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase px-2.5 py-1">
+                <div className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-2.5 py-0.5">
                   {cat.title}
                 </div>
                 <div className="space-y-0.5">
@@ -2093,14 +2093,14 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
                       <button
                         key={m.id}
                         onClick={() => handleSelectModule(m.id)}
-                        className={`relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer text-left ${
+                        className={`relative w-full flex items-center gap-3 px-3 py-1.5 rounded-xl text-[12.5px] transition-all duration-150 cursor-pointer text-left ${
                           isActive
-                            ? 'bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
-                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            ? 'bg-[#181a20] text-white font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.4)]'
+                            : 'text-slate-400 hover:text-white hover:bg-white/[0.04] font-medium'
                         }`}
                       >
                         {isActive && (
-                          <span className="absolute left-0 w-[3px] h-5 bg-white rounded-r-full shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                         )}
                         <Icon
                           className={`w-4 h-4 shrink-0 transition-colors ${
@@ -2118,7 +2118,7 @@ export const ServerManageView: React.FC<ServerManageViewProps> = ({
         </aside>
 
         {/* Center Column: Configuration Form (Changes based on activeModule!) */}
-        <main className="flex-1 h-full bg-[#06070a] p-6 lg:p-8 overflow-y-auto space-y-6 relative scrollbar-thin">
+        <main className="flex-1 lg:ml-72 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-thin p-6 lg:p-8 space-y-6 relative">
           {isModuleSyncing ? (
             <SyncingLoader
               fullScreen={false}
