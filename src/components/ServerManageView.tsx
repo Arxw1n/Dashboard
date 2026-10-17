@@ -50,6 +50,7 @@ import {
   Layers,
   LayoutDashboard,
   Eye,
+  CheckCircle2,
 } from 'lucide-react';
 import { GuildItem, GuildSettings, UserProfile, CommandItem } from '../types';
 import { SyncingLoader } from './SyncingLoader';
